@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+  "chip8-gui",
+  "libchip8",
+]
