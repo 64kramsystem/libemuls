@@ -117,6 +117,10 @@ impl Chip8 {
 
     fn cycle_decode_execute(&mut self, instruction: Word) {
         match instruction {
+            0x2000..=0x2FFF => {
+                let address = instruction & 0b0000_1111_1111_1111;
+                self.cycle_execute_call_subroutine(address);
+            }
             0xA000..=0xAFFF => {
                 let value = instruction & 0b0000_1111_1111_1111;
                 self.cycle_execute_set_I(value);
@@ -126,8 +130,6 @@ impl Chip8 {
                 instruction
             ),
         }
-
-        self.pc += 2;
     }
 
     fn cycle_update_timers(&mut self) {
@@ -145,10 +147,17 @@ impl Chip8 {
 
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
 
+    fn cycle_execute_call_subroutine(&mut self, address: Word) {
+        self.stack[self.sp as usize] = self.pc + 2;
+        self.sp += 1;
+        self.pc = address;
+    }
+
     // Sets I to the address NNN.
     //
     fn cycle_execute_set_I(&mut self, value: Word) {
         self.i = value;
+        self.pc += 2;
     }
 }
 
