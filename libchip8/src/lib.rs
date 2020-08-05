@@ -6,7 +6,7 @@ type Word = u16;
 
 struct Chip8 {
     ram: [Byte; 4096],
-    screen: [Byte; 64 * 32], // Simplification: each byte is a bit.
+    screen: [Byte; 64 * 32], // Simplification (exactly: bit)
     stack: [Word; 16],
 
     v: [Byte; 16],
@@ -17,11 +17,12 @@ struct Chip8 {
     delay_timer: Byte,
     sound_timer: Byte,
 
-    key: [Byte; 16], // Simplification: each byte is a bit.
+    key: [Byte; 16], // Simplification (exactly: bit)
 }
 
 impl Chip8 {
-    // Simplification: instantiate with the data loaded.
+    // Simplification: load the data on instantiation, as there is practically no initialization
+    // stage (BIOS/firmware).
     //
     pub fn new(game_rom: &[Byte]) -> Chip8 {
         Chip8 {
