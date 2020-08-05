@@ -1,7 +1,23 @@
+use clap::{self, App, Arg};
 use libchip8;
+use std::error::Error;
+use std::fs;
 
-fn main() {
-    println!("Running CHIP-8 GUI...");
+fn decode_commandline_arguments() -> String {
+    let commandline_args = std::env::args().collect::<Vec<String>>();
 
-    libchip8::emulate(&[0; 0])
+    let matches = App::new("chip8")
+        .arg(Arg::with_name("GAME_ROM").required(true).index(1))
+        .get_matches_from(commandline_args);
+
+    matches.value_of("GAME_ROM").unwrap().to_string()
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let game_rom_filename = decode_commandline_arguments();
+    let game_rom_data = fs::read(game_rom_filename)?;
+
+    libchip8::emulate(game_rom_data);
+
+    Ok(())
 }

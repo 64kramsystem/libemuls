@@ -66,7 +66,7 @@ fn setup_input() {
     println!("WRITEME: setup_input")
 }
 
-pub fn emulate(game_rom: &[Byte]) {
+pub fn emulate(game_rom: Vec<Byte>) {
     setup_graphics();
     setup_input();
 

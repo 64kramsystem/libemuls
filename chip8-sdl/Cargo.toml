@@ -6,4 +6,5 @@ version = "0.1.0"
 
 [dependencies]
 
+clap = "2.33.1"
 libchip8 = {path = "../libchip8"}
