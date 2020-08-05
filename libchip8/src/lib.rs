@@ -4,8 +4,34 @@
 type Byte = u8;
 type Word = u16;
 
+// Simplification: the below are words, however, since they're used in indexing, the required
+// casting makes usage very ugly, therefore, they're defined as usize.
+//
+const RAM_SIZE: usize = 4096;
+const FONTS_LOCATION: usize = 0; // There's no reference location, but this is common practice
+const PROGRAMS_LOCATION: usize = 0x200;
+
+const FONTSET: [Byte; 80] = [
+    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+    0x20, 0x60, 0x20, 0x20, 0x70, // 1
+    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+    0xF0, 0x80, 0xF0, 0x80, 0x80, // F
+];
+
 struct Chip8 {
-    ram: [Byte; 4096],
+    ram: [Byte; RAM_SIZE],
     screen: [Byte; 64 * 32], // Simplification (exactly: bit)
     stack: [Word; 16],
 
@@ -25,21 +51,35 @@ impl Chip8 {
     // stage (BIOS/firmware).
     //
     fn new(game_rom: &Vec<Byte>) -> Chip8 {
-        Chip8 {
-            ram: [0; 4096],
+        if game_rom.len() > RAM_SIZE - PROGRAMS_LOCATION {
+            panic!(
+                "Rom too big!: {} bytes ({} allowed)",
+                game_rom.len(),
+                RAM_SIZE - PROGRAMS_LOCATION
+            );
+        }
+
+        let mut chip8 = Chip8 {
+            ram: [0; RAM_SIZE],
             screen: [0; 64 * 32],
             stack: [0; 16],
 
             v: [0; 16],
             i: 0,
-            pc: 0,
+            pc: PROGRAMS_LOCATION as Word,
             sp: 0,
 
             delay_timer: 0,
             sound_timer: 0,
 
             key: [0; 16],
-        }
+        };
+
+        chip8.ram[FONTS_LOCATION..FONTS_LOCATION + FONTSET.len()].copy_from_slice(&FONTSET);
+
+        chip8.ram[PROGRAMS_LOCATION..PROGRAMS_LOCATION + game_rom.len()].copy_from_slice(game_rom);
+
+        chip8
     }
 
     fn emulate_cycle(&mut self) {
@@ -111,11 +151,11 @@ fn setup_input() {
     println!("WRITEME: setup_input")
 }
 
-pub fn emulate(game_rom: Vec<Byte>) {
+pub fn emulate(game_rom: &Vec<Byte>) {
     setup_graphics();
     setup_input();
 
-    let mut chip8 = Chip8::new(&game_rom);
+    let mut chip8 = Chip8::new(game_rom);
 
     loop {
         chip8.emulate_cycle();

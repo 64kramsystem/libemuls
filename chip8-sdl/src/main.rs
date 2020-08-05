@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let game_rom_filename = decode_commandline_arguments();
     let game_rom_data = fs::read(game_rom_filename)?;
 
-    libchip8::emulate(game_rom_data);
+    libchip8::emulate(&game_rom_data);
 
     Ok(())
 }
