@@ -130,8 +130,17 @@ impl Chip8 {
         self.pc += 2;
     }
 
-    fn cycle_update_timers(&self) {
-        println!("WRITEME: cycle_update_timers")
+    fn cycle_update_timers(&mut self) {
+        if self.delay_timer > 0 {
+            self.delay_timer -= 1;
+        }
+
+        if self.sound_timer > 0 {
+            if self.sound_timer == 1 {
+                println!("WRITEME: Beep");
+            }
+            self.sound_timer -= 1;
+        }
     }
 
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
