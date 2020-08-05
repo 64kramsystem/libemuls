@@ -1,6 +1,6 @@
 [workspace]
 
 members = [
-  "chip8-gui",
+  "chip8-sdl",
   "libchip8",
 ]
