@@ -121,20 +121,20 @@ impl Chip8 {
     fn cycle_decode_execute(&mut self, instruction: Word) {
         match instruction {
             0x2000..=0x2FFF => {
-                let address = (instruction & 0b0000_1111_1111_1111) as usize;
+                let address = (instruction & 0x0FFF) as usize;
                 self.cycle_execute_call_subroutine(address);
             }
-            0x8004..=0x8FF4 if instruction & 0b0000_0000_0000_1111 == 0x0004 => {
-                let Vx = ((instruction & 0b0000_1111_0000_0000) >> 8) as usize;
-                let Vy = ((instruction & 0b0000_0000_1111_0000) >> 4) as usize;
+            0x8004..=0x8FF4 if instruction & 0x000F == 0x0004 => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let Vy = ((instruction & 0x00F0) >> 4) as usize;
                 self.add_Vy_to_Vx(Vx, Vy);
             }
             0xA000..=0xAFFF => {
-                let value = (instruction & 0b0000_1111_1111_1111) as usize;
+                let value = (instruction & 0x0FFF) as usize;
                 self.cycle_execute_set_I(value);
             }
-            0xF033..=0xFF33 if instruction & 0b0000_0000_1111_1111 == 0x0033 => {
-                let Vx: usize = ((instruction & 0b0000_1111_0000_0000) >> 8) as usize;
+            0xF033..=0xFF33 if instruction & 0x00FF == 0x0033 => {
+                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.store_Vx_bcd_representation(Vx);
             }
             _ => panic!(
