@@ -36,9 +36,12 @@ struct Chip8 {
     stack: [Word; 16],
 
     V: [Byte; 16],
-    I: Word,
-    PC: Word,
-    SP: Word,
+
+    // Simplification of the address registers (exactly: word); see location constants comment.
+    //
+    I: usize,
+    PC: usize,
+    SP: usize,
 
     delay_timer: Byte,
     sound_timer: Byte,
@@ -66,7 +69,7 @@ impl Chip8 {
 
             V: [0; 16],
             I: 0,
-            PC: PROGRAMS_LOCATION as Word,
+            PC: PROGRAMS_LOCATION,
             SP: 0,
 
             delay_timer: 0,
@@ -110,15 +113,15 @@ impl Chip8 {
     // CYCLE MAIN STAGES ///////////////////////////////////////////////////////////////////////////
 
     fn cycle_fetch(&self) -> Word {
-        let instruction_hi_byte = self.ram[self.PC as usize] as Word;
-        let instruction_lo_byte = self.ram[(self.PC + 1) as usize] as Word;
+        let instruction_hi_byte = self.ram[self.PC] as Word;
+        let instruction_lo_byte = self.ram[self.PC + 1] as Word;
         (instruction_hi_byte << 8) + instruction_lo_byte
     }
 
     fn cycle_decode_execute(&mut self, instruction: Word) {
         match instruction {
             0x2000..=0x2FFF => {
-                let address = instruction & 0b0000_1111_1111_1111;
+                let address = (instruction & 0b0000_1111_1111_1111) as usize;
                 self.cycle_execute_call_subroutine(address);
             }
             0x8004..=0x8FF4 if instruction & 0b0000_0000_0000_1111 == 0x0004 => {
@@ -127,7 +130,7 @@ impl Chip8 {
                 self.add_Vy_to_Vx(Vx, Vy);
             }
             0xA000..=0xAFFF => {
-                let value = instruction & 0b0000_1111_1111_1111;
+                let value = (instruction & 0b0000_1111_1111_1111) as usize;
                 self.cycle_execute_set_I(value);
             }
             _ => panic!(
@@ -152,8 +155,8 @@ impl Chip8 {
 
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
 
-    fn cycle_execute_call_subroutine(&mut self, address: Word) {
-        self.stack[self.SP as usize] = self.PC + 2;
+    fn cycle_execute_call_subroutine(&mut self, address: usize) {
+        self.stack[self.SP] = (self.PC + 2) as Word;
         self.SP += 1;
         self.PC = address;
     }
@@ -167,7 +170,7 @@ impl Chip8 {
 
     // Sets I to the address NNN.
     //
-    fn cycle_execute_set_I(&mut self, value: Word) {
+    fn cycle_execute_set_I(&mut self, value: usize) {
         self.I = value;
         self.PC += 2;
     }
