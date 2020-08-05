@@ -35,10 +35,10 @@ struct Chip8 {
     screen: [Byte; 64 * 32], // Simplification (exactly: bit)
     stack: [Word; 16],
 
-    v: [Byte; 16],
-    i: Word,
-    pc: Word,
-    sp: Word,
+    V: [Byte; 16],
+    I: Word,
+    PC: Word,
+    SP: Word,
 
     delay_timer: Byte,
     sound_timer: Byte,
@@ -64,10 +64,10 @@ impl Chip8 {
             screen: [0; 64 * 32],
             stack: [0; 16],
 
-            v: [0; 16],
-            i: 0,
-            pc: PROGRAMS_LOCATION as Word,
-            sp: 0,
+            V: [0; 16],
+            I: 0,
+            PC: PROGRAMS_LOCATION as Word,
+            SP: 0,
 
             delay_timer: 0,
             sound_timer: 0,
@@ -110,8 +110,8 @@ impl Chip8 {
     // CYCLE MAIN STAGES ///////////////////////////////////////////////////////////////////////////
 
     fn cycle_fetch(&self) -> Word {
-        let instruction_hi_byte = self.ram[self.pc as usize] as Word;
-        let instruction_lo_byte = self.ram[(self.pc + 1) as usize] as Word;
+        let instruction_hi_byte = self.ram[self.PC as usize] as Word;
+        let instruction_lo_byte = self.ram[(self.PC + 1) as usize] as Word;
         (instruction_hi_byte << 8) + instruction_lo_byte
     }
 
@@ -122,9 +122,9 @@ impl Chip8 {
                 self.cycle_execute_call_subroutine(address);
             }
             0x8004..=0x8FF4 if instruction & 0b0000_0000_0000_1111 == 0x0004 => {
-                let vx = ((instruction & 0b0000_1111_0000_0000) >> 8) as usize;
-                let vy = ((instruction & 0b0000_0000_1111_0000) >> 4) as usize;
-                self.add_vy_to_vx(vx, vy);
+                let Vx = ((instruction & 0b0000_1111_0000_0000) >> 8) as usize;
+                let Vy = ((instruction & 0b0000_0000_1111_0000) >> 4) as usize;
+                self.add_Vy_to_Vx(Vx, Vy);
             }
             0xA000..=0xAFFF => {
                 let value = instruction & 0b0000_1111_1111_1111;
@@ -153,23 +153,23 @@ impl Chip8 {
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
 
     fn cycle_execute_call_subroutine(&mut self, address: Word) {
-        self.stack[self.sp as usize] = self.pc + 2;
-        self.sp += 1;
-        self.pc = address;
+        self.stack[self.SP as usize] = self.PC + 2;
+        self.SP += 1;
+        self.PC = address;
     }
 
-    fn add_vy_to_vx(&mut self, vx: usize, vy: usize) {
-        let addition_result = self.v[vx].overflowing_add(self.v[vy]);
-        self.v[vx] = addition_result.0;
-        self.v[15] = addition_result.1 as Byte;
-        self.pc += 2;
+    fn add_Vy_to_Vx(&mut self, Vx: usize, Vy: usize) {
+        let addition_result = self.V[Vx].overflowing_add(self.V[Vy]);
+        self.V[Vx] = addition_result.0;
+        self.V[15] = addition_result.1 as Byte;
+        self.PC += 2;
     }
 
     // Sets I to the address NNN.
     //
     fn cycle_execute_set_I(&mut self, value: Word) {
-        self.i = value;
-        self.pc += 2;
+        self.I = value;
+        self.PC += 2;
     }
 }
 
