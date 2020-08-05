@@ -121,6 +121,11 @@ impl Chip8 {
                 let address = instruction & 0b0000_1111_1111_1111;
                 self.cycle_execute_call_subroutine(address);
             }
+            0x8004..=0x8FF4 if instruction & 0b0000_0000_0000_1111 == 0x0004 => {
+                let vx = ((instruction & 0b0000_1111_0000_0000) >> 8) as usize;
+                let vy = ((instruction & 0b0000_0000_1111_0000) >> 4) as usize;
+                self.add_vy_to_vx(vx, vy);
+            }
             0xA000..=0xAFFF => {
                 let value = instruction & 0b0000_1111_1111_1111;
                 self.cycle_execute_set_I(value);
@@ -151,6 +156,13 @@ impl Chip8 {
         self.stack[self.sp as usize] = self.pc + 2;
         self.sp += 1;
         self.pc = address;
+    }
+
+    fn add_vy_to_vx(&mut self, vx: usize, vy: usize) {
+        let addition_result = self.v[vx].overflowing_add(self.v[vy]);
+        self.v[vx] = addition_result.0;
+        self.v[15] = addition_result.1 as Byte;
+        self.pc += 2;
     }
 
     // Sets I to the address NNN.
