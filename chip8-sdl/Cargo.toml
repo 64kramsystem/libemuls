@@ -1,7 +1,7 @@
 [package]
 authors = ["Saverio Miroddi <saverio.pub2@gmail.com>"]
 edition = "2018"
-name = "chip8-gui"
+name = "chip8-sdl"
 version = "0.1.0"
 
 [dependencies]
