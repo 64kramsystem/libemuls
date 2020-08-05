@@ -133,6 +133,10 @@ impl Chip8 {
                 let value = (instruction & 0b0000_1111_1111_1111) as usize;
                 self.cycle_execute_set_I(value);
             }
+            0xF033..=0xFF33 if instruction & 0b0000_0000_1111_1111 == 0x0033 => {
+                let Vx: usize = ((instruction & 0b0000_1111_0000_0000) >> 8) as usize;
+                self.store_Vx_bcd_representation(Vx);
+            }
             _ => panic!(
                 "WRITEME: Invalid/unsupported instruction: {:04X}",
                 instruction
@@ -172,6 +176,16 @@ impl Chip8 {
     //
     fn cycle_execute_set_I(&mut self, value: usize) {
         self.I = value;
+        self.PC += 2;
+    }
+
+    fn store_Vx_bcd_representation(&mut self, Vx: usize) {
+        let most_significant_digit = self.V[Vx] / 100;
+        let middle_digit = (self.V[Vx] % 100) / 10;
+        let least_significant_digit = self.V[Vx] % 10;
+        self.ram[self.I] = most_significant_digit;
+        self.ram[self.I + 1] = middle_digit;
+        self.ram[self.I + 2] = least_significant_digit;
         self.PC += 2;
     }
 }
