@@ -1,3 +1,6 @@
+// For clarity, any register reference is upper case.
+#![allow(non_snake_case)]
+
 type Byte = u8;
 type Word = u16;
 
@@ -38,9 +41,7 @@ impl Chip8 {
         }
     }
 
-    fn emulate_cycle(&self) {
-        println!("WRITEME: emulate_cycle");
-
+    fn emulate_cycle(&mut self) {
         // The decode/execute stages are conventionally split. In this system there is not real need
         // for this, so, for simplicity, they're merged. A separate-stages design would likely have
         // a function pointer and the operands as intermediate values.
@@ -73,11 +74,19 @@ impl Chip8 {
         (instruction_hi_byte << 8) + instruction_lo_byte
     }
 
-    fn cycle_decode_execute(&self, instruction: Word) {
-        println!("WRITEME: cycle_decode");
+    fn cycle_decode_execute(&mut self, instruction: Word) {
         match instruction {
-            _ => self.cycle_execute_foo(0, 1, 2),
+            0xA000..=0xAFFF => {
+                let value = instruction & 0b0000_1111_1111_1111;
+                self.cycle_execute_set_I(value);
+            }
+            _ => panic!(
+                "WRITEME: Invalid/unsupported instruction: {:04X}",
+                instruction
+            ),
         }
+
+        self.pc += 2;
     }
 
     fn cycle_update_timers(&self) {
@@ -86,8 +95,10 @@ impl Chip8 {
 
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
 
-    fn cycle_execute_foo(&self, x: u8, y: u8, n: u8) {
-        println!("WRITEME: cycle_execute_foo; x:{}, y:{}, n:{}", x, y, n);
+    // Sets I to the address NNN.
+    //
+    fn cycle_execute_set_I(&mut self, value: Word) {
+        self.i = value;
     }
 }
 
@@ -103,7 +114,7 @@ pub fn emulate(game_rom: Vec<Byte>) {
     setup_graphics();
     setup_input();
 
-    let chip8 = Chip8::new(&game_rom);
+    let mut chip8 = Chip8::new(&game_rom);
 
     loop {
         chip8.emulate_cycle();
