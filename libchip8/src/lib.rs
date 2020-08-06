@@ -216,6 +216,10 @@ impl Chip8 {
                 let value = (instruction & 0x0FFF) as usize;
                 self.execute_set_I(value);
             }
+            0xB000..=0xBFFF => {
+                let address = (instruction & 0x0FFF) as usize;
+                self.execute_goto_plus_V0(address);
+            }
             0xD000..=0xDFFF => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
@@ -369,6 +373,10 @@ impl Chip8 {
     fn execute_set_I(&mut self, value: usize) {
         self.I = value;
         self.PC += 2;
+    }
+
+    fn execute_goto_plus_V0(&mut self, address: usize) {
+        self.PC = address + self.V[0] as usize;
     }
 
     fn execute_draw_sprite(&mut self, Vx: usize, Vy: usize, lines: usize) {
