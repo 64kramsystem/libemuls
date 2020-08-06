@@ -152,6 +152,11 @@ impl Chip8 {
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
                 self.execute_skip_next_instruction_if_Vx_equals_Vy(Vx, Vy);
             }
+            0x6000..=0x6FFF => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let n = (instruction & 0x00FF) as Byte;
+                self.execute_set_Vx_to_n(Vx, n);
+            }
             0x8004..=0x8FF4 if instruction & 0x000F == 0x0004 => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
@@ -237,6 +242,11 @@ impl Chip8 {
         } else {
             self.PC += 2;
         }
+    }
+
+    fn execute_set_Vx_to_n(&mut self, Vx: usize, n: Byte) {
+        self.V[Vx] = n;
+        self.PC += 2;
     }
 
     fn execute_add_Vy_to_Vx(&mut self, Vx: usize, Vy: usize) {
