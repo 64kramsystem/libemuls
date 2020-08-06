@@ -167,6 +167,21 @@ impl Chip8 {
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
                 self.execute_set_Vx_to_Vy(Vx, Vy);
             }
+            0x8001..=0x8FF1 if instruction & 0x000F == 0x0001 => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+                self.execute_set_Vx_to_Vx_or_Vy(Vx, Vy);
+            }
+            0x8002..=0x8FF2 if instruction & 0x000F == 0x0002 => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+                self.execute_set_Vx_to_Vx_and_Vy(Vx, Vy);
+            }
+            0x8003..=0x8FF3 if instruction & 0x000F == 0x0003 => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+                self.execute_set_Vx_to_Vx_xor_Vy(Vx, Vy);
+            }
             0x8004..=0x8FF4 if instruction & 0x000F == 0x0004 => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
@@ -267,6 +282,21 @@ impl Chip8 {
 
     fn execute_set_Vx_to_Vy(&mut self, Vx: usize, Vy: usize) {
         self.V[Vx] = self.V[Vy];
+        self.PC += 2;
+    }
+
+    fn execute_set_Vx_to_Vx_or_Vy(&mut self, Vx: usize, Vy: usize) {
+        self.V[Vx] |= self.V[Vy];
+        self.PC += 2;
+    }
+
+    fn execute_set_Vx_to_Vx_and_Vy(&mut self, Vx: usize, Vy: usize) {
+        self.V[Vx] &= self.V[Vy];
+        self.PC += 2;
+    }
+
+    fn execute_set_Vx_to_Vx_xor_Vy(&mut self, Vx: usize, Vy: usize) {
+        self.V[Vx] ^= self.V[Vy];
         self.PC += 2;
     }
 
