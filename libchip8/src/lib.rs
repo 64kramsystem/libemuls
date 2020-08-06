@@ -50,6 +50,8 @@ struct Chip8 {
     sound_timer: Byte,
 
     key: [Byte; 16], // Simplification (exactly: bit)
+
+    draw_flag: bool,
 }
 
 impl Chip8 {
@@ -79,6 +81,8 @@ impl Chip8 {
             sound_timer: 0,
 
             key: [0; 16],
+
+            draw_flag: false,
         };
 
         chip8.ram[FONTS_LOCATION..FONTS_LOCATION + FONTSET.len()].copy_from_slice(&FONTSET);
@@ -100,13 +104,9 @@ impl Chip8 {
         self.cycle_update_timers();
     }
 
-    fn draw_flag(&self) -> bool {
-        println!("WRITEME: draw_flag");
-        true
-    }
-
-    fn draw_graphics(&self) {
-        println!("WRITEME: draw_graphics")
+    fn draw_graphics(&mut self) {
+        println!("WRITEME: draw_graphics");
+        self.draw_flag = false;
     }
 
     fn set_keys(&self) {
@@ -135,6 +135,12 @@ impl Chip8 {
             0xA000..=0xAFFF => {
                 let value = (instruction & 0x0FFF) as usize;
                 self.cycle_execute_set_I(value);
+            }
+            0xD000..=0xDFFF => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+                let lines = (instruction & 0x00F) as usize;
+                self.draw_sprite(Vx, Vy, lines);
             }
             0xF033..=0xFF33 if instruction & 0x00FF == 0x0033 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
@@ -182,6 +188,36 @@ impl Chip8 {
         self.PC += 2;
     }
 
+    fn draw_sprite(&mut self, Vx: usize, Vy: usize, lines: usize) {
+        let x = self.V[Vx] as usize;
+        let y = self.V[Vy] as usize;
+
+        let mut current_position = SCREEN_WIDTH * y + x;
+        let mut sprite_collided: Byte = 0;
+
+        for source_sprite_row in self.ram[(self.I)..(self.I + lines)].iter() {
+            for sprite_pixel_shift in (0..=7).rev() {
+                let pixel_value = (source_sprite_row >> sprite_pixel_shift) & 0b000_0001_u8;
+
+                if pixel_value == 1 {
+                    if self.screen[current_position] == 1 {
+                        sprite_collided = 1;
+                    }
+                    self.screen[current_position] ^= 1;
+                }
+
+                current_position += 1;
+            }
+
+            current_position += SCREEN_WIDTH - 8;
+        }
+
+        self.V[15] = sprite_collided;
+        self.PC += 2;
+
+        self.draw_flag = true;
+    }
+
     fn store_Vx_bcd_representation(&mut self, Vx: usize) {
         let most_significant_digit = self.V[Vx] / 100;
         let middle_digit = (self.V[Vx] % 100) / 10;
@@ -210,7 +246,7 @@ pub fn emulate(game_rom: &[Byte]) {
     loop {
         chip8.emulate_cycle();
 
-        if chip8.draw_flag() {
+        if chip8.draw_flag {
             chip8.draw_graphics();
         }
 
