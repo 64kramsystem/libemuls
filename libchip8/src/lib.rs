@@ -261,9 +261,9 @@ impl Chip8 {
     }
 
     fn execute_add_Vy_to_Vx(&mut self, Vx: usize, Vy: usize) {
-        let addition_result = self.V[Vx].overflowing_add(self.V[Vy]);
-        self.V[Vx] = addition_result.0;
-        self.V[15] = addition_result.1 as Byte;
+        let (addition_result, carry) = self.V[Vx].overflowing_add(self.V[Vy]);
+        self.V[Vx] = addition_result;
+        self.V[15] = carry as Byte;
         self.PC += 2;
     }
 
