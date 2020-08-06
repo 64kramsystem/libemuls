@@ -220,6 +220,11 @@ impl Chip8 {
                 let address = (instruction & 0x0FFF) as usize;
                 self.execute_goto_plus_V0(address);
             }
+            0xC000..=0xCFFF => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let n = (instruction & 0x00FF) as Byte;
+                self.execute_set_Vx_to_masked_random(Vx, n);
+            }
             0xD000..=0xDFFF => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
@@ -377,6 +382,11 @@ impl Chip8 {
 
     fn execute_goto_plus_V0(&mut self, address: usize) {
         self.PC = address + (self.V[0] as usize);
+    }
+
+    fn execute_set_Vx_to_masked_random(&mut self, Vx: usize, n: Byte) {
+        self.V[Vx] = rand::random::<Byte>() & n;
+        self.PC += 2;
     }
 
     fn execute_draw_sprite(&mut self, Vx: usize, Vy: usize, lines: usize) {
