@@ -125,26 +125,26 @@ impl Chip8 {
         match instruction {
             0x2000..=0x2FFF => {
                 let address = (instruction & 0x0FFF) as usize;
-                self.cycle_execute_call_subroutine(address);
+                self.execute_call_subroutine(address);
             }
             0x8004..=0x8FF4 if instruction & 0x000F == 0x0004 => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
-                self.add_Vy_to_Vx(Vx, Vy);
+                self.execute_add_Vy_to_Vx(Vx, Vy);
             }
             0xA000..=0xAFFF => {
                 let value = (instruction & 0x0FFF) as usize;
-                self.cycle_execute_set_I(value);
+                self.execute_set_I(value);
             }
             0xD000..=0xDFFF => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
                 let lines = (instruction & 0x00F) as usize;
-                self.draw_sprite(Vx, Vy, lines);
+                self.execute_draw_sprite(Vx, Vy, lines);
             }
             0xF033..=0xFF33 if instruction & 0x00FF == 0x0033 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
-                self.store_Vx_bcd_representation(Vx);
+                self.execute_store_Vx_bcd_representation(Vx);
             }
             _ => panic!(
                 "WRITEME: Invalid/unsupported instruction: {:04X}",
@@ -168,27 +168,25 @@ impl Chip8 {
 
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
 
-    fn cycle_execute_call_subroutine(&mut self, address: usize) {
+    fn execute_call_subroutine(&mut self, address: usize) {
         self.stack[self.SP] = (self.PC + 2) as Word;
         self.SP += 1;
         self.PC = address;
     }
 
-    fn add_Vy_to_Vx(&mut self, Vx: usize, Vy: usize) {
+    fn execute_add_Vy_to_Vx(&mut self, Vx: usize, Vy: usize) {
         let addition_result = self.V[Vx].overflowing_add(self.V[Vy]);
         self.V[Vx] = addition_result.0;
         self.V[15] = addition_result.1 as Byte;
         self.PC += 2;
     }
 
-    // Sets I to the address NNN.
-    //
-    fn cycle_execute_set_I(&mut self, value: usize) {
+    fn execute_set_I(&mut self, value: usize) {
         self.I = value;
         self.PC += 2;
     }
 
-    fn draw_sprite(&mut self, Vx: usize, Vy: usize, lines: usize) {
+    fn execute_draw_sprite(&mut self, Vx: usize, Vy: usize, lines: usize) {
         let x = self.V[Vx] as usize;
         let y = self.V[Vy] as usize;
 
@@ -218,7 +216,7 @@ impl Chip8 {
         self.draw_flag = true;
     }
 
-    fn store_Vx_bcd_representation(&mut self, Vx: usize) {
+    fn execute_store_Vx_bcd_representation(&mut self, Vx: usize) {
         let most_significant_digit = self.V[Vx] / 100;
         let middle_digit = (self.V[Vx] % 100) / 10;
         let least_significant_digit = self.V[Vx] % 10;
