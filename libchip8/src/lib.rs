@@ -126,6 +126,9 @@ impl Chip8 {
             0x00E0 => {
                 self.execute_clear_screen();
             }
+            0x00EE => {
+                self.execute_return_from_subroutine();
+            }
             0x2000..=0x2FFF => {
                 let address = (instruction & 0x0FFF) as usize;
                 self.execute_call_subroutine(address);
@@ -176,6 +179,11 @@ impl Chip8 {
         self.PC += 2;
 
         self.draw_flag = true;
+    }
+
+    fn execute_return_from_subroutine(&mut self) {
+        self.SP -= 1;
+        self.PC = self.stack[self.SP] as usize;
     }
 
     fn execute_call_subroutine(&mut self, address: usize) {
