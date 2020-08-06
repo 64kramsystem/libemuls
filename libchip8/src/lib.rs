@@ -192,6 +192,16 @@ impl Chip8 {
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
                 self.execute_subtract_Vy_from_Vx(Vx, Vy);
             }
+            0x8006..=0x8FF6 if instruction & 0x000F == 0x0006 => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                // Vy is ignored
+                self.execute_shift_right_Vx(Vx);
+            }
+            0x800E..=0x8FFE if instruction & 0x000F == 0x000E => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                // Vy is ignored
+                self.execute_shift_left_Vx(Vx);
+            }
             0xA000..=0xAFFF => {
                 let value = (instruction & 0x0FFF) as usize;
                 self.execute_set_I(value);
@@ -316,6 +326,18 @@ impl Chip8 {
         let (subtraction_result, carry) = self.V[Vx].overflowing_sub(self.V[Vy]);
         self.V[Vx] = subtraction_result;
         self.V[15] = (!carry) as Byte;
+        self.PC += 2;
+    }
+
+    fn execute_shift_right_Vx(&mut self, Vx: usize) {
+        self.V[15] = self.V[Vx] & 1;
+        self.V[Vx] >>= 1;
+        self.PC += 2;
+    }
+
+    fn execute_shift_left_Vx(&mut self, Vx: usize) {
+        self.V[15] = self.V[Vx] >> 7;
+        self.V[Vx] <<= 1;
         self.PC += 2;
     }
 
