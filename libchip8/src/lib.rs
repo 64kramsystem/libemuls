@@ -137,6 +137,11 @@ impl Chip8 {
                 let address = (instruction & 0x0FFF) as usize;
                 self.execute_call_subroutine(address);
             }
+            0x3000..=0x3FFF => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let n = (instruction & 0x00FF) as Byte;
+                self.execute_skip_next_instruction_if_Vx_equals_n(Vx, n);
+            }
             0x8004..=0x8FF4 if instruction & 0x000F == 0x0004 => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
@@ -198,6 +203,14 @@ impl Chip8 {
         self.stack[self.SP] = self.PC + 2;
         self.SP += 1;
         self.PC = address;
+    }
+
+    fn execute_skip_next_instruction_if_Vx_equals_n(&mut self, Vx: usize, n: Byte) {
+        if self.V[Vx] == n {
+            self.PC += 4;
+        } else {
+            self.PC += 2;
+        }
     }
 
     fn execute_add_Vy_to_Vx(&mut self, Vx: usize, Vy: usize) {
