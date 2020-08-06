@@ -187,6 +187,11 @@ impl Chip8 {
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
                 self.execute_add_Vy_to_Vx(Vx, Vy);
             }
+            0x8005..=0x8FF5 if instruction & 0x000F == 0x0005 => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+                self.execute_subtract_Vy_from_Vx(Vx, Vy);
+            }
             0xA000..=0xAFFF => {
                 let value = (instruction & 0x0FFF) as usize;
                 self.execute_set_I(value);
@@ -304,6 +309,13 @@ impl Chip8 {
         let (addition_result, carry) = self.V[Vx].overflowing_add(self.V[Vy]);
         self.V[Vx] = addition_result;
         self.V[15] = carry as Byte;
+        self.PC += 2;
+    }
+
+    fn execute_subtract_Vy_from_Vx(&mut self, Vx: usize, Vy: usize) {
+        let (subtraction_result, carry) = self.V[Vx].overflowing_sub(self.V[Vy]);
+        self.V[Vx] = subtraction_result;
+        self.V[15] = (!carry) as Byte;
         self.PC += 2;
     }
 
