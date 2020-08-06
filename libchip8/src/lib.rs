@@ -11,6 +11,9 @@ const RAM_SIZE: usize = 4096;
 const FONTS_LOCATION: usize = 0; // There's no reference location, but this is common practice
 const PROGRAMS_LOCATION: usize = 0x200;
 
+const SCREEN_WIDTH: usize = 64;
+const SCREEN_HEIGHT: usize = 32;
+
 const FONTSET: [Byte; 80] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -32,7 +35,7 @@ const FONTSET: [Byte; 80] = [
 
 struct Chip8 {
     ram: [Byte; RAM_SIZE],
-    screen: [Byte; 64 * 32], // Simplification (exactly: bit)
+    screen: [Byte; SCREEN_WIDTH * SCREEN_HEIGHT], // Simplification (exactly: bit)
     stack: [Word; 16],
 
     V: [Byte; 16],
@@ -64,7 +67,7 @@ impl Chip8 {
 
         let mut chip8 = Chip8 {
             ram: [0; RAM_SIZE],
-            screen: [0; 64 * 32],
+            screen: [0; SCREEN_WIDTH * SCREEN_HEIGHT],
             stack: [0; 16],
 
             V: [0; 16],
