@@ -123,6 +123,9 @@ impl Chip8 {
 
     fn cycle_decode_execute(&mut self, instruction: Word) {
         match instruction {
+            0x00E0 => {
+                self.execute_clear_screen();
+            }
             0x2000..=0x2FFF => {
                 let address = (instruction & 0x0FFF) as usize;
                 self.execute_call_subroutine(address);
@@ -167,6 +170,13 @@ impl Chip8 {
     }
 
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
+
+    fn execute_clear_screen(&mut self) {
+        self.screen = [0; SCREEN_WIDTH * SCREEN_HEIGHT];
+        self.PC += 2;
+
+        self.draw_flag = true;
+    }
 
     fn execute_call_subroutine(&mut self, address: usize) {
         self.stack[self.SP] = (self.PC + 2) as Word;
