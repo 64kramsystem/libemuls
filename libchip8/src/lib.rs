@@ -207,6 +207,11 @@ impl Chip8 {
                 // Vy is ignored
                 self.execute_shift_left_Vx(Vx);
             }
+            0x9000..=0x9FFF if instruction & 0x000F == 0x0000 => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+                self.execute_skip_next_instruction_if_Vx_not_equals_Vy(Vx, Vy);
+            }
             0xA000..=0xAFFF => {
                 let value = (instruction & 0x0FFF) as usize;
                 self.execute_set_I(value);
@@ -351,6 +356,14 @@ impl Chip8 {
         self.V[15] = self.V[Vx] >> 7;
         self.V[Vx] <<= 1;
         self.PC += 2;
+    }
+
+    fn execute_skip_next_instruction_if_Vx_not_equals_Vy(&mut self, Vx: usize, Vy: usize) {
+        if self.V[Vx] != self.V[Vy] {
+            self.PC += 4;
+        } else {
+            self.PC += 2;
+        }
     }
 
     fn execute_set_I(&mut self, value: usize) {
