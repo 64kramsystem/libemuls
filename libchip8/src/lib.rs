@@ -157,6 +157,11 @@ impl Chip8 {
                 let n = (instruction & 0x00FF) as Byte;
                 self.execute_set_Vx_to_n(Vx, n);
             }
+            0x7000..=0x7FFF => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let n = (instruction & 0x00FF) as Byte;
+                self.execute_add_n_to_Vx(Vx, n);
+            }
             0x8004..=0x8FF4 if instruction & 0x000F == 0x0004 => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
@@ -246,6 +251,12 @@ impl Chip8 {
 
     fn execute_set_Vx_to_n(&mut self, Vx: usize, n: Byte) {
         self.V[Vx] = n;
+        self.PC += 2;
+    }
+
+    fn execute_add_n_to_Vx(&mut self, Vx: usize, n: Byte) {
+        let (addition_result, _) = self.V[Vx].overflowing_add(n);
+        self.V[Vx] = addition_result;
         self.PC += 2;
     }
 
