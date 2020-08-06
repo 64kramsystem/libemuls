@@ -36,7 +36,7 @@ const FONTSET: [Byte; 80] = [
 struct Chip8 {
     ram: [Byte; RAM_SIZE],
     screen: [Byte; SCREEN_WIDTH * SCREEN_HEIGHT], // Simplification (exactly: bit)
-    stack: [Word; 16],
+    stack: [usize; 16], // Simplification (exactly: word); see location constants comment.
 
     V: [Byte; 16],
 
@@ -183,11 +183,11 @@ impl Chip8 {
 
     fn execute_return_from_subroutine(&mut self) {
         self.SP -= 1;
-        self.PC = self.stack[self.SP] as usize;
+        self.PC = self.stack[self.SP];
     }
 
     fn execute_call_subroutine(&mut self, address: usize) {
-        self.stack[self.SP] = (self.PC + 2) as Word;
+        self.stack[self.SP] = self.PC + 2;
         self.SP += 1;
         self.PC = address;
     }
