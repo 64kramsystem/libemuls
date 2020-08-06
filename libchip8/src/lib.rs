@@ -142,6 +142,11 @@ impl Chip8 {
                 let n = (instruction & 0x00FF) as Byte;
                 self.execute_skip_next_instruction_if_Vx_equals_n(Vx, n);
             }
+            0x4000..=0x4FFF => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                let n = (instruction & 0x00FF) as Byte;
+                self.execute_skip_next_instruction_if_Vx_not_equals_n(Vx, n);
+            }
             0x8004..=0x8FF4 if instruction & 0x000F == 0x0004 => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
@@ -207,6 +212,14 @@ impl Chip8 {
 
     fn execute_skip_next_instruction_if_Vx_equals_n(&mut self, Vx: usize, n: Byte) {
         if self.V[Vx] == n {
+            self.PC += 4;
+        } else {
+            self.PC += 2;
+        }
+    }
+
+    fn execute_skip_next_instruction_if_Vx_not_equals_n(&mut self, Vx: usize, n: Byte) {
+        if self.V[Vx] != n {
             self.PC += 4;
         } else {
             self.PC += 2;
