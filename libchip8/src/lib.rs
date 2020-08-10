@@ -259,6 +259,10 @@ impl Chip8 {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_store_Vx_bcd_representation(Vx);
             }
+            0xF055..=0xFF55 if instruction & 0x00FF == 0x0055 => {
+                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+                self.execute_dump_registers_to_memory(Vx);
+            }
             _ => panic!(
                 "WRITEME: Invalid/unsupported instruction: {:04X}",
                 instruction
@@ -490,6 +494,21 @@ impl Chip8 {
         self.ram[self.I] = most_significant_digit;
         self.ram[self.I + 1] = middle_digit;
         self.ram[self.I + 2] = least_significant_digit;
+        self.PC += 2;
+    }
+
+    fn execute_dump_registers_to_memory(&mut self, Vx: usize) {
+        // An amusing, but too verbose, Rust-y approach is
+        //
+        //   for (address, v) in self.ram.iter_mut().skip(self.I).take(16).zip(self.V.iter()) { /* ... */ }
+        //
+        // There are other middle grounds, e.g.:
+        //
+        //   for (i, value) in self.V.iter().enumerate() { /* ... */ }
+        //
+        for i in 0..=Vx {
+            self.ram[self.I + i] = self.V[i];
+        }
         self.PC += 2;
     }
 }
