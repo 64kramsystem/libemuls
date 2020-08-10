@@ -235,6 +235,10 @@ impl Chip8 {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_skip_next_instruction_if_Vx_key_pressed(Vx);
             }
+            0xE0A1..=0xEFA1 if instruction & 0x00FF == 0x00A1 => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                self.execute_skip_next_instruction_if_Vx_key_not_pressed(Vx);
+            }
             0xF033..=0xFF33 if instruction & 0x00FF == 0x0033 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_store_Vx_bcd_representation(Vx);
@@ -427,6 +431,16 @@ impl Chip8 {
         let keyIndex = self.V[Vx] as usize;
 
         if self.key[keyIndex] == 1 {
+            self.PC += 4;
+        } else {
+            self.PC += 2;
+        }
+    }
+
+    fn execute_skip_next_instruction_if_Vx_key_not_pressed(&mut self, Vx: usize) {
+        let keyIndex = self.V[Vx] as usize;
+
+        if self.key[keyIndex] == 0 {
             self.PC += 4;
         } else {
             self.PC += 2;
