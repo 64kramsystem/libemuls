@@ -123,12 +123,19 @@ impl Chip8 {
 
     fn cycle_decode_execute(&mut self, instruction: Word) {
         match instruction {
+            // Some instructions are in the 0x0NNN range (machine code routine call), and need to be
+            // placed before it, therefore, out of order.
+            //
             0x00E0 => {
                 self.execute_clear_screen();
             }
             0x00EE => {
                 self.execute_return_from_subroutine();
             }
+            0x0000..=0x0FFF => panic!(
+                "Call machine code routine instruction or extension not implemented: {:04X}",
+                instruction
+            ),
             0x1000..=0x1FFF => {
                 let address = (instruction & 0x0FFF) as usize;
                 self.execute_goto(address);
