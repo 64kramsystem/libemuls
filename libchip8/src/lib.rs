@@ -262,6 +262,10 @@ impl Chip8 {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_add_Vx_to_I(Vx);
             }
+            0xF029..=0xFF29 if instruction & 0x00FF == 0x0029 => {
+                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+                self.execute_set_I_to_Vx_sprite_address(Vx);
+            }
             0xF033..=0xFF33 if instruction & 0x00FF == 0x0033 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_store_Vx_bcd_representation(Vx);
@@ -495,6 +499,11 @@ impl Chip8 {
 
     fn execute_add_Vx_to_I(&mut self, Vx: usize) {
         self.I += self.V[Vx] as usize;
+        self.PC += 2;
+    }
+
+    fn execute_set_I_to_Vx_sprite_address(&mut self, Vx: usize) {
+        self.I = (self.V[Vx] * 5) as usize;
         self.PC += 2;
     }
 
