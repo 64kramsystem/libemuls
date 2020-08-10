@@ -263,6 +263,10 @@ impl Chip8 {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_dump_registers_to_memory(Vx);
             }
+            0xF065..=0xFF65 if instruction & 0x00FF == 0x0065 => {
+                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+                self.execute_load_registers_from_memory(Vx);
+            }
             _ => panic!(
                 "WRITEME: Invalid/unsupported instruction: {:04X}",
                 instruction
@@ -508,6 +512,13 @@ impl Chip8 {
         //
         for i in 0..=Vx {
             self.ram[self.I + i] = self.V[i];
+        }
+        self.PC += 2;
+    }
+
+    fn execute_load_registers_from_memory(&mut self, Vx: usize) {
+        for i in 0..=Vx {
+            self.V[i] = self.ram[self.I + i];
         }
         self.PC += 2;
     }
