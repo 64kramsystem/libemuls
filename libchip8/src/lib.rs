@@ -247,6 +247,10 @@ impl Chip8 {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_set_delay_timer_to_Vx(Vx);
             }
+            0xF018..=0xFF18 if instruction & 0x00FF == 0x0018 => {
+                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+                self.execute_set_sound_timer_to_Vx(Vx);
+            }
             0xF033..=0xFF33 if instruction & 0x00FF == 0x0033 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_store_Vx_bcd_representation(Vx);
@@ -462,6 +466,11 @@ impl Chip8 {
 
     fn execute_set_delay_timer_to_Vx(&mut self, Vx: usize) {
         self.delay_timer = self.V[Vx];
+        self.PC += 2;
+    }
+
+    fn execute_set_sound_timer_to_Vx(&mut self, Vx: usize) {
+        self.sound_timer = self.V[Vx];
         self.PC += 2;
     }
 
