@@ -231,6 +231,10 @@ impl Chip8 {
                 let lines = (instruction & 0x00F) as usize;
                 self.execute_draw_sprite(Vx, Vy, lines);
             }
+            0xE09E..=0xEF9E if instruction & 0x00FF == 0x009E => {
+                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+                self.execute_skip_next_instruction_if_Vx_key_pressed(Vx);
+            }
             0xF033..=0xFF33 if instruction & 0x00FF == 0x0033 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_store_Vx_bcd_representation(Vx);
@@ -417,6 +421,16 @@ impl Chip8 {
         self.PC += 2;
 
         self.draw_flag = true;
+    }
+
+    fn execute_skip_next_instruction_if_Vx_key_pressed(&mut self, Vx: usize) {
+        let keyIndex = self.V[Vx] as usize;
+
+        if self.key[keyIndex] == 1 {
+            self.PC += 4;
+        } else {
+            self.PC += 2;
+        }
     }
 
     fn execute_store_Vx_bcd_representation(&mut self, Vx: usize) {
