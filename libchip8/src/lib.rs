@@ -239,6 +239,10 @@ impl Chip8 {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_skip_next_instruction_if_Vx_key_not_pressed(Vx);
             }
+            0xF007..=0xFF07 if instruction & 0x00FF == 0x0007 => {
+                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+                self.execute_set_Vx_to_delay_timer(Vx);
+            }
             0xF033..=0xFF33 if instruction & 0x00FF == 0x0033 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_store_Vx_bcd_representation(Vx);
@@ -445,6 +449,11 @@ impl Chip8 {
         } else {
             self.PC += 2;
         }
+    }
+
+    fn execute_set_Vx_to_delay_timer(&mut self, Vx: usize) {
+        self.V[Vx] = self.delay_timer;
+        self.PC += 2;
     }
 
     fn execute_store_Vx_bcd_representation(&mut self, Vx: usize) {
