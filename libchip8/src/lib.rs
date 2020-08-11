@@ -1,6 +1,9 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
+use std::thread;
+use std::time::{Duration, Instant};
+
 type Byte = u8;
 type Word = u16;
 
@@ -10,6 +13,8 @@ type Word = u16;
 const RAM_SIZE: usize = 4096;
 const FONTS_LOCATION: usize = 0; // There's no reference location, but this is common practice
 const PROGRAMS_LOCATION: usize = 0x200;
+
+const CLOCK_SPEED: u32 = 500; // Herz
 
 const SCREEN_WIDTH: usize = 64;
 const SCREEN_HEIGHT: usize = 32;
@@ -554,6 +559,10 @@ pub fn emulate(game_rom: &[Byte]) {
 
     let mut chip8 = Chip8::new(game_rom);
 
+    let cycle_time_slice = Duration::new(0, 1_000_000_000 / CLOCK_SPEED);
+
+    let mut last_cycle_time = Instant::now();
+
     loop {
         chip8.emulate_cycle();
 
@@ -563,6 +572,17 @@ pub fn emulate(game_rom: &[Byte]) {
 
         chip8.set_keys();
 
-        println!("WRITEME: sleep");
+        // If there are no delays, use a fixed loop time (start time + N * cycle_time_slice).
+        // If there is a delay, expand the current loop (time).
+        //
+        let next_cycle_time = last_cycle_time + cycle_time_slice;
+        let current_time = Instant::now();
+
+        if current_time < next_cycle_time {
+            thread::sleep(next_cycle_time - current_time);
+            last_cycle_time = next_cycle_time;
+        } else {
+            last_cycle_time = current_time;
+        }
     }
 }
