@@ -15,6 +15,7 @@ const FONTS_LOCATION: usize = 0; // There's no reference location, but this is c
 const PROGRAMS_LOCATION: usize = 0x200;
 
 const CLOCK_SPEED: u32 = 500; // Herz
+const TIMERS_SPEED: u32 = 60; // Herz
 
 const SCREEN_WIDTH: usize = 64;
 const SCREEN_HEIGHT: usize = 32;
@@ -105,8 +106,6 @@ impl Chip8 {
         let instruction = self.cycle_fetch();
 
         self.cycle_decode_execute(instruction);
-
-        self.cycle_update_timers();
     }
 
     fn draw_graphics(&mut self) {
@@ -116,6 +115,19 @@ impl Chip8 {
 
     fn set_keys(&self) {
         println!("WRITEME: set_keys")
+    }
+
+    fn update_timers(&mut self) {
+        if self.delay_timer > 0 {
+            self.delay_timer -= 1;
+        }
+
+        if self.sound_timer > 0 {
+            if self.sound_timer == 1 {
+                println!("WRITEME: Beep");
+            }
+            self.sound_timer -= 1;
+        }
     }
 
     // CYCLE MAIN STAGES ///////////////////////////////////////////////////////////////////////////
@@ -287,19 +299,6 @@ impl Chip8 {
                 "WRITEME: Invalid/unsupported instruction: {:04X}",
                 instruction
             ),
-        }
-    }
-
-    fn cycle_update_timers(&mut self) {
-        if self.delay_timer > 0 {
-            self.delay_timer -= 1;
-        }
-
-        if self.sound_timer > 0 {
-            if self.sound_timer == 1 {
-                println!("WRITEME: Beep");
-            }
-            self.sound_timer -= 1;
         }
     }
 
@@ -560,8 +559,10 @@ pub fn emulate(game_rom: &[Byte]) {
     let mut chip8 = Chip8::new(game_rom);
 
     let cycle_time_slice = Duration::new(0, 1_000_000_000 / CLOCK_SPEED);
+    let timers_time_slice = Duration::new(0, 1_000_000_000 / TIMERS_SPEED);
 
     let mut last_cycle_time = Instant::now();
+    let mut next_timers_time = last_cycle_time;
 
     loop {
         chip8.emulate_cycle();
@@ -573,9 +574,21 @@ pub fn emulate(game_rom: &[Byte]) {
         chip8.set_keys();
 
         // If there are no delays, use a fixed loop time (start time + N * cycle_time_slice).
-        // If there is a delay, expand the current loop (time).
+        // If there is a delay, expand the current loop (time), and delay the timers' next tick.
+        //
+        // The code would be more expressive if it was possible to set `delay = current_time - next_cycle_time`,
+        // but it panics when the result is negative!
         //
         let next_cycle_time = last_cycle_time + cycle_time_slice;
+
+        // This check doesn't need to account delays, because it uses the next cycle time, which,
+        // at this step, is not recalculated.
+        //
+        if last_cycle_time <= next_timers_time && next_timers_time < next_cycle_time {
+            chip8.update_timers();
+            next_timers_time += timers_time_slice;
+        }
+
         let current_time = Instant::now();
 
         if current_time < next_cycle_time {
@@ -583,6 +596,7 @@ pub fn emulate(game_rom: &[Byte]) {
             last_cycle_time = next_cycle_time;
         } else {
             last_cycle_time = current_time;
+            next_timers_time += current_time - next_cycle_time;
         }
     }
 }
