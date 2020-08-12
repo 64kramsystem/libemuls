@@ -56,8 +56,6 @@ struct Chip8 {
     sound_timer: Byte,
 
     key: [Byte; 16], // Simplification (exactly: bit)
-
-    draw_flag: bool,
 }
 
 impl Chip8 {
@@ -87,8 +85,6 @@ impl Chip8 {
             sound_timer: 0,
 
             key: [0; 16],
-
-            draw_flag: false,
         };
 
         chip8.ram[FONTS_LOCATION..FONTS_LOCATION + FONTSET.len()].copy_from_slice(&FONTSET);
@@ -98,19 +94,18 @@ impl Chip8 {
         chip8
     }
 
-    fn emulate_cycle(&mut self) {
+    fn emulate_cycle(&mut self, draw_screen: &mut bool) {
         // The decode/execute stages are conventionally split. In this system there is not real need
         // for this, so, for simplicity, they're merged. A separate-stages design would likely have
         // a function pointer and the operands as intermediate values.
         //
         let instruction = self.cycle_fetch();
 
-        self.cycle_decode_execute(instruction);
+        self.cycle_decode_execute(instruction, draw_screen);
     }
 
     fn draw_graphics(&mut self) {
         println!("WRITEME: draw_graphics");
-        self.draw_flag = false;
     }
 
     fn set_keys(&self) {
@@ -138,13 +133,13 @@ impl Chip8 {
         (instruction_hi_byte << 8) + instruction_lo_byte
     }
 
-    fn cycle_decode_execute(&mut self, instruction: Word) {
+    fn cycle_decode_execute(&mut self, instruction: Word, draw_screen: &mut bool) {
         match instruction {
             // Some instructions are in the 0x0NNN range (machine code routine call), and need to be
             // placed before it, therefore, out of order.
             //
             0x00E0 => {
-                self.execute_clear_screen();
+                self.execute_clear_screen(draw_screen);
             }
             0x00EE => {
                 self.execute_return_from_subroutine();
@@ -253,7 +248,7 @@ impl Chip8 {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
                 let lines = (instruction & 0x00F) as usize;
-                self.execute_draw_sprite(Vx, Vy, lines);
+                self.execute_draw_sprite(Vx, Vy, lines, draw_screen);
             }
             0xE09E..=0xEF9E if instruction & 0x00FF == 0x009E => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
@@ -304,11 +299,11 @@ impl Chip8 {
 
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
 
-    fn execute_clear_screen(&mut self) {
+    fn execute_clear_screen(&mut self, draw_screen: &mut bool) {
         self.screen = [0; SCREEN_WIDTH * SCREEN_HEIGHT];
         self.PC += 2;
 
-        self.draw_flag = true;
+        *draw_screen = true;
     }
 
     fn execute_return_from_subroutine(&mut self) {
@@ -436,7 +431,7 @@ impl Chip8 {
         self.PC += 2;
     }
 
-    fn execute_draw_sprite(&mut self, Vx: usize, Vy: usize, lines: usize) {
+    fn execute_draw_sprite(&mut self, Vx: usize, Vy: usize, lines: usize, draw_screen: &mut bool) {
         let x = self.V[Vx] as usize;
         let y = self.V[Vy] as usize;
 
@@ -463,7 +458,7 @@ impl Chip8 {
         self.V[15] = sprite_collided;
         self.PC += 2;
 
-        self.draw_flag = true;
+        *draw_screen = true;
     }
 
     fn execute_skip_next_instruction_if_Vx_key_pressed(&mut self, Vx: usize) {
@@ -564,11 +559,16 @@ pub fn emulate(game_rom: &[Byte]) {
     let mut last_cycle_time = Instant::now();
     let mut next_timers_time = last_cycle_time;
 
-    loop {
-        chip8.emulate_cycle();
+    // This is an optimization; the simplest approach is to pass the reference down the call stack.
+    //
+    let mut draw_screen = false;
 
-        if chip8.draw_flag {
+    loop {
+        chip8.emulate_cycle(&mut draw_screen);
+
+        if draw_screen {
             chip8.draw_graphics();
+            draw_screen = false;
         }
 
         chip8.set_keys();
