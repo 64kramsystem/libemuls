@@ -5,4 +5,5 @@ members = [
   "interfaces",
   "frontend-sdl",
   "libchip8",
+  "playground",
 ]
