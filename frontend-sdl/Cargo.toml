@@ -5,3 +5,5 @@ name = "frontend-sdl"
 version = "0.1.0"
 
 [dependencies]
+io-frontend = {path = "../io-frontend"}
+sdl2 = "0.34.2"
