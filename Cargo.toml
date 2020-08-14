@@ -3,5 +3,6 @@
 members = [
   "chip8-sdl",
   "io-frontend",
+  "frontend-sdl",
   "libchip8",
 ]
