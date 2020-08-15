@@ -39,7 +39,7 @@ const FONTSET: [Byte; 80] = [
     0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 ];
 
-struct Chip8 {
+pub struct Chip8 {
     ram: [Byte; RAM_SIZE],
     screen: [Byte; SCREEN_WIDTH * SCREEN_HEIGHT], // Simplification (exactly: bit)
     stack: [usize; 16], // Simplification (exactly: word); see location constants comment.
@@ -91,7 +91,67 @@ impl Chip8 {
 
         chip8.ram[PROGRAMS_LOCATION..PROGRAMS_LOCATION + game_rom.len()].copy_from_slice(game_rom);
 
+        chip8.setup_graphics();
+        chip8.setup_input();
+
         chip8
+    }
+
+    pub fn run(&mut self) {
+        let cycle_time_slice = Duration::new(0, 1_000_000_000 / CLOCK_SPEED);
+        let timers_time_slice = Duration::new(0, 1_000_000_000 / TIMERS_SPEED);
+
+        let mut last_cycle_time = Instant::now();
+        let mut next_timers_time = last_cycle_time;
+
+        // This is an optimization; the simplest approach is to pass the reference down the call stack.
+        //
+        let mut draw_screen = false;
+
+        loop {
+            self.emulate_cycle(&mut draw_screen);
+
+            if draw_screen {
+                self.draw_graphics();
+                draw_screen = false;
+            }
+
+            self.set_keys();
+
+            // If there are no delays, use a fixed loop time (start time + N * cycle_time_slice).
+            // If there is a delay, expand the current loop (time), and delay the timers' next tick.
+            //
+            // The code would be more expressive if it was possible to set `delay = current_time - next_cycle_time`,
+            // but it panics when the result is negative!
+            //
+            let next_cycle_time = last_cycle_time + cycle_time_slice;
+
+            // This check doesn't need to account delays, because it uses the next cycle time, which,
+            // at this step, is not recalculated.
+            //
+            if last_cycle_time <= next_timers_time && next_timers_time < next_cycle_time {
+                self.update_timers();
+                next_timers_time += timers_time_slice;
+            }
+
+            let current_time = Instant::now();
+
+            if current_time < next_cycle_time {
+                thread::sleep(next_cycle_time - current_time);
+                last_cycle_time = next_cycle_time;
+            } else {
+                last_cycle_time = current_time;
+                next_timers_time += current_time - next_cycle_time;
+            }
+        }
+    }
+
+    fn setup_graphics(&mut self) {
+        println!("WRITEME: setup_graphics")
+    }
+
+    fn setup_input(&mut self) {
+        println!("WRITEME: setup_input")
     }
 
     fn emulate_cycle(&mut self, draw_screen: &mut bool) {
@@ -536,67 +596,5 @@ impl Chip8 {
             self.V[i] = self.ram[self.I + i];
         }
         self.PC += 2;
-    }
-}
-
-fn setup_graphics() {
-    println!("WRITEME: setup_graphics")
-}
-
-fn setup_input() {
-    println!("WRITEME: setup_input")
-}
-
-pub fn emulate(game_rom: &[Byte]) {
-    setup_graphics();
-    setup_input();
-
-    let mut chip8 = Chip8::new(game_rom);
-
-    let cycle_time_slice = Duration::new(0, 1_000_000_000 / CLOCK_SPEED);
-    let timers_time_slice = Duration::new(0, 1_000_000_000 / TIMERS_SPEED);
-
-    let mut last_cycle_time = Instant::now();
-    let mut next_timers_time = last_cycle_time;
-
-    // This is an optimization; the simplest approach is to pass the reference down the call stack.
-    //
-    let mut draw_screen = false;
-
-    loop {
-        chip8.emulate_cycle(&mut draw_screen);
-
-        if draw_screen {
-            chip8.draw_graphics();
-            draw_screen = false;
-        }
-
-        chip8.set_keys();
-
-        // If there are no delays, use a fixed loop time (start time + N * cycle_time_slice).
-        // If there is a delay, expand the current loop (time), and delay the timers' next tick.
-        //
-        // The code would be more expressive if it was possible to set `delay = current_time - next_cycle_time`,
-        // but it panics when the result is negative!
-        //
-        let next_cycle_time = last_cycle_time + cycle_time_slice;
-
-        // This check doesn't need to account delays, because it uses the next cycle time, which,
-        // at this step, is not recalculated.
-        //
-        if last_cycle_time <= next_timers_time && next_timers_time < next_cycle_time {
-            chip8.update_timers();
-            next_timers_time += timers_time_slice;
-        }
-
-        let current_time = Instant::now();
-
-        if current_time < next_cycle_time {
-            thread::sleep(next_cycle_time - current_time);
-            last_cycle_time = next_cycle_time;
-        } else {
-            last_cycle_time = current_time;
-            next_timers_time += current_time - next_cycle_time;
-        }
     }
 }
