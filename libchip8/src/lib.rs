@@ -1,7 +1,7 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use interfaces::{IoFrontend, Keycode};
+use interfaces::{IoFrontend, Keycode, Logger};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -61,6 +61,7 @@ pub struct Chip8<'a, T: IoFrontend> {
     keys_pressed: [bool; 16],
 
     io_frontend: &'a mut T,
+    logger: &'a mut Option<Box<dyn Logger>>,
 
     screen_width: usize,
     screen_height: usize,
@@ -70,7 +71,11 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     // Simplification: load the data on instantiation, as there is practically no initialization
     // stage (BIOS/firmware).
     //
-    pub fn new(io_frontend: &'a mut T, game_rom: &[Byte]) -> Chip8<'a, T> {
+    pub fn new(
+        io_frontend: &'a mut T,
+        game_rom: &[Byte],
+        logger: &'a mut Option<Box<dyn Logger>>,
+    ) -> Chip8<'a, T> {
         if game_rom.len() > RAM_SIZE - PROGRAMS_LOCATION {
             panic!(
                 "Rom too big!: {} bytes ({} allowed)",
@@ -95,6 +100,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             keys_pressed: [false; 16],
 
             io_frontend,
+            logger,
 
             screen_width: STANDARD_SCREEN_WIDTH,
             screen_height: STANDARD_SCREEN_HEIGHT,
