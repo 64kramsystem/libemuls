@@ -1,7 +1,7 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use io_frontend::IoFrontend;
+use io_frontend::{IoFrontend, Keycode};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -178,8 +178,28 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         self.io_frontend.update_screen();
     }
 
-    fn set_keys(&self) {
-        println!("WRITEME: set_keys")
+    fn set_keys(&mut self) {
+        while let Some(keycode) = self.io_frontend.poll_key_event() {
+            match keycode {
+                Keycode::Num0(key_pressed) => self.keys_pressed[0] = key_pressed,
+                Keycode::Num1(key_pressed) => self.keys_pressed[1] = key_pressed,
+                Keycode::Num2(key_pressed) => self.keys_pressed[2] = key_pressed,
+                Keycode::Num3(key_pressed) => self.keys_pressed[3] = key_pressed,
+                Keycode::Num4(key_pressed) => self.keys_pressed[4] = key_pressed,
+                Keycode::Num5(key_pressed) => self.keys_pressed[5] = key_pressed,
+                Keycode::Num6(key_pressed) => self.keys_pressed[6] = key_pressed,
+                Keycode::Num7(key_pressed) => self.keys_pressed[7] = key_pressed,
+                Keycode::Num8(key_pressed) => self.keys_pressed[8] = key_pressed,
+                Keycode::Num9(key_pressed) => self.keys_pressed[9] = key_pressed,
+                Keycode::A(key_pressed) => self.keys_pressed[10] = key_pressed,
+                Keycode::B(key_pressed) => self.keys_pressed[11] = key_pressed,
+                Keycode::C(key_pressed) => self.keys_pressed[12] = key_pressed,
+                Keycode::D(key_pressed) => self.keys_pressed[13] = key_pressed,
+                Keycode::E(key_pressed) => self.keys_pressed[14] = key_pressed,
+                Keycode::F(key_pressed) => self.keys_pressed[15] = key_pressed,
+                _ => { /* Ignore the other key events. */ }
+            };
+        }
     }
 
     fn update_timers(&mut self) {
@@ -332,6 +352,10 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_set_Vx_to_delay_timer(Vx);
             }
+            0xF00A..=0xFF0A if instruction & 0x00FF == 0x000A => {
+                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+                self.execute_wait_keypress(Vx);
+            }
             0xF015..=0xFF15 if instruction & 0x00FF == 0x0015 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_set_delay_timer_to_Vx(Vx);
@@ -360,10 +384,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_load_registers_from_memory(Vx);
             }
-            _ => panic!(
-                "WRITEME: Invalid/unsupported instruction: {:04X}",
-                instruction
-            ),
+            _ => panic!("Invalid/unsupported instruction: {:04X}", instruction),
         }
     }
 
@@ -556,6 +577,42 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         self.PC += 2;
     }
 
+    fn execute_wait_keypress(&mut self, Vx: usize) {
+        // Simplistic approach: evaluate the first matching keypress in the queue.
+        // Due to the wait_kepress() contract, `key_pressed` is always true.
+        //
+        loop {
+            let key_code = match self.io_frontend.wait_keypress() {
+                Keycode::Num0(key_pressed) => Some((0, key_pressed)),
+                Keycode::Num1(key_pressed) => Some((1, key_pressed)),
+                Keycode::Num2(key_pressed) => Some((2, key_pressed)),
+                Keycode::Num3(key_pressed) => Some((3, key_pressed)),
+                Keycode::Num4(key_pressed) => Some((4, key_pressed)),
+                Keycode::Num5(key_pressed) => Some((5, key_pressed)),
+                Keycode::Num6(key_pressed) => Some((6, key_pressed)),
+                Keycode::Num7(key_pressed) => Some((7, key_pressed)),
+                Keycode::Num8(key_pressed) => Some((8, key_pressed)),
+                Keycode::Num9(key_pressed) => Some((9, key_pressed)),
+                Keycode::A(key_pressed) => Some((10, key_pressed)),
+                Keycode::B(key_pressed) => Some((11, key_pressed)),
+                Keycode::C(key_pressed) => Some((12, key_pressed)),
+                Keycode::D(key_pressed) => Some((13, key_pressed)),
+                Keycode::E(key_pressed) => Some((14, key_pressed)),
+                Keycode::F(key_pressed) => Some((15, key_pressed)),
+                _ => None,
+            };
+
+            if let Some((key_code, key_pressed)) = key_code {
+                self.keys_pressed[key_code] = key_pressed;
+                self.V[Vx] = key_code as Byte;
+
+                self.PC += 2;
+
+                return;
+            }
+        }
+    }
+
     fn execute_set_delay_timer_to_Vx(&mut self, Vx: usize) {
         self.delay_timer = self.V[Vx];
         self.PC += 2;
@@ -607,4 +664,6 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         }
         self.PC += 2;
     }
+
+    // CYCLE MAIN STAGES ///////////////////////////////////////////////////////////////////////////
 }
