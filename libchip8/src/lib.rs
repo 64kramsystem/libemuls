@@ -151,7 +151,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn setup_graphics(&mut self) {
-        println!("WRITEME: setup_graphics")
+        self.io_frontend
+            .init(SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32);
     }
 
     fn emulate_cycle(&mut self, draw_screen: &mut bool) {
