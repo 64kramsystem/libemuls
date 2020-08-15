@@ -1,6 +1,7 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
+use io_frontend::IoFrontend;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -39,7 +40,7 @@ const FONTSET: [Byte; 80] = [
     0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 ];
 
-pub struct Chip8 {
+pub struct Chip8<'a, T: IoFrontend> {
     ram: [Byte; RAM_SIZE],
     screen: [Byte; SCREEN_WIDTH * SCREEN_HEIGHT], // Simplification (exactly: bit)
     stack: [usize; 16], // Simplification (exactly: word); see location constants comment.
@@ -56,13 +57,15 @@ pub struct Chip8 {
     sound_timer: Byte,
 
     keys_pressed: [bool; 16],
+
+    io_frontend: &'a mut T,
 }
 
-impl Chip8 {
+impl<'a, T: IoFrontend> Chip8<'a, T> {
     // Simplification: load the data on instantiation, as there is practically no initialization
     // stage (BIOS/firmware).
     //
-    pub fn new(game_rom: &Vec<Byte>) -> Chip8 {
+    pub fn new(io_frontend: &'a mut T, game_rom: &Vec<Byte>) -> Chip8<'a, T> {
         if game_rom.len() > RAM_SIZE - PROGRAMS_LOCATION {
             panic!(
                 "Rom too big!: {} bytes ({} allowed)",
@@ -85,6 +88,8 @@ impl Chip8 {
             sound_timer: 0,
 
             keys_pressed: [false; 16],
+
+            io_frontend: io_frontend,
         };
 
         chip8.ram[FONTS_LOCATION..FONTS_LOCATION + FONTSET.len()].copy_from_slice(&FONTSET);

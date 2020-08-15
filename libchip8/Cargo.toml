@@ -5,4 +5,5 @@ name = "libchip8"
 version = "0.1.0"
 
 [dependencies]
+io-frontend = {path = "../io-frontend"}
 rand = "0.7.3"
