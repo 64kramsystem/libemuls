@@ -411,6 +411,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
 
     fn execute_clear_screen(&mut self, draw_screen: &mut bool) {
+        self.log(format!("[{:X}] CLS", self.PC));
+
         self.screen = vec![0; self.screen_width * self.screen_height];
         self.PC += 2;
 
@@ -418,11 +420,15 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_return_from_subroutine(&mut self) {
+        self.log(format!("[{:X}] RET", self.PC));
+
         self.SP -= 1;
         self.PC = self.stack[self.SP];
     }
 
     fn execute_set_hires_mode(&mut self) {
+        self.log(format!("[{:X}] HIRES", self.PC));
+
         self.screen_width = HIRES_SCREEN_WIDTH;
         self.screen_height = HIRES_SCREEN_HEIGHT;
         self.setup_graphics();
@@ -430,16 +436,22 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_goto(&mut self, address: usize) {
+        self.log(format!("[{:X}] JP 0x{:X}", self.PC, address));
+
         self.PC = address;
     }
 
     fn execute_call_subroutine(&mut self, address: usize) {
+        self.log(format!("[{:X}] CALL 0x{:X}", self.PC, address));
+
         self.stack[self.SP] = self.PC + 2;
         self.SP += 1;
         self.PC = address;
     }
 
     fn execute_skip_next_instruction_if_Vx_equals_n(&mut self, Vx: usize, n: Byte) {
+        self.log(format!("[{:X}] SE V{}, 0x{:X}", self.PC, Vx, n));
+
         if self.V[Vx] == n {
             self.PC += 4;
         } else {
@@ -448,6 +460,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_skip_next_instruction_if_Vx_not_equals_n(&mut self, Vx: usize, n: Byte) {
+        self.log(format!("[{:X}] SNE V{}, 0x{:X}", self.PC, Vx, n));
+
         if self.V[Vx] != n {
             self.PC += 4;
         } else {
@@ -456,6 +470,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_skip_next_instruction_if_Vx_equals_Vy(&mut self, Vx: usize, Vy: usize) {
+        self.log(format!("[{:X}] SE V{}, V{}", self.PC, Vx, Vy));
+
         if self.V[Vx] == self.V[Vy] {
             self.PC += 4;
         } else {
@@ -464,37 +480,51 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_set_Vx_to_n(&mut self, Vx: usize, n: Byte) {
+        self.log(format!("[{:X}] LD V{}, 0x{:X}", self.PC, Vx, n));
+
         self.V[Vx] = n;
         self.PC += 2;
     }
 
     fn execute_add_n_to_Vx(&mut self, Vx: usize, n: Byte) {
+        self.log(format!("[{:X}] ADD V{}, 0x{:X}", self.PC, Vx, n));
+
         let (addition_result, _) = self.V[Vx].overflowing_add(n);
         self.V[Vx] = addition_result;
         self.PC += 2;
     }
 
     fn execute_set_Vx_to_Vy(&mut self, Vx: usize, Vy: usize) {
+        self.log(format!("[{:X}] LD V{}, V{}", self.PC, Vx, Vy));
+
         self.V[Vx] = self.V[Vy];
         self.PC += 2;
     }
 
     fn execute_set_Vx_to_Vx_or_Vy(&mut self, Vx: usize, Vy: usize) {
+        self.log(format!("[{:X}] OR V{}, V{}", self.PC, Vx, Vy));
+
         self.V[Vx] |= self.V[Vy];
         self.PC += 2;
     }
 
     fn execute_set_Vx_to_Vx_and_Vy(&mut self, Vx: usize, Vy: usize) {
+        self.log(format!("[{:X}] AND V{}, V{}", self.PC, Vx, Vy));
+
         self.V[Vx] &= self.V[Vy];
         self.PC += 2;
     }
 
     fn execute_set_Vx_to_Vx_xor_Vy(&mut self, Vx: usize, Vy: usize) {
+        self.log(format!("[{:X}] XOR V{}, V{}", self.PC, Vx, Vy));
+
         self.V[Vx] ^= self.V[Vy];
         self.PC += 2;
     }
 
     fn execute_add_Vy_to_Vx(&mut self, Vx: usize, Vy: usize) {
+        self.log(format!("[{:X}] ADD V{}, V{}", self.PC, Vx, Vy));
+
         let (addition_result, carry) = self.V[Vx].overflowing_add(self.V[Vy]);
         self.V[Vx] = addition_result;
         self.V[15] = carry as Byte;
@@ -502,6 +532,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_subtract_Vy_from_Vx(&mut self, Vx: usize, Vy: usize) {
+        self.log(format!("[{:X}] SUB V{}, V{}", self.PC, Vx, Vy));
+
         let (subtraction_result, carry) = self.V[Vx].overflowing_sub(self.V[Vy]);
         self.V[Vx] = subtraction_result;
         self.V[15] = (!carry) as Byte;
@@ -509,12 +541,16 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_shift_right_Vx(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] SHR V{} {{, Vy}}", self.PC, Vx));
+
         self.V[15] = self.V[Vx] & 1;
         self.V[Vx] >>= 1;
         self.PC += 2;
     }
 
     fn execute_set_Vx_to_Vy_minus_Vx(&mut self, Vx: usize, Vy: usize) {
+        self.log(format!("[{:X}] SUBN V{}, V{}", self.PC, Vx, Vy));
+
         let (subtraction_result, carry) = self.V[Vy].overflowing_sub(self.V[Vx]);
         self.V[Vx] = subtraction_result;
         self.V[15] = (!carry) as Byte;
@@ -522,12 +558,16 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_shift_left_Vx(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] SHL V{} {{, Vy}}", self.PC, Vx));
+
         self.V[15] = self.V[Vx] >> 7;
         self.V[Vx] <<= 1;
         self.PC += 2;
     }
 
     fn execute_skip_next_instruction_if_Vx_not_equals_Vy(&mut self, Vx: usize, Vy: usize) {
+        self.log(format!("[{:X}] SNE V{}, V{}", self.PC, Vx, Vy));
+
         if self.V[Vx] != self.V[Vy] {
             self.PC += 4;
         } else {
@@ -536,20 +576,30 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_set_I(&mut self, value: usize) {
+        self.log(format!("[{:X}] LD I, 0x{:X}", self.PC, value));
         self.I = value;
         self.PC += 2;
     }
 
     fn execute_goto_plus_V0(&mut self, address: usize) {
+        self.log(format!("[{:X}] JP V0, 0x{:X}", self.PC, address));
+
         self.PC = address + self.V[0] as usize;
     }
 
     fn execute_set_Vx_to_masked_random(&mut self, Vx: usize, n: Byte) {
+        self.log(format!("[{:X}] RND V{}, 0x{:X}", self.PC, Vx, n));
+
         self.V[Vx] = rand::random::<Byte>() & n;
         self.PC += 2;
     }
 
     fn execute_draw_sprite(&mut self, Vx: usize, Vy: usize, lines: usize, draw_screen: &mut bool) {
+        self.log(format!(
+            "[{:X}] DRW V{}, V{}, {}; I={:X}, x={}, y={}",
+            self.PC, Vx, Vy, lines, self.I, self.V[Vx], self.V[Vy],
+        ));
+
         let x = self.V[Vx] as usize;
         let y = self.V[Vy] as usize;
 
@@ -580,6 +630,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_skip_next_instruction_if_Vx_key_pressed(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] SKP V{}", self.PC, Vx));
+
         let keyIndex = self.V[Vx] as usize;
 
         if self.keys_pressed[keyIndex] {
@@ -590,6 +642,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_skip_next_instruction_if_Vx_key_not_pressed(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] SKNP V{}", self.PC, Vx));
+
         let keyIndex = self.V[Vx] as usize;
 
         if !self.keys_pressed[keyIndex] {
@@ -600,11 +654,18 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_set_Vx_to_delay_timer(&mut self, Vx: usize) {
+        self.log(format!(
+            "[{:X}] LD V{}, DT; DT = {}",
+            self.PC, Vx, self.delay_timer
+        ));
+
         self.V[Vx] = self.delay_timer;
         self.PC += 2;
     }
 
     fn execute_wait_keypress(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] LD V{}, K", self.PC, Vx));
+
         loop {
             if let Some((key_code, key_pressed)) = self.io_frontend.read_key_event(true) {
                 let key_index = match key_code {
@@ -641,26 +702,36 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_set_delay_timer_to_Vx(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] LD DT, V{}", self.PC, Vx));
+
         self.delay_timer = self.V[Vx];
         self.PC += 2;
     }
 
     fn execute_set_sound_timer_to_Vx(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] LD ST, V{}", self.PC, Vx));
+
         self.sound_timer = self.V[Vx];
         self.PC += 2;
     }
 
     fn execute_add_Vx_to_I(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] ADD I, V{}", self.PC, Vx));
+
         self.I += self.V[Vx] as usize;
         self.PC += 2;
     }
 
     fn execute_set_I_to_Vx_sprite_address(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] LD F, V{}", self.PC, Vx));
+
         self.I = (self.V[Vx] * 5) as usize;
         self.PC += 2;
     }
 
     fn execute_store_Vx_bcd_representation(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] LD B, V{}", self.PC, Vx));
+
         let most_significant_digit = self.V[Vx] / 100;
         let middle_digit = (self.V[Vx] % 100) / 10;
         let least_significant_digit = self.V[Vx] % 10;
@@ -671,6 +742,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_dump_registers_to_memory(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] LD I, V{}", self.PC, Vx));
+
         // An amusing, but too verbose, Rust-y approach is
         //
         //   for (address, v) in self.ram.iter_mut().skip(self.I).take(16).zip(self.V.iter()) { /* ... */ }
@@ -686,9 +759,19 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn execute_load_registers_from_memory(&mut self, Vx: usize) {
+        self.log(format!("[{:X}] LD V{}, I", self.PC, Vx));
+
         for i in 0..=Vx {
             self.V[i] = self.ram[self.I + i];
         }
         self.PC += 2;
+    }
+
+    // HELPERS /////////////////////////////////////////////////////////////////////////////////////
+
+    fn log(&mut self, message: String) {
+        if let Some(logger) = self.logger {
+            logger.log(message);
+        }
     }
 }
