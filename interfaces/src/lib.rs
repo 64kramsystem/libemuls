@@ -6,7 +6,9 @@
 mod io_frontend;
 mod keycode;
 mod logger;
+mod stdout_logger;
 
 pub use crate::io_frontend::IoFrontend;
 pub use crate::keycode::Keycode;
 pub use crate::logger::Logger;
+pub use crate::stdout_logger::StdoutLogger;
