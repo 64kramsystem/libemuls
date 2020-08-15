@@ -2,7 +2,7 @@
 
 members = [
   "chip8-sdl",
-  "io-frontend",
+  "interfaces",
   "frontend-sdl",
   "libchip8",
   "playground",
