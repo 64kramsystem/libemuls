@@ -97,7 +97,6 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         chip8.ram[PROGRAMS_LOCATION..PROGRAMS_LOCATION + game_rom.len()].copy_from_slice(game_rom);
 
         chip8.setup_graphics();
-        chip8.setup_input();
 
         chip8
     }
@@ -153,10 +152,6 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
     fn setup_graphics(&mut self) {
         println!("WRITEME: setup_graphics")
-    }
-
-    fn setup_input(&mut self) {
-        println!("WRITEME: setup_input")
     }
 
     fn emulate_cycle(&mut self, draw_screen: &mut bool) {
