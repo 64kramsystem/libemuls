@@ -7,4 +7,5 @@ version = "0.1.0"
 [dependencies]
 
 clap = "2.33.1"
+frontend-sdl = {path = "../frontend-sdl"}
 libchip8 = {path = "../libchip8"}
