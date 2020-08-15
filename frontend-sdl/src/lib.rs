@@ -1,8 +1,8 @@
-use io_frontend::IoFrontend;
+use interfaces::IoFrontend;
 
 use sdl2::{event::Event, pixels::Color, rect::Point, render::Canvas, video::Window};
 
-use io_frontend::Keycode as LibemuKeycode;
+use interfaces::Keycode as LibemuKeycode;
 use sdl2::{keyboard::Keycode as SdlKeycode, EventPump};
 
 // We start from an arbitrary size - it needs to be a sensible size, because it's the size it
@@ -321,8 +321,6 @@ impl IoFrontend for FrontendSdl {
                 //
                 return None;
             }
-
-            // If it's another event type, we ignore it in any case.
         }
     }
 }
