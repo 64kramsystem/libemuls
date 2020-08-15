@@ -8,4 +8,5 @@ version = "0.1.0"
 
 clap = "2.33.1"
 frontend-sdl = {path = "../frontend-sdl"}
+interfaces = {path = "../interfaces"}
 libchip8 = {path = "../libchip8"}
