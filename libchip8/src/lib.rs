@@ -1,7 +1,7 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use io_frontend::IoFrontend;
+use io_frontend::{IoFrontend, Keycode};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -178,8 +178,30 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         self.io_frontend.update_screen();
     }
 
-    fn set_keys(&self) {
-        println!("WRITEME: set_keys")
+    fn set_keys(&mut self) {
+        while let Some((keycode, key_pressed)) = self.io_frontend.read_key_event(false) {
+            let key_index = match keycode {
+                Keycode::Num0 => 0,
+                Keycode::Num1 => 1,
+                Keycode::Num2 => 2,
+                Keycode::Num3 => 3,
+                Keycode::Num4 => 4,
+                Keycode::Num5 => 5,
+                Keycode::Num6 => 6,
+                Keycode::Num7 => 7,
+                Keycode::Num8 => 8,
+                Keycode::Num9 => 9,
+                Keycode::A => 10,
+                Keycode::B => 11,
+                Keycode::C => 12,
+                Keycode::D => 13,
+                Keycode::E => 14,
+                Keycode::F => 15,
+                _ => continue,
+            };
+
+            self.keys_pressed[key_index] = key_pressed;
+        }
     }
 
     fn update_timers(&mut self) {
@@ -332,6 +354,10 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_set_Vx_to_delay_timer(Vx);
             }
+            0xF00A..=0xFF0A if instruction & 0x00FF == 0x000A => {
+                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+                self.execute_wait_keypress(Vx);
+            }
             0xF015..=0xFF15 if instruction & 0x00FF == 0x0015 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_set_delay_timer_to_Vx(Vx);
@@ -360,10 +386,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_load_registers_from_memory(Vx);
             }
-            _ => panic!(
-                "WRITEME: Invalid/unsupported instruction: {:04X}",
-                instruction
-            ),
+            _ => panic!("Invalid/unsupported instruction: {:04X}", instruction),
         }
     }
 
@@ -554,6 +577,42 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     fn execute_set_Vx_to_delay_timer(&mut self, Vx: usize) {
         self.V[Vx] = self.delay_timer;
         self.PC += 2;
+    }
+
+    fn execute_wait_keypress(&mut self, Vx: usize) {
+        loop {
+            if let Some((key_code, key_pressed)) = self.io_frontend.read_key_event(true) {
+                let key_index = match key_code {
+                    Keycode::Num0 => 0,
+                    Keycode::Num1 => 1,
+                    Keycode::Num2 => 2,
+                    Keycode::Num3 => 3,
+                    Keycode::Num4 => 4,
+                    Keycode::Num5 => 5,
+                    Keycode::Num6 => 6,
+                    Keycode::Num7 => 7,
+                    Keycode::Num8 => 8,
+                    Keycode::Num9 => 9,
+                    Keycode::A => 10,
+                    Keycode::B => 11,
+                    Keycode::C => 12,
+                    Keycode::D => 13,
+                    Keycode::E => 14,
+                    Keycode::F => 15,
+                    _ => continue,
+                };
+
+                // Don't forget to register key released events!
+                //
+                self.keys_pressed[key_index] = key_pressed;
+
+                if key_pressed {
+                    self.V[Vx] = key_index as Byte;
+                    self.PC += 2;
+                    return;
+                }
+            };
+        }
     }
 
     fn execute_set_delay_timer_to_Vx(&mut self, Vx: usize) {
