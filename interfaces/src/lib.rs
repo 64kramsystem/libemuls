@@ -5,6 +5,8 @@
 
 mod io_frontend;
 mod keycode;
+mod logger;
 
 pub use crate::io_frontend::IoFrontend;
 pub use crate::keycode::Keycode;
+pub use crate::logger::Logger;
