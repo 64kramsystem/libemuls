@@ -1,6 +1,7 @@
 use clap::{self, App, Arg};
 
 use frontend_sdl::FrontendSdl;
+use interfaces::{Logger, NullLogger};
 
 use std::error::Error;
 use std::fs;
@@ -20,8 +21,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let game_rom_data = fs::read(game_rom_filename)?;
 
     let mut sdl_frontend = FrontendSdl::new("CHIP-8!");
+    let mut logger: Box<dyn Logger> = Box::new(NullLogger::new());
 
-    let mut chip8 = libchip8::Chip8::new(&mut sdl_frontend, &game_rom_data);
+    let mut chip8 = libchip8::Chip8::new(&mut sdl_frontend, &mut logger, &game_rom_data);
 
     chip8.run();
 
