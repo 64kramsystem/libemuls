@@ -109,14 +109,14 @@ impl Chip8 {
         let mut draw_screen = false;
 
         loop {
+            self.set_keys();
+
             self.emulate_cycle(&mut draw_screen);
 
             if draw_screen {
                 self.draw_graphics();
                 draw_screen = false;
             }
-
-            self.set_keys();
 
             // If there are no delays, use a fixed loop time (start time + N * cycle_time_slice).
             // If there is a delay, expand the current loop (time), and delay the timers' next tick.
