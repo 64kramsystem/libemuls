@@ -18,8 +18,8 @@ const PROGRAMS_LOCATION: usize = 0x200;
 const CLOCK_SPEED: u32 = 500; // Herz
 const TIMERS_SPEED: u32 = 60; // Herz
 
-const SCREEN_WIDTH: usize = 64;
-const SCREEN_HEIGHT: usize = 32;
+const STANDARD_SCREEN_WIDTH: usize = 64;
+const STANDARD_SCREEN_HEIGHT: usize = 32;
 
 const FONTSET: [Byte; 80] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -42,7 +42,7 @@ const FONTSET: [Byte; 80] = [
 
 pub struct Chip8<'a, T: IoFrontend> {
     ram: [Byte; RAM_SIZE],
-    screen: [Byte; SCREEN_WIDTH * SCREEN_HEIGHT], // Simplification (exactly: bit)
+    screen: Vec<Byte>,  // Simplification (exactly: bit)
     stack: [usize; 16], // Simplification (exactly: word); see location constants comment.
 
     V: [Byte; 16],
@@ -59,6 +59,9 @@ pub struct Chip8<'a, T: IoFrontend> {
     keys_pressed: [bool; 16],
 
     io_frontend: &'a mut T,
+
+    screen_width: usize,
+    screen_height: usize,
 }
 
 impl<'a, T: IoFrontend> Chip8<'a, T> {
@@ -76,7 +79,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         let mut chip8 = Chip8 {
             ram: [0; RAM_SIZE],
-            screen: [0; SCREEN_WIDTH * SCREEN_HEIGHT],
+            screen: vec![],
             stack: [0; 16],
 
             V: [0; 16],
@@ -90,6 +93,9 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             keys_pressed: [false; 16],
 
             io_frontend,
+
+            screen_width: STANDARD_SCREEN_WIDTH,
+            screen_height: STANDARD_SCREEN_HEIGHT,
         };
 
         chip8.ram[FONTS_LOCATION..FONTS_LOCATION + FONTSET.len()].copy_from_slice(&FONTSET);
@@ -151,8 +157,9 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn setup_graphics(&mut self) {
+        self.screen = vec![0; self.screen_width * self.screen_height];
         self.io_frontend
-            .init(SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32);
+            .init(self.screen_width as u32, self.screen_height as u32);
     }
 
     fn emulate_cycle(&mut self, draw_screen: &mut bool) {
@@ -167,8 +174,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
     fn draw_graphics(&mut self) {
         for (i, pixel_on) in self.screen.iter().enumerate() {
-            let x = i % SCREEN_WIDTH;
-            let y = i / SCREEN_WIDTH;
+            let x = i % self.screen_width;
+            let y = i / self.screen_width;
 
             let color = u32::from_be_bytes([255 * *pixel_on, 255 * *pixel_on, 255 * *pixel_on, 0]);
 
@@ -391,7 +398,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
 
     fn execute_clear_screen(&mut self, draw_screen: &mut bool) {
-        self.screen = [0; SCREEN_WIDTH * SCREEN_HEIGHT];
+        self.screen = vec![0; self.screen_width * self.screen_height];
         self.PC += 2;
 
         *draw_screen = true;
@@ -526,7 +533,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         let x = self.V[Vx] as usize;
         let y = self.V[Vy] as usize;
 
-        let mut current_position = SCREEN_WIDTH * y + x;
+        let mut current_position = self.screen_width * y + x;
         let mut sprite_collided: Byte = 0;
 
         for source_sprite_row in self.ram[(self.I)..(self.I + lines)].iter() {
@@ -543,7 +550,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 current_position += 1;
             }
 
-            current_position += SCREEN_WIDTH - 8;
+            current_position += self.screen_width - 8;
         }
 
         self.V[15] = sprite_collided;
