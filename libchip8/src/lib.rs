@@ -20,6 +20,8 @@ const TIMERS_SPEED: u32 = 60; // Herz
 
 const STANDARD_SCREEN_WIDTH: usize = 64;
 const STANDARD_SCREEN_HEIGHT: usize = 32;
+const HIRES_SCREEN_WIDTH: usize = 128;
+const HIRES_SCREEN_HEIGHT: usize = 64;
 
 const FONTSET: [Byte; 80] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -243,6 +245,9 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             0x00EE => {
                 self.execute_return_from_subroutine();
             }
+            0x00FF => {
+                self.execute_set_hires_mode();
+            }
             0x0000..=0x0FFF => panic!(
                 "Call machine code routine instruction or extension not implemented: {:04X}",
                 instruction
@@ -409,6 +414,13 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     fn execute_return_from_subroutine(&mut self) {
         self.SP -= 1;
         self.PC = self.stack[self.SP];
+    }
+
+    fn execute_set_hires_mode(&mut self) {
+        self.screen_width = HIRES_SCREEN_WIDTH;
+        self.screen_height = HIRES_SCREEN_HEIGHT;
+        self.setup_graphics();
+        self.PC += 2;
     }
 
     fn execute_goto(&mut self, address: usize) {
