@@ -165,7 +165,16 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn draw_graphics(&mut self) {
-        println!("WRITEME: draw_graphics");
+        for (i, pixel_on) in self.screen.iter().enumerate() {
+            let x = i % SCREEN_WIDTH;
+            let y = i / SCREEN_WIDTH;
+
+            let color = u32::from_be_bytes([255 * *pixel_on, 255 * *pixel_on, 255 * *pixel_on, 0]);
+
+            self.io_frontend.draw_pixel(x as u32, y as u32, color)
+        }
+
+        self.io_frontend.update_screen();
     }
 
     fn set_keys(&self) {
