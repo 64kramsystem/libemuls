@@ -1,7 +1,7 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use io_frontend::{IoFrontend, Keycode};
+use interfaces::{IoFrontend, Keycode};
 use std::thread;
 use std::time::{Duration, Instant};
 

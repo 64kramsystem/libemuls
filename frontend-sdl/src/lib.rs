@@ -1,8 +1,8 @@
-use io_frontend::IoFrontend;
+use interfaces::IoFrontend;
 
 use sdl2::{event::Event, pixels::Color, rect::Point, render::Canvas, video::Window, Sdl};
 
-use io_frontend::Keycode as LibemuKeycode;
+use interfaces::Keycode as LibemuKeycode;
 use sdl2::keyboard::Keycode as SdlKeycode;
 
 pub struct FrontendSdl {
@@ -319,7 +319,7 @@ impl IoFrontend for FrontendSdl {
         None
     }
 
-    fn wait_keypress(&mut self) -> io_frontend::Keycode {
+    fn wait_keypress(&mut self) -> interfaces::Keycode {
         let mut event_pump = self.sdl_context.event_pump().unwrap();
 
         for event in event_pump.wait_iter() {
