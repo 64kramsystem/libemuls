@@ -1,4 +1,7 @@
 use clap::{self, App, Arg};
+
+use frontend_sdl::FrontendSdl;
+
 use std::error::Error;
 use std::fs;
 
@@ -16,7 +19,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let game_rom_filename = decode_commandline_arguments();
     let game_rom_data = fs::read(game_rom_filename)?;
 
-    let mut chip8 = libchip8::Chip8::new(&game_rom_data);
+    let mut sdl_frontend = FrontendSdl::new("CHIP-8!");
+
+    let mut chip8 = libchip8::Chip8::new(&mut sdl_frontend, &game_rom_data);
 
     chip8.run();
 
