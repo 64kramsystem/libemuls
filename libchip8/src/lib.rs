@@ -55,7 +55,7 @@ struct Chip8 {
     delay_timer: Byte,
     sound_timer: Byte,
 
-    key: [Byte; 16], // Simplification (exactly: bit)
+    keys_pressed: [bool; 16],
 }
 
 impl Chip8 {
@@ -84,7 +84,7 @@ impl Chip8 {
             delay_timer: 0,
             sound_timer: 0,
 
-            key: [0; 16],
+            keys_pressed: [false; 16],
         };
 
         chip8.ram[FONTS_LOCATION..FONTS_LOCATION + FONTSET.len()].copy_from_slice(&FONTSET);
@@ -464,7 +464,7 @@ impl Chip8 {
     fn execute_skip_next_instruction_if_Vx_key_pressed(&mut self, Vx: usize) {
         let keyIndex = self.V[Vx] as usize;
 
-        if self.key[keyIndex] == 1 {
+        if self.keys_pressed[keyIndex] {
             self.PC += 4;
         } else {
             self.PC += 2;
@@ -474,7 +474,7 @@ impl Chip8 {
     fn execute_skip_next_instruction_if_Vx_key_not_pressed(&mut self, Vx: usize) {
         let keyIndex = self.V[Vx] as usize;
 
-        if self.key[keyIndex] == 0 {
+        if !self.keys_pressed[keyIndex] {
             self.PC += 4;
         } else {
             self.PC += 2;
