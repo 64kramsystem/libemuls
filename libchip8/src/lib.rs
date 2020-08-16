@@ -58,7 +58,9 @@ pub struct Chip8<'a, T: IoFrontend> {
     delay_timer: Byte,
     sound_timer: Byte,
 
-    keys_pressed: [bool; 16],
+    // True/false for key pressed/released.
+    //
+    keys_status: [bool; 16],
 
     io_frontend: &'a mut T,
     logger: &'a mut Box<dyn Logger>,
@@ -97,7 +99,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             delay_timer: 0,
             sound_timer: 0,
 
-            keys_pressed: [false; 16],
+            keys_status: [false; 16],
 
             io_frontend,
             logger,
@@ -215,7 +217,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 _ => continue,
             };
 
-            self.keys_pressed[key_index] = key_pressed;
+            self.keys_status[key_index] = key_pressed;
         }
     }
 
@@ -656,7 +658,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         let keyIndex = self.V[Vx] as usize;
 
-        if self.keys_pressed[keyIndex] {
+        if self.keys_status[keyIndex] {
             self.PC += 4;
         } else {
             self.PC += 2;
@@ -668,7 +670,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         let keyIndex = self.V[Vx] as usize;
 
-        if !self.keys_pressed[keyIndex] {
+        if !self.keys_status[keyIndex] {
             self.PC += 4;
         } else {
             self.PC += 2;
@@ -712,7 +714,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
                 // Don't forget to register key released events!
                 //
-                self.keys_pressed[key_index] = key_pressed;
+                self.keys_status[key_index] = key_pressed;
 
                 if key_pressed {
                     self.V[Vx] = key_index as Byte;
