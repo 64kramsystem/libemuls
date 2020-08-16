@@ -620,27 +620,29 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             self.PC, Vx, Vy, lines, self.I, self.V[Vx], self.V[Vy],
         ));
 
-        let x = self.V[Vx] as usize;
-        let y = self.V[Vy] as usize;
+        let top_x = self.V[Vx] as usize;
+        let top_y = self.V[Vy] as usize;
 
-        let mut current_position = self.screen_width * y + x;
         let mut sprite_collided: Byte = 0;
 
-        for source_sprite_row in self.ram[(self.I)..(self.I + lines)].iter() {
-            for sprite_pixel_shift in (0..=7).rev() {
-                let pixel_value = (source_sprite_row >> sprite_pixel_shift) & 0b000_0001_u8;
+        for y_shift in 0..lines {
+            let pixel_y = (top_y + y_shift) % self.screen_height;
 
-                if pixel_value == 1 {
-                    if self.screen[current_position] == 1 {
+            for x_shift in 0..8 {
+                // Sprites wrap around; see http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#Dxyn.
+                //
+                let pixel_x = (top_x + x_shift) % self.screen_width;
+                let pixel_value = (self.ram[self.I + y_shift] << x_shift) & 0b1000_0000;
+
+                if pixel_value != 0 {
+                    let pixel_screen_index = self.screen_width * pixel_y + pixel_x;
+
+                    if self.screen[pixel_screen_index] == 1 {
                         sprite_collided = 1;
                     }
-                    self.screen[current_position] ^= 1;
+                    self.screen[pixel_screen_index] ^= 1;
                 }
-
-                current_position += 1;
             }
-
-            current_position += self.screen_width - 8;
         }
 
         self.V[15] = sprite_collided;
