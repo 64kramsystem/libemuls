@@ -286,11 +286,8 @@ impl IoFrontend for FrontendSdl {
         window.set_size(screen_width, screen_height).unwrap();
     }
 
-    fn draw_pixel(&mut self, x: u32, y: u32, color: u32) {
-        let rgba = color.to_be_bytes();
-
-        self.canvas
-            .set_draw_color(Color::RGBA(rgba[0], rgba[1], rgba[2], rgba[3]));
+    fn draw_pixel(&mut self, x: u32, y: u32, r: u8, g: u8, b: u8) {
+        self.canvas.set_draw_color(Color::RGB(r, g, b));
 
         self.canvas
             .draw_point(Point::new(x as i32, y as i32))
