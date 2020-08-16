@@ -58,7 +58,9 @@ pub struct Chip8<'a, T: IoFrontend> {
     delay_timer: Byte,
     sound_timer: Byte,
 
-    keys_pressed: [bool; 16],
+    // true/false for key pressed/released.
+    //
+    keys_status: [bool; 16],
 
     io_frontend: &'a mut T,
     logger: &'a mut Box<dyn Logger>,
@@ -97,7 +99,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             delay_timer: 0,
             sound_timer: 0,
 
-            keys_pressed: [false; 16],
+            keys_status: [false; 16],
 
             io_frontend,
             logger,
@@ -196,22 +198,22 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     fn set_keys(&mut self) {
         while let Some(keycode) = self.io_frontend.poll_key_event() {
             match keycode {
-                Keycode::Num0(key_pressed) => self.keys_pressed[0] = key_pressed,
-                Keycode::Num1(key_pressed) => self.keys_pressed[1] = key_pressed,
-                Keycode::Num2(key_pressed) => self.keys_pressed[2] = key_pressed,
-                Keycode::Num3(key_pressed) => self.keys_pressed[3] = key_pressed,
-                Keycode::Num4(key_pressed) => self.keys_pressed[4] = key_pressed,
-                Keycode::Num5(key_pressed) => self.keys_pressed[5] = key_pressed,
-                Keycode::Num6(key_pressed) => self.keys_pressed[6] = key_pressed,
-                Keycode::Num7(key_pressed) => self.keys_pressed[7] = key_pressed,
-                Keycode::Num8(key_pressed) => self.keys_pressed[8] = key_pressed,
-                Keycode::Num9(key_pressed) => self.keys_pressed[9] = key_pressed,
-                Keycode::A(key_pressed) => self.keys_pressed[10] = key_pressed,
-                Keycode::B(key_pressed) => self.keys_pressed[11] = key_pressed,
-                Keycode::C(key_pressed) => self.keys_pressed[12] = key_pressed,
-                Keycode::D(key_pressed) => self.keys_pressed[13] = key_pressed,
-                Keycode::E(key_pressed) => self.keys_pressed[14] = key_pressed,
-                Keycode::F(key_pressed) => self.keys_pressed[15] = key_pressed,
+                Keycode::Num0(key_pressed) => self.keys_status[0] = key_pressed,
+                Keycode::Num1(key_pressed) => self.keys_status[1] = key_pressed,
+                Keycode::Num2(key_pressed) => self.keys_status[2] = key_pressed,
+                Keycode::Num3(key_pressed) => self.keys_status[3] = key_pressed,
+                Keycode::Num4(key_pressed) => self.keys_status[4] = key_pressed,
+                Keycode::Num5(key_pressed) => self.keys_status[5] = key_pressed,
+                Keycode::Num6(key_pressed) => self.keys_status[6] = key_pressed,
+                Keycode::Num7(key_pressed) => self.keys_status[7] = key_pressed,
+                Keycode::Num8(key_pressed) => self.keys_status[8] = key_pressed,
+                Keycode::Num9(key_pressed) => self.keys_status[9] = key_pressed,
+                Keycode::A(key_pressed) => self.keys_status[10] = key_pressed,
+                Keycode::B(key_pressed) => self.keys_status[11] = key_pressed,
+                Keycode::C(key_pressed) => self.keys_status[12] = key_pressed,
+                Keycode::D(key_pressed) => self.keys_status[13] = key_pressed,
+                Keycode::E(key_pressed) => self.keys_status[14] = key_pressed,
+                Keycode::F(key_pressed) => self.keys_status[15] = key_pressed,
                 _ => { /* Ignore the other key events. */ }
             };
         }
@@ -654,7 +656,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         let keyIndex = self.V[Vx] as usize;
 
-        if self.keys_pressed[keyIndex] {
+        if self.keys_status[keyIndex] {
             self.PC += 4;
         } else {
             self.PC += 2;
@@ -666,7 +668,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         let keyIndex = self.V[Vx] as usize;
 
-        if !self.keys_pressed[keyIndex] {
+        if !self.keys_status[keyIndex] {
             self.PC += 4;
         } else {
             self.PC += 2;
@@ -711,7 +713,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             };
 
             if let Some((key_code, key_pressed)) = key_code {
-                self.keys_pressed[key_code] = key_pressed;
+                self.keys_status[key_code] = key_pressed;
                 self.V[Vx] = key_code as Byte;
 
                 self.PC += 2;
