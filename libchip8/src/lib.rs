@@ -58,7 +58,9 @@ pub struct Chip8<'a, T: IoFrontend> {
     delay_timer: Byte,
     sound_timer: Byte,
 
-    keys_pressed: [bool; 16],
+    // true/false for key pressed/released.
+    //
+    keys_status: [bool; 16],
 
     io_frontend: &'a mut T,
     logger: &'a mut Box<dyn Logger>,
@@ -97,7 +99,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             delay_timer: 0,
             sound_timer: 0,
 
-            keys_pressed: [false; 16],
+            keys_status: [false; 16],
 
             io_frontend: io_frontend,
             logger: logger,
@@ -216,7 +218,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             };
 
             if let Some(key_value) = key_value {
-                self.keys_pressed[key_value] = key_pressed;
+                self.keys_status[key_value] = key_pressed;
             }
         }
     }
@@ -657,7 +659,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         let keyIndex = self.V[Vx] as usize;
 
-        if self.keys_pressed[keyIndex] {
+        if self.keys_status[keyIndex] {
             self.PC += 4;
         } else {
             self.PC += 2;
@@ -669,7 +671,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         let keyIndex = self.V[Vx] as usize;
 
-        if !self.keys_pressed[keyIndex] {
+        if !self.keys_status[keyIndex] {
             self.PC += 4;
         } else {
             self.PC += 2;
@@ -713,7 +715,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             };
 
             if let Some(key_pressed) = key_pressed {
-                self.keys_pressed[key_pressed] = true;
+                self.keys_status[key_pressed] = true;
                 self.V[Vx] = key_pressed as Byte;
 
                 self.PC += 2;
