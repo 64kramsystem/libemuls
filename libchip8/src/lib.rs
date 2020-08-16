@@ -129,7 +129,11 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         let mut draw_screen = false;
 
         loop {
-            self.set_keys();
+            let quit_received = self.set_keys();
+
+            if quit_received {
+                break;
+            }
 
             self.emulate_cycle(&mut draw_screen);
 
@@ -201,7 +205,9 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         self.io_frontend.update_screen();
     }
 
-    fn set_keys(&mut self) {
+    // Return true if a quit event has been received.
+    //
+    fn set_keys(&mut self) -> bool {
         while let Some((keycode, key_pressed)) = self.io_frontend.poll_event() {
             let key_value = match keycode {
                 EventCode::KeyNum0 => Some(0),
@@ -220,6 +226,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 EventCode::KeyD => Some(13),
                 EventCode::KeyE => Some(14),
                 EventCode::KeyF => Some(15),
+                EventCode::Quit => return true,
                 _ => None,
             };
 
@@ -227,6 +234,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 self.keys_status[key_value] = key_pressed;
             }
         }
+
+        return false;
     }
 
     fn update_timers(&mut self) {
