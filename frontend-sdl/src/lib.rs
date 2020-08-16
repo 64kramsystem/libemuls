@@ -312,6 +312,8 @@ impl IoFrontend for FrontendSdl {
                 if let Some(keycode) = keycode {
                     return Some((FrontendSdl::sdl_to_io_frontend_keycode(keycode), false));
                 }
+            } else if let Some(Event::Quit { .. }) = event {
+                return Some((EventCode::Quit, true));
             } else if let None = event {
                 // This happens only for non-blocking events.
                 //
