@@ -245,11 +245,17 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             // Some instructions are in the 0x0NNN range (machine code routine call), and need to be
             // placed before it, therefore, out of order.
             //
+            0x00D0..=0x00DF => {
+                panic!("Unsupported instruction: 00DN (XO-CHIP)");
+            }
             0x00E0 => {
                 self.execute_clear_screen(draw_screen);
             }
             0x00EE => {
                 self.execute_return_from_subroutine();
+            }
+            0x00FC => {
+                panic!("Unsupported instruction: 00FC (Super-CHIP 1.1)");
             }
             0x00FF => {
                 self.execute_set_hires_mode();
@@ -280,6 +286,12 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 let Vy = ((instruction & 0x00F0) >> 4) as usize;
                 self.execute_skip_next_instruction_if_Vx_equals_Vy(Vx, Vy);
+            }
+            0x5000..=0x5FFF if instruction & 0x000F == 0x0002 => {
+                panic!("Unsupported instruction: 5XY2 (XO-CHIP)");
+            }
+            0x5000..=0x5FFF if instruction & 0x000F == 0x0003 => {
+                panic!("Unsupported instruction: 5XY3 (XO-CHIP)");
             }
             0x6000..=0x6FFF => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
@@ -367,6 +379,15 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             0xE0A1..=0xEFA1 if instruction & 0x00FF == 0x00A1 => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 self.execute_skip_next_instruction_if_Vx_key_not_pressed(Vx);
+            }
+            0xF000 => {
+                panic!("Unsupported instruction: F000 (XO-CHIP)");
+            }
+            0xF001..=0xFF01 if instruction & 0x00FF == 0x0001 => {
+                panic!("Unsupported instruction: FN01 (XO-CHIP)");
+            }
+            0xF002 => {
+                panic!("Unsupported instruction: F002 (XO-CHIP)");
             }
             0xF007..=0xFF07 if instruction & 0x00FF == 0x0007 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
