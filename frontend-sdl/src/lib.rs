@@ -317,6 +317,9 @@ impl IoFrontend for FrontendSdl {
                 }) => {
                     return Some((FrontendSdl::sdl_to_io_frontend_keycode(keycode), false));
                 }
+                Some(Event::Quit { .. }) => {
+                    return Some((EventCode::Quit, true));
+                }
                 None => {
                     // This happens only for non-blocking events.
                     //

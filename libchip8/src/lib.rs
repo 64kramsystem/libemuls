@@ -128,15 +128,17 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         //
         let mut draw_screen = false;
 
-        loop {
-            self.emulate_cycle(&mut draw_screen);
+        let mut emulation_running = true;
+
+        while emulation_running {
+            self.emulate_cycle(&mut draw_screen, &mut emulation_running);
 
             if draw_screen {
                 self.draw_graphics();
                 draw_screen = false;
             }
 
-            self.set_keys();
+            self.set_keys(&mut emulation_running);
 
             // If there are no delays, use a fixed loop time (start time + N * cycle_time_slice).
             // If there is a delay, expand the current loop (time), and delay the timers' next tick.
@@ -172,14 +174,14 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             .init(self.screen_width as u32, self.screen_height as u32);
     }
 
-    fn emulate_cycle(&mut self, draw_screen: &mut bool) {
+    fn emulate_cycle(&mut self, draw_screen: &mut bool, emulation_running: &mut bool) {
         // The decode/execute stages are conventionally split. In this system there is not real need
         // for this, so, for simplicity, they're merged. A separate-stages design would likely have
         // a function pointer and the operands as intermediate values.
         //
         let instruction = self.cycle_fetch();
 
-        self.cycle_decode_execute(instruction, draw_screen);
+        self.cycle_decode_execute(instruction, draw_screen, emulation_running);
     }
 
     fn draw_graphics(&mut self) {
@@ -201,7 +203,9 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         self.io_frontend.update_screen();
     }
 
-    fn set_keys(&mut self) {
+    // Return true if a quit event has been received.
+    //
+    fn set_keys(&mut self, emulation_running: &mut bool) {
         while let Some((keycode, key_pressed)) = self.io_frontend.read_event(false) {
             let key_index = match keycode {
                 EventCode::KeyNum0 => 0,
@@ -220,6 +224,10 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 EventCode::KeyD => 13,
                 EventCode::KeyE => 14,
                 EventCode::KeyF => 15,
+                EventCode::Quit => {
+                    *emulation_running = false;
+                    return;
+                }
                 _ => continue,
             };
 
@@ -248,7 +256,12 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         (instruction_hi_byte << 8) + instruction_lo_byte
     }
 
-    fn cycle_decode_execute(&mut self, instruction: Word, draw_screen: &mut bool) {
+    fn cycle_decode_execute(
+        &mut self,
+        instruction: Word,
+        draw_screen: &mut bool,
+        emulation_running: &mut bool,
+    ) {
         match instruction {
             // Some instructions are in the 0x0NNN range (machine code routine call), and need to be
             // placed before it, therefore, out of order.
@@ -403,7 +416,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             }
             0xF00A..=0xFF0A if instruction & 0x00FF == 0x000A => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
-                self.execute_wait_keypress(Vx);
+                self.execute_wait_keypress(Vx, emulation_running);
             }
             0xF015..=0xFF15 if instruction & 0x00FF == 0x0015 => {
                 let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
@@ -704,7 +717,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         self.PC += 2;
     }
 
-    fn execute_wait_keypress(&mut self, Vx: usize) {
+    fn execute_wait_keypress(&mut self, Vx: usize, emulation_running: &mut bool) {
         self.log(format!("[{:X}] LD V{}, K", self.PC, Vx));
 
         loop {
@@ -726,6 +739,10 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                     EventCode::KeyD => 13,
                     EventCode::KeyE => 14,
                     EventCode::KeyF => 15,
+                    EventCode::Quit => {
+                        *emulation_running = false;
+                        return;
+                    }
                     _ => continue,
                 };
 
