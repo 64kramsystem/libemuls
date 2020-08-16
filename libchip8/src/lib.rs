@@ -623,24 +623,34 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         let top_x = self.V[Vx] as usize;
         let top_y = self.V[Vy] as usize;
 
+        // lines = 0 is a Superchip feature; see https://chip8.fandom.com/wiki/Instruction_Draw.
+        //
+        let (bytes_per_line, lines) = if lines == 0 { (2, 16) } else { (1, lines) };
+
         let mut sprite_collided: Byte = 0;
 
         for y_shift in 0..lines {
             let pixel_y = (top_y + y_shift) % self.screen_height;
 
-            for x_shift in 0..8 {
-                // Sprites wrap around; see http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#Dxyn.
-                //
-                let pixel_x = (top_x + x_shift) % self.screen_width;
-                let pixel_value = (self.ram[self.I + y_shift] << x_shift) & 0b1000_0000;
+            for sprite_line_index in 0..bytes_per_line {
+                for x_shift in 0..8 {
+                    // Sprites wrap around; see http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#Dxyn.
+                    //
+                    let pixel_x = (top_x + x_shift + 8 * sprite_line_index) % self.screen_width;
 
-                if pixel_value != 0 {
-                    let pixel_screen_index = self.screen_width * pixel_y + pixel_x;
+                    let pixel_source_byte =
+                        self.ram[self.I + bytes_per_line * y_shift + sprite_line_index];
 
-                    if self.screen[pixel_screen_index] == 1 {
-                        sprite_collided = 1;
+                    let pixel_value = (pixel_source_byte << x_shift) & 0b1000_0000;
+
+                    if pixel_value != 0 {
+                        let pixel_screen_index = self.screen_width * pixel_y + pixel_x;
+
+                        if self.screen[pixel_screen_index] == 1 {
+                            sprite_collided = 1;
+                        }
+                        self.screen[pixel_screen_index] ^= 1;
                     }
-                    self.screen[pixel_screen_index] ^= 1;
                 }
             }
         }
