@@ -44,7 +44,7 @@ const FONTSET: [Byte; 80] = [
 
 pub struct Chip8<'a, T: IoFrontend> {
     ram: [Byte; RAM_SIZE],
-    screen: Vec<Byte>,  // Simplification (exactly: bit)
+    screen: Vec<bool>,
     stack: [usize; 16], // Simplification (exactly: word); see location constants comment.
 
     V: [Byte; 16],
@@ -167,7 +167,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn setup_graphics(&mut self) {
-        self.screen = vec![0; self.screen_width * self.screen_height];
+        self.screen = vec![false; self.screen_width * self.screen_height];
         self.io_frontend
             .init(self.screen_width as u32, self.screen_height as u32);
     }
@@ -187,7 +187,9 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             let x = i % self.screen_width;
             let y = i / self.screen_width;
 
-            let color = u32::from_be_bytes([255 * *pixel_on, 255 * *pixel_on, 255 * *pixel_on, 0]);
+            let pixel_value = if *pixel_on { 255 } else { 0 };
+
+            let color = u32::from_be_bytes([pixel_value, pixel_value, pixel_value, 0]);
 
             self.io_frontend.draw_pixel(x as u32, y as u32, color)
         }
@@ -434,7 +436,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     fn execute_clear_screen(&mut self, draw_screen: &mut bool) {
         self.logger.log(format!("[{:X}] CLS", self.PC));
 
-        self.screen = vec![0; self.screen_width * self.screen_height];
+        self.screen = vec![false; self.screen_width * self.screen_height];
         self.PC += 2;
 
         *draw_screen = true;
@@ -667,10 +669,10 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                     if pixel_value != 0 {
                         let pixel_screen_index = self.screen_width * pixel_y + pixel_x;
 
-                        if self.screen[pixel_screen_index] == 1 {
+                        if self.screen[pixel_screen_index] {
                             sprite_collided = 1;
                         }
-                        self.screen[pixel_screen_index] ^= 1;
+                        self.screen[pixel_screen_index] ^= true;
                     }
                 }
             }
