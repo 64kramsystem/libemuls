@@ -1,6 +1,8 @@
 // Ripped off from the SDL crate 😬
 //
 pub enum EventCode {
+    Quit,
+
     KeyBackspace(bool),
     KeyTab(bool),
     KeyReturn(bool),

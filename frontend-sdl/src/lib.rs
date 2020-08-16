@@ -306,6 +306,8 @@ impl IoFrontend for FrontendSdl {
                 if let Some(keycode) = keycode {
                     return Some(FrontendSdl::sdl_to_io_frontend_keycode(keycode, false));
                 }
+            } else if let Event::Quit { .. } = event {
+                return Some(EventCode::Quit);
             }
         }
 
