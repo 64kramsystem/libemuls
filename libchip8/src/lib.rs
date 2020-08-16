@@ -15,8 +15,8 @@ const RAM_SIZE: usize = 4096;
 const FONTS_LOCATION: usize = 0; // There's no reference location, but this is common practice
 const PROGRAMS_LOCATION: usize = 0x200;
 
-const CLOCK_SPEED: u32 = 500; // Herz
-const TIMERS_SPEED: u32 = 60; // Herz
+const CLOCK_SPEED: u32 = 50000; // Herz
+const TIMERS_SPEED: u32 = 6000; // Herz
 
 const STANDARD_SCREEN_WIDTH: usize = 64;
 const STANDARD_SCREEN_HEIGHT: usize = 32;
@@ -128,6 +128,9 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         //
         let mut draw_screen = false;
 
+        let mut frames_count = 0_u32;
+        let mut frames_time = Instant::now();
+
         loop {
             let quit_received = self.set_keys();
 
@@ -140,6 +143,14 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             if draw_screen {
                 self.draw_graphics();
                 draw_screen = false;
+            }
+
+            frames_count += 1;
+
+            if frames_count == 10000 {
+                println!("Time for 10k frames: {:?}", frames_time.elapsed());
+                frames_count = 0;
+                frames_time = Instant::now();
             }
 
             // If there are no delays, use a fixed loop time (start time + N * cycle_time_slice).
