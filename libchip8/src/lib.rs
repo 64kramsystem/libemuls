@@ -187,11 +187,15 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             let x = i % self.screen_width;
             let y = i / self.screen_width;
 
-            let pixel_value = if *pixel_on { 255 } else { 0 };
+            let common_color_component = if *pixel_on { 255 } else { 0 };
 
-            let color = u32::from_be_bytes([pixel_value, pixel_value, pixel_value, 0]);
-
-            self.io_frontend.draw_pixel(x as u32, y as u32, color)
+            self.io_frontend.draw_pixel(
+                x as u32,
+                y as u32,
+                common_color_component,
+                common_color_component,
+                common_color_component,
+            )
         }
 
         self.io_frontend.update_screen();
