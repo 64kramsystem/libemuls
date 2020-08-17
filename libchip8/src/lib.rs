@@ -1,7 +1,7 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use interfaces::{IoFrontend, Keycode, Logger};
+use interfaces::{EventCode, IoFrontend, Logger};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -202,24 +202,24 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn set_keys(&mut self) {
-        while let Some(keycode) = self.io_frontend.poll_key_event() {
+        while let Some(keycode) = self.io_frontend.poll_event() {
             match keycode {
-                Keycode::Num0(key_pressed) => self.keys_status[0] = key_pressed,
-                Keycode::Num1(key_pressed) => self.keys_status[1] = key_pressed,
-                Keycode::Num2(key_pressed) => self.keys_status[2] = key_pressed,
-                Keycode::Num3(key_pressed) => self.keys_status[3] = key_pressed,
-                Keycode::Num4(key_pressed) => self.keys_status[4] = key_pressed,
-                Keycode::Num5(key_pressed) => self.keys_status[5] = key_pressed,
-                Keycode::Num6(key_pressed) => self.keys_status[6] = key_pressed,
-                Keycode::Num7(key_pressed) => self.keys_status[7] = key_pressed,
-                Keycode::Num8(key_pressed) => self.keys_status[8] = key_pressed,
-                Keycode::Num9(key_pressed) => self.keys_status[9] = key_pressed,
-                Keycode::A(key_pressed) => self.keys_status[10] = key_pressed,
-                Keycode::B(key_pressed) => self.keys_status[11] = key_pressed,
-                Keycode::C(key_pressed) => self.keys_status[12] = key_pressed,
-                Keycode::D(key_pressed) => self.keys_status[13] = key_pressed,
-                Keycode::E(key_pressed) => self.keys_status[14] = key_pressed,
-                Keycode::F(key_pressed) => self.keys_status[15] = key_pressed,
+                EventCode::KeyNum0(key_pressed) => self.keys_status[0] = key_pressed,
+                EventCode::KeyNum1(key_pressed) => self.keys_status[1] = key_pressed,
+                EventCode::KeyNum2(key_pressed) => self.keys_status[2] = key_pressed,
+                EventCode::KeyNum3(key_pressed) => self.keys_status[3] = key_pressed,
+                EventCode::KeyNum4(key_pressed) => self.keys_status[4] = key_pressed,
+                EventCode::KeyNum5(key_pressed) => self.keys_status[5] = key_pressed,
+                EventCode::KeyNum6(key_pressed) => self.keys_status[6] = key_pressed,
+                EventCode::KeyNum7(key_pressed) => self.keys_status[7] = key_pressed,
+                EventCode::KeyNum8(key_pressed) => self.keys_status[8] = key_pressed,
+                EventCode::KeyNum9(key_pressed) => self.keys_status[9] = key_pressed,
+                EventCode::KeyA(key_pressed) => self.keys_status[10] = key_pressed,
+                EventCode::KeyB(key_pressed) => self.keys_status[11] = key_pressed,
+                EventCode::KeyC(key_pressed) => self.keys_status[12] = key_pressed,
+                EventCode::KeyD(key_pressed) => self.keys_status[13] = key_pressed,
+                EventCode::KeyE(key_pressed) => self.keys_status[14] = key_pressed,
+                EventCode::KeyF(key_pressed) => self.keys_status[15] = key_pressed,
                 _ => { /* Ignore the other key events. */ }
             };
         }
@@ -730,22 +730,22 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         //
         loop {
             let key_code = match self.io_frontend.wait_keypress() {
-                Keycode::Num0(key_pressed) => Some((0, key_pressed)),
-                Keycode::Num1(key_pressed) => Some((1, key_pressed)),
-                Keycode::Num2(key_pressed) => Some((2, key_pressed)),
-                Keycode::Num3(key_pressed) => Some((3, key_pressed)),
-                Keycode::Num4(key_pressed) => Some((4, key_pressed)),
-                Keycode::Num5(key_pressed) => Some((5, key_pressed)),
-                Keycode::Num6(key_pressed) => Some((6, key_pressed)),
-                Keycode::Num7(key_pressed) => Some((7, key_pressed)),
-                Keycode::Num8(key_pressed) => Some((8, key_pressed)),
-                Keycode::Num9(key_pressed) => Some((9, key_pressed)),
-                Keycode::A(key_pressed) => Some((10, key_pressed)),
-                Keycode::B(key_pressed) => Some((11, key_pressed)),
-                Keycode::C(key_pressed) => Some((12, key_pressed)),
-                Keycode::D(key_pressed) => Some((13, key_pressed)),
-                Keycode::E(key_pressed) => Some((14, key_pressed)),
-                Keycode::F(key_pressed) => Some((15, key_pressed)),
+                EventCode::KeyNum0(key_pressed) => Some((0, key_pressed)),
+                EventCode::KeyNum1(key_pressed) => Some((1, key_pressed)),
+                EventCode::KeyNum2(key_pressed) => Some((2, key_pressed)),
+                EventCode::KeyNum3(key_pressed) => Some((3, key_pressed)),
+                EventCode::KeyNum4(key_pressed) => Some((4, key_pressed)),
+                EventCode::KeyNum5(key_pressed) => Some((5, key_pressed)),
+                EventCode::KeyNum6(key_pressed) => Some((6, key_pressed)),
+                EventCode::KeyNum7(key_pressed) => Some((7, key_pressed)),
+                EventCode::KeyNum8(key_pressed) => Some((8, key_pressed)),
+                EventCode::KeyNum9(key_pressed) => Some((9, key_pressed)),
+                EventCode::KeyA(key_pressed) => Some((10, key_pressed)),
+                EventCode::KeyB(key_pressed) => Some((11, key_pressed)),
+                EventCode::KeyC(key_pressed) => Some((12, key_pressed)),
+                EventCode::KeyD(key_pressed) => Some((13, key_pressed)),
+                EventCode::KeyE(key_pressed) => Some((14, key_pressed)),
+                EventCode::KeyF(key_pressed) => Some((15, key_pressed)),
                 _ => None,
             };
 
