@@ -254,188 +254,157 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn cycle_decode_execute(&mut self, instruction: Word, draw_screen: &mut bool) {
-        match instruction {
+        // When used alone, nibble1 and/or nibble2 are always Vx/Vy; nibble0 and nibble3
+        // are never used alone.
+        //
+        let nibble0 = (instruction >> 12) as usize;
+        let Vx = ((instruction & 0x0F00) >> 8) as usize;
+        let Vy = ((instruction & 0x00F0) >> 4) as usize;
+        let nibble3 = (instruction & 0x000F) as usize;
+
+        match (nibble0, Vx, Vy, nibble3) {
             // Some instructions are in the 0x0NNN range (machine code routine call), and need to be
             // placed before it, therefore, out of order.
             //
-            0x00D0..=0x00DF => {
-                panic!("Unsupported instruction: 00DN (XO-CHIP)");
-            }
-            0x00E0 => {
+            (0, 0, 0xD, _) => panic!("Unsupported instruction: 00DN (XO-CHIP)"),
+            (0, 0, 0xE, 0) => {
                 self.execute_clear_screen(draw_screen);
             }
-            0x00EE => {
+            (0, 0, 0xE, 0xE) => {
                 self.execute_return_from_subroutine();
             }
-            0x00FC => {
+            (0, 0, 0xF, 0xC) => {
                 panic!("Unsupported instruction: 00FC (Super-CHIP 1.1)");
             }
-            0x00FF => {
+            (0, 0, 0xF, 0xF) => {
                 self.execute_set_hires_mode();
             }
-            0x0000..=0x0FFF => panic!(
+            (0, _, _, _) => panic!(
                 "Call machine code routine instruction or extension not implemented: {:04X}",
                 instruction
             ),
-            0x1000..=0x1FFF => {
+            (1, _, _, _) => {
                 let address = (instruction & 0x0FFF) as usize;
                 self.execute_goto(address);
             }
-            0x2000..=0x2FFF => {
+            (2, _, _, _) => {
                 let address = (instruction & 0x0FFF) as usize;
                 self.execute_call_subroutine(address);
             }
-            0x3000..=0x3FFF => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+            (3, _, _, _) => {
                 let n = (instruction & 0x00FF) as Byte;
                 self.execute_skip_next_instruction_if_Vx_equals_n(Vx, n);
             }
-            0x4000..=0x4FFF => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+            (4, _, _, _) => {
                 let n = (instruction & 0x00FF) as Byte;
                 self.execute_skip_next_instruction_if_Vx_not_equals_n(Vx, n);
             }
-            0x5000..=0x5FFF if instruction & 0x000F == 0x0000 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
-                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+            (5, _, _, 0) => {
                 self.execute_skip_next_instruction_if_Vx_equals_Vy(Vx, Vy);
             }
-            0x5000..=0x5FFF if instruction & 0x000F == 0x0002 => {
+            (5, _, _, 2) => {
                 panic!("Unsupported instruction: 5XY2 (XO-CHIP)");
             }
-            0x5000..=0x5FFF if instruction & 0x000F == 0x0003 => {
+            (5, _, _, 3) => {
                 panic!("Unsupported instruction: 5XY3 (XO-CHIP)");
             }
-            0x6000..=0x6FFF => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+            (6, _, _, _) => {
                 let n = (instruction & 0x00FF) as Byte;
                 self.execute_set_Vx_to_n(Vx, n);
             }
-            0x7000..=0x7FFF => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+            (7, _, _, _) => {
                 let n = (instruction & 0x00FF) as Byte;
                 self.execute_add_n_to_Vx(Vx, n);
             }
-            0x8000..=0x8FF0 if instruction & 0x000F == 0x0000 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
-                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+            (8, _, _, 0) => {
                 self.execute_set_Vx_to_Vy(Vx, Vy);
             }
-            0x8001..=0x8FF1 if instruction & 0x000F == 0x0001 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
-                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+            (8, _, _, 1) => {
                 self.execute_set_Vx_to_Vx_or_Vy(Vx, Vy);
             }
-            0x8002..=0x8FF2 if instruction & 0x000F == 0x0002 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
-                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+            (8, _, _, 2) => {
                 self.execute_set_Vx_to_Vx_and_Vy(Vx, Vy);
             }
-            0x8003..=0x8FF3 if instruction & 0x000F == 0x0003 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
-                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+            (8, _, _, 3) => {
                 self.execute_set_Vx_to_Vx_xor_Vy(Vx, Vy);
             }
-            0x8004..=0x8FF4 if instruction & 0x000F == 0x0004 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
-                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+            (8, _, _, 4) => {
                 self.execute_add_Vy_to_Vx(Vx, Vy);
             }
-            0x8005..=0x8FF5 if instruction & 0x000F == 0x0005 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
-                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+            (8, _, _, 5) => {
                 self.execute_subtract_Vy_from_Vx(Vx, Vy);
             }
-            0x8006..=0x8FF6 if instruction & 0x000F == 0x0006 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+            (8, _, _, 6) => {
                 // Vy is ignored
                 self.execute_shift_right_Vx(Vx);
             }
-            0x8007..=0x8FF7 if instruction & 0x000F == 0x0007 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
-                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+            (8, _, _, 7) => {
                 self.execute_set_Vx_to_Vy_minus_Vx(Vx, Vy);
             }
-            0x800E..=0x8FFE if instruction & 0x000F == 0x000E => {
+            (8, _, _, 0xE) => {
                 let Vx = ((instruction & 0x0F00) >> 8) as usize;
                 // Vy is ignored
                 self.execute_shift_left_Vx(Vx);
             }
-            0x9000..=0x9FFF if instruction & 0x000F == 0x0000 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
-                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+            (9, _, _, 0) => {
                 self.execute_skip_next_instruction_if_Vx_not_equals_Vy(Vx, Vy);
             }
-            0xA000..=0xAFFF => {
+            (0xA, _, _, _) => {
                 let value = (instruction & 0x0FFF) as usize;
                 self.execute_set_I(value);
             }
-            0xB000..=0xBFFF => {
+            (0xB, _, _, _) => {
                 let address = (instruction & 0x0FFF) as usize;
                 self.execute_goto_plus_V0(address);
             }
-            0xC000..=0xCFFF => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+            (0xC, _, _, _) => {
                 let n = (instruction & 0x00FF) as Byte;
                 self.execute_set_Vx_to_masked_random(Vx, n);
             }
-            0xD000..=0xDFFF => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
-                let Vy = ((instruction & 0x00F0) >> 4) as usize;
+            (0xD, _, _, _) => {
                 let lines = (instruction & 0x00F) as usize;
                 self.execute_draw_sprite(Vx, Vy, lines, draw_screen);
             }
-            0xE09E..=0xEF9E if instruction & 0x00FF == 0x009E => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+            (0xE, _, 9, 0xE) => {
                 self.execute_skip_next_instruction_if_Vx_key_pressed(Vx);
             }
-            0xE0A1..=0xEFA1 if instruction & 0x00FF == 0x00A1 => {
-                let Vx = ((instruction & 0x0F00) >> 8) as usize;
+            (0xE, _, 0xA, 1) => {
                 self.execute_skip_next_instruction_if_Vx_key_not_pressed(Vx);
             }
-            0xF000 => {
+            (0xF, 0, 0, 0) => {
                 panic!("Unsupported instruction: F000 (XO-CHIP)");
             }
-            0xF001..=0xFF01 if instruction & 0x00FF == 0x0001 => {
+            (0xF, _, 0, 1) => {
                 panic!("Unsupported instruction: FN01 (XO-CHIP)");
             }
-            0xF002 => {
+            (0xF, _, 0, 2) => {
                 panic!("Unsupported instruction: F002 (XO-CHIP)");
             }
-            0xF007..=0xFF07 if instruction & 0x00FF == 0x0007 => {
-                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+            (0xF, _, 0, 7) => {
                 self.execute_set_Vx_to_delay_timer(Vx);
             }
-            0xF00A..=0xFF0A if instruction & 0x00FF == 0x000A => {
-                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+            (0xF, _, 0, 0xA) => {
                 self.execute_wait_keypress(Vx);
             }
-            0xF015..=0xFF15 if instruction & 0x00FF == 0x0015 => {
-                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+            (0xF, _, 1, 5) => {
                 self.execute_set_delay_timer_to_Vx(Vx);
             }
-            0xF018..=0xFF18 if instruction & 0x00FF == 0x0018 => {
-                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+            (0xF, _, 1, 8) => {
                 self.execute_set_sound_timer_to_Vx(Vx);
             }
-            0xF01E..=0xFF1E if instruction & 0x00FF == 0x001E => {
-                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+            (0xF, _, 1, 0xE) => {
                 self.execute_add_Vx_to_I(Vx);
             }
-            0xF029..=0xFF29 if instruction & 0x00FF == 0x0029 => {
-                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+            (0xF, _, 2, 0x9) => {
                 self.execute_set_I_to_Vx_sprite_address(Vx);
             }
-            0xF033..=0xFF33 if instruction & 0x00FF == 0x0033 => {
-                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+            (0xF, _, 3, 3) => {
                 self.execute_store_Vx_bcd_representation(Vx);
             }
-            0xF055..=0xFF55 if instruction & 0x00FF == 0x0055 => {
-                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+            (0xF, _, 5, 5) => {
                 self.execute_dump_registers_to_memory(Vx);
             }
-            0xF065..=0xFF65 if instruction & 0x00FF == 0x0065 => {
-                let Vx: usize = ((instruction & 0x0F00) >> 8) as usize;
+            (0xF, _, 6, 5) => {
                 self.execute_load_registers_from_memory(Vx);
             }
             _ => panic!("Invalid/unsupported instruction: {:04X}", instruction),
