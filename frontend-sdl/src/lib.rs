@@ -1,16 +1,21 @@
 use interfaces::{EventCode, IoFrontend};
 
 use sdl2::{event::Event, pixels::Color, rect::Point, render::Canvas, video::Window};
+use std::collections::HashMap;
 
 use sdl2::{keyboard::Keycode as SdlKeycode, EventPump};
 
 pub struct FrontendSdl {
     event_pump: EventPump,
     canvas: Canvas<Window>,
+    custom_keys_mapping: HashMap<EventCode, EventCode>,
 }
 
 impl FrontendSdl {
-    pub fn new(window_title: &str) -> FrontendSdl {
+    pub fn new(
+        window_title: &str,
+        custom_keys_mapping: HashMap<EventCode, EventCode>,
+    ) -> FrontendSdl {
         let sdl_context = sdl2::init().unwrap();
 
         let window = sdl_context
@@ -31,7 +36,11 @@ impl FrontendSdl {
 
         let event_pump = sdl_context.event_pump().unwrap();
 
-        FrontendSdl { event_pump, canvas }
+        FrontendSdl {
+            event_pump,
+            canvas,
+            custom_keys_mapping,
+        }
     }
 
     // Ugly but necessary, as we can't trivially map an enum to another enum
@@ -297,21 +306,34 @@ impl IoFrontend for FrontendSdl {
     }
 
     fn poll_event(&mut self) -> Option<EventCode> {
+        let mut event_code = None;
+
         for event in self.event_pump.poll_iter() {
             if let Event::KeyDown { keycode, .. } = event {
                 if let Some(keycode) = keycode {
-                    return Some(FrontendSdl::sdl_to_io_frontend_keycode(keycode, true));
+                    event_code = Some(FrontendSdl::sdl_to_io_frontend_keycode(keycode, true));
+                    break;
                 }
             } else if let Event::KeyUp { keycode, .. } = event {
                 if let Some(keycode) = keycode {
-                    return Some(FrontendSdl::sdl_to_io_frontend_keycode(keycode, false));
+                    event_code = Some(FrontendSdl::sdl_to_io_frontend_keycode(keycode, false));
+                    break;
                 }
             } else if let Event::Quit { .. } = event {
-                return Some(EventCode::Quit);
+                event_code = Some(EventCode::Quit);
+                break;
             }
         }
 
-        None
+        if let Some(event_code) = event_code {
+            if let Some(mapped_event_code) = self.custom_keys_mapping.get(&event_code) {
+                Some(mapped_event_code.clone())
+            } else {
+                Some(event_code)
+            }
+        } else {
+            None
+        }
     }
 
     fn wait_keypress(&mut self) -> interfaces::EventCode {
