@@ -1,10 +1,12 @@
+#[macro_use]
+extern crate maplit;
+
 use clap::{self, App, Arg};
 
 use frontend_sdl::FrontendSdl;
-use interfaces::{Logger, NullLogger, StdoutLogger};
+use interfaces::{EventCode, Logger, NullLogger, StdoutLogger};
 use libchip8;
 
-use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 
@@ -32,7 +34,21 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let game_rom_data = fs::read(game_rom_filename)?;
 
-    let mut custom_keys_mapping = HashMap::new();
+    let custom_keys_mapping = hashmap! {
+         EventCode::KeyNum4 => EventCode::KeyC,
+         EventCode::KeyQ => EventCode::KeyNum4,
+         EventCode::KeyW => EventCode::KeyNum5,
+         EventCode::KeyE => EventCode::KeyNum6,
+         EventCode::KeyR => EventCode::KeyD,
+         EventCode::KeyA => EventCode::KeyNum7,
+         EventCode::KeyS => EventCode::KeyNum8,
+         EventCode::KeyD => EventCode::KeyNum9,
+         EventCode::KeyF => EventCode::KeyE,
+         EventCode::KeyZ => EventCode::KeyA,
+         EventCode::KeyX => EventCode::KeyNum0,
+         EventCode::KeyC => EventCode::KeyB,
+         EventCode::KeyV => EventCode::KeyF,
+    };
 
     let mut sdl_frontend = FrontendSdl::new("CHIP-8!", custom_keys_mapping);
 
