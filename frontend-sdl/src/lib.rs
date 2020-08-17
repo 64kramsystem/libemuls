@@ -1,6 +1,7 @@
 use interfaces::{EventCode, IoFrontend};
 
 use sdl2::{event::Event, pixels::Color, rect::Point, render::Canvas, video::Window};
+use std::collections::HashMap;
 
 use sdl2::{keyboard::Keycode as SdlKeycode, EventPump};
 
@@ -13,10 +14,14 @@ const WINDOW_START_HEIGHT: u32 = 480;
 pub struct FrontendSdl {
     event_pump: EventPump,
     canvas: Canvas<Window>,
+    custom_keys_mapping: HashMap<EventCode, EventCode>,
 }
 
 impl FrontendSdl {
-    pub fn new(window_title: &str) -> FrontendSdl {
+    pub fn new(
+        window_title: &str,
+        custom_keys_mapping: HashMap<EventCode, EventCode>,
+    ) -> FrontendSdl {
         let sdl_context = sdl2::init().unwrap();
 
         let window = sdl_context
@@ -31,7 +36,11 @@ impl FrontendSdl {
 
         let event_pump = sdl_context.event_pump().unwrap();
 
-        FrontendSdl { event_pump, canvas }
+        FrontendSdl {
+            event_pump,
+            canvas,
+            custom_keys_mapping,
+        }
     }
 
     // Ugly but necessary, as we can't trivially map an enum to another enum
@@ -306,11 +315,25 @@ impl IoFrontend for FrontendSdl {
 
             if let Some(Event::KeyDown { keycode, .. }) = event {
                 if let Some(keycode) = keycode {
-                    return Some((FrontendSdl::sdl_to_io_frontend_keycode(keycode), true));
+                    let key_code = FrontendSdl::sdl_to_io_frontend_keycode(keycode);
+
+                    // The unwrap() alternative is cool, but doesn't give real gains.
+                    //
+                    return if let Some(mapped_key) = self.custom_keys_mapping.get(&key_code) {
+                        Some((mapped_key.clone(), true))
+                    } else {
+                        Some((key_code, true))
+                    };
                 }
             } else if let Some(Event::KeyUp { keycode, .. }) = event {
                 if let Some(keycode) = keycode {
-                    return Some((FrontendSdl::sdl_to_io_frontend_keycode(keycode), false));
+                    let key_code = FrontendSdl::sdl_to_io_frontend_keycode(keycode);
+
+                    return if let Some(mapped_key) = self.custom_keys_mapping.get(&key_code) {
+                        Some((mapped_key.clone(), false))
+                    } else {
+                        Some((key_code, false))
+                    };
                 }
             } else if let Some(Event::Quit { .. }) = event {
                 return Some((EventCode::Quit, true));

@@ -1,5 +1,6 @@
 // Ripped off from the SDL crate 😬
 //
+#[derive(Clone, Eq, PartialEq, Hash)]
 pub enum EventCode {
     Quit,
 
