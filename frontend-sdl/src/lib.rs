@@ -1,12 +1,27 @@
 use interfaces::{EventCode, IoFrontend};
 
 use sdl2::{event::Event, pixels::Color, rect::Point, render::Canvas, video::Window, Sdl};
+use std::time::{Duration, Instant};
 
 use sdl2::keyboard::Keycode as SdlKeycode;
+
+const MAX_SCREEN_UPDATE_FREQUENCY: u32 = 60; // Herz
 
 pub struct FrontendSdl {
     sdl_context: Sdl,
     canvas: Canvas<Window>,
+
+    // Screen update capping logic.
+    //
+    // If at least 1"/MAX_SCREEN_UPDATE_FREQUENCY hasn't passed since the last canvas update, draw
+    // pixels/canvas update are not perfomed.
+    // After, after the first canvas update (which is ignored), pixels are drawn, and the second
+    // update is perfomed; finally, the cycle restarts.
+    //
+    // This is effective for high frame rates. At low rates, it may cut the display rate in half.
+    //
+    last_canvas_update: Instant,
+    do_draw_pixels: bool,
 }
 
 impl FrontendSdl {
@@ -32,6 +47,8 @@ impl FrontendSdl {
         FrontendSdl {
             sdl_context: sdl_context,
             canvas: canvas,
+            last_canvas_update: Instant::now(),
+            do_draw_pixels: false,
         }
     }
 
@@ -285,16 +302,30 @@ impl IoFrontend for FrontendSdl {
         window.set_size(screen_width, screen_height).unwrap();
     }
 
+    // Capped to MAX_SCREEN_UPDATE_FREQUENCY (see struct comments).
+    //
     fn draw_pixel(&mut self, x: u32, y: u32, r: u8, g: u8, b: u8) {
-        self.canvas.set_draw_color(Color::RGB(r, g, b));
+        if self.do_draw_pixels {
+            self.canvas.set_draw_color(Color::RGB(r, g, b));
 
-        self.canvas
-            .draw_point(Point::new(x as i32, y as i32))
-            .unwrap();
+            self.canvas
+                .draw_point(Point::new(x as i32, y as i32))
+                .unwrap();
+        }
     }
 
+    // Capped to MAX_SCREEN_UPDATE_FREQUENCY (see struct comments).
+    //
     fn update_screen(&mut self) {
-        self.canvas.present();
+        if self.last_canvas_update.elapsed() >= Duration::new(1, 0) / MAX_SCREEN_UPDATE_FREQUENCY {
+            if self.do_draw_pixels {
+                self.canvas.present();
+                self.last_canvas_update = Instant::now();
+                self.do_draw_pixels = false
+            } else {
+                self.do_draw_pixels = true
+            }
+        }
     }
 
     fn poll_event(&mut self) -> Option<(EventCode, bool)> {
