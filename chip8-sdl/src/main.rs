@@ -4,6 +4,7 @@ use frontend_sdl::FrontendSdl;
 use interfaces::{Logger, NullLogger, StdoutLogger};
 use libchip8;
 
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 
@@ -31,7 +32,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let game_rom_data = fs::read(game_rom_filename)?;
 
-    let mut sdl_frontend = FrontendSdl::new("CHIP-8!");
+    let mut custom_keys_mapping = HashMap::new();
+
+    let mut sdl_frontend = FrontendSdl::new("CHIP-8!", custom_keys_mapping);
 
     let mut logger: Box<dyn Logger> = if debug_mode {
         Box::new(StdoutLogger::new())

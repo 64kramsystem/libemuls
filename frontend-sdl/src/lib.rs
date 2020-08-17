@@ -1,6 +1,7 @@
 use interfaces::{EventCode, IoFrontend};
 
 use sdl2::{event::Event, pixels::Color, rect::Point, render::Canvas, video::Window, Sdl};
+use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use sdl2::keyboard::Keycode as SdlKeycode;
@@ -10,6 +11,8 @@ const MAX_SCREEN_UPDATE_FREQUENCY: u32 = 60; // Herz
 pub struct FrontendSdl {
     sdl_context: Sdl,
     canvas: Canvas<Window>,
+
+    custom_keys_mapping: HashMap<EventCode, EventCode>,
 
     // Screen update capping logic.
     //
@@ -25,7 +28,10 @@ pub struct FrontendSdl {
 }
 
 impl FrontendSdl {
-    pub fn new(window_title: &str) -> FrontendSdl {
+    pub fn new(
+        window_title: &str,
+        custom_keys_mapping: HashMap<EventCode, EventCode>,
+    ) -> FrontendSdl {
         let sdl_context = sdl2::init().unwrap();
 
         let window = sdl_context
@@ -47,6 +53,7 @@ impl FrontendSdl {
         FrontendSdl {
             sdl_context: sdl_context,
             canvas: canvas,
+            custom_keys_mapping: custom_keys_mapping,
             last_canvas_update: Instant::now(),
             do_draw_pixels: false,
         }
@@ -330,22 +337,34 @@ impl IoFrontend for FrontendSdl {
 
     fn poll_event(&mut self) -> Option<(EventCode, bool)> {
         let mut event_pump = self.sdl_context.event_pump().unwrap();
+        let mut key_event = None;
 
         for event in event_pump.poll_iter() {
             if let Event::KeyDown { keycode, .. } = event {
                 if let Some(keycode) = keycode {
-                    return Some((FrontendSdl::sdl_to_io_frontend_keycode(keycode), true));
+                    key_event = Some((FrontendSdl::sdl_to_io_frontend_keycode(keycode), true));
+                    break;
                 }
             } else if let Event::KeyUp { keycode, .. } = event {
                 if let Some(keycode) = keycode {
-                    return Some((FrontendSdl::sdl_to_io_frontend_keycode(keycode), false));
+                    key_event = Some((FrontendSdl::sdl_to_io_frontend_keycode(keycode), false));
+                    break;
                 }
             } else if let Event::Quit { .. } = event {
-                return Some((EventCode::Quit, true));
+                key_event = Some((EventCode::Quit, true));
+                break;
             }
         }
 
-        None
+        if let Some((event_code, key_pressed)) = key_event {
+            if let Some(mapped_key) = self.custom_keys_mapping.get(&event_code) {
+                Some((mapped_key.clone(), key_pressed))
+            } else {
+                Some((event_code, key_pressed))
+            }
+        } else {
+            None
+        }
     }
 
     fn wait_keypress(&mut self) -> interfaces::EventCode {
