@@ -1,7 +1,7 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use interfaces::{IoFrontend, Keycode, Logger};
+use interfaces::{EventCode, IoFrontend, Logger};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -202,24 +202,24 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn set_keys(&mut self) {
-        while let Some((keycode, key_pressed)) = self.io_frontend.poll_key_event() {
+        while let Some((keycode, key_pressed)) = self.io_frontend.poll_event() {
             let key_value = match keycode {
-                Keycode::Num0 => Some(0),
-                Keycode::Num1 => Some(1),
-                Keycode::Num2 => Some(2),
-                Keycode::Num3 => Some(3),
-                Keycode::Num4 => Some(4),
-                Keycode::Num5 => Some(5),
-                Keycode::Num6 => Some(6),
-                Keycode::Num7 => Some(7),
-                Keycode::Num8 => Some(8),
-                Keycode::Num9 => Some(9),
-                Keycode::A => Some(10),
-                Keycode::B => Some(11),
-                Keycode::C => Some(12),
-                Keycode::D => Some(13),
-                Keycode::E => Some(14),
-                Keycode::F => Some(15),
+                EventCode::KeyNum0 => Some(0),
+                EventCode::KeyNum1 => Some(1),
+                EventCode::KeyNum2 => Some(2),
+                EventCode::KeyNum3 => Some(3),
+                EventCode::KeyNum4 => Some(4),
+                EventCode::KeyNum5 => Some(5),
+                EventCode::KeyNum6 => Some(6),
+                EventCode::KeyNum7 => Some(7),
+                EventCode::KeyNum8 => Some(8),
+                EventCode::KeyNum9 => Some(9),
+                EventCode::KeyA => Some(10),
+                EventCode::KeyB => Some(11),
+                EventCode::KeyC => Some(12),
+                EventCode::KeyD => Some(13),
+                EventCode::KeyE => Some(14),
+                EventCode::KeyF => Some(15),
                 _ => None,
             };
 
@@ -733,22 +733,22 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         //
         loop {
             let key_pressed = match self.io_frontend.wait_keypress() {
-                Keycode::Num0 => Some(0),
-                Keycode::Num1 => Some(1),
-                Keycode::Num2 => Some(2),
-                Keycode::Num3 => Some(3),
-                Keycode::Num4 => Some(4),
-                Keycode::Num5 => Some(5),
-                Keycode::Num6 => Some(6),
-                Keycode::Num7 => Some(7),
-                Keycode::Num8 => Some(8),
-                Keycode::Num9 => Some(9),
-                Keycode::A => Some(10),
-                Keycode::B => Some(11),
-                Keycode::C => Some(12),
-                Keycode::D => Some(13),
-                Keycode::E => Some(14),
-                Keycode::F => Some(15),
+                EventCode::KeyNum0 => Some(0),
+                EventCode::KeyNum1 => Some(1),
+                EventCode::KeyNum2 => Some(2),
+                EventCode::KeyNum3 => Some(3),
+                EventCode::KeyNum4 => Some(4),
+                EventCode::KeyNum5 => Some(5),
+                EventCode::KeyNum6 => Some(6),
+                EventCode::KeyNum7 => Some(7),
+                EventCode::KeyNum8 => Some(8),
+                EventCode::KeyNum9 => Some(9),
+                EventCode::KeyA => Some(10),
+                EventCode::KeyB => Some(11),
+                EventCode::KeyC => Some(12),
+                EventCode::KeyD => Some(13),
+                EventCode::KeyE => Some(14),
+                EventCode::KeyF => Some(15),
                 _ => None,
             };
 

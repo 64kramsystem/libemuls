@@ -6,6 +6,6 @@ pub trait IoFrontend {
 
     // true/false for key pressed/released.
     //
-    fn poll_key_event(&mut self) -> Option<(Keycode, bool)>;
-    fn wait_keypress(&mut self) -> Keycode;
+    fn poll_event(&mut self) -> Option<(EventCode, bool)>;
+    fn wait_keypress(&mut self) -> EventCode;
 }
