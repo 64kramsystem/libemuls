@@ -1,7 +1,7 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use interfaces::{IoFrontend, Keycode, Logger};
+use interfaces::{EventCode, IoFrontend, Logger};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -202,24 +202,24 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn set_keys(&mut self) {
-        while let Some((keycode, key_pressed)) = self.io_frontend.read_key_event(false) {
+        while let Some((keycode, key_pressed)) = self.io_frontend.read_event(false) {
             let key_index = match keycode {
-                Keycode::Num0 => 0,
-                Keycode::Num1 => 1,
-                Keycode::Num2 => 2,
-                Keycode::Num3 => 3,
-                Keycode::Num4 => 4,
-                Keycode::Num5 => 5,
-                Keycode::Num6 => 6,
-                Keycode::Num7 => 7,
-                Keycode::Num8 => 8,
-                Keycode::Num9 => 9,
-                Keycode::A => 10,
-                Keycode::B => 11,
-                Keycode::C => 12,
-                Keycode::D => 13,
-                Keycode::E => 14,
-                Keycode::F => 15,
+                EventCode::KeyNum0 => 0,
+                EventCode::KeyNum1 => 1,
+                EventCode::KeyNum2 => 2,
+                EventCode::KeyNum3 => 3,
+                EventCode::KeyNum4 => 4,
+                EventCode::KeyNum5 => 5,
+                EventCode::KeyNum6 => 6,
+                EventCode::KeyNum7 => 7,
+                EventCode::KeyNum8 => 8,
+                EventCode::KeyNum9 => 9,
+                EventCode::KeyA => 10,
+                EventCode::KeyB => 11,
+                EventCode::KeyC => 12,
+                EventCode::KeyD => 13,
+                EventCode::KeyE => 14,
+                EventCode::KeyF => 15,
                 _ => continue,
             };
 
@@ -708,24 +708,24 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         self.log(format!("[{:X}] LD V{}, K", self.PC, Vx));
 
         loop {
-            if let Some((key_code, key_pressed)) = self.io_frontend.read_key_event(true) {
+            if let Some((key_code, key_pressed)) = self.io_frontend.read_event(true) {
                 let key_index = match key_code {
-                    Keycode::Num0 => 0,
-                    Keycode::Num1 => 1,
-                    Keycode::Num2 => 2,
-                    Keycode::Num3 => 3,
-                    Keycode::Num4 => 4,
-                    Keycode::Num5 => 5,
-                    Keycode::Num6 => 6,
-                    Keycode::Num7 => 7,
-                    Keycode::Num8 => 8,
-                    Keycode::Num9 => 9,
-                    Keycode::A => 10,
-                    Keycode::B => 11,
-                    Keycode::C => 12,
-                    Keycode::D => 13,
-                    Keycode::E => 14,
-                    Keycode::F => 15,
+                    EventCode::KeyNum0 => 0,
+                    EventCode::KeyNum1 => 1,
+                    EventCode::KeyNum2 => 2,
+                    EventCode::KeyNum3 => 3,
+                    EventCode::KeyNum4 => 4,
+                    EventCode::KeyNum5 => 5,
+                    EventCode::KeyNum6 => 6,
+                    EventCode::KeyNum7 => 7,
+                    EventCode::KeyNum8 => 8,
+                    EventCode::KeyNum9 => 9,
+                    EventCode::KeyA => 10,
+                    EventCode::KeyB => 11,
+                    EventCode::KeyC => 12,
+                    EventCode::KeyD => 13,
+                    EventCode::KeyE => 14,
+                    EventCode::KeyF => 15,
                     _ => continue,
                 };
 
