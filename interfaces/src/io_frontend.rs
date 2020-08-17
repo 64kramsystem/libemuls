@@ -1,4 +1,4 @@
-use crate::keycode::Keycode;
+use crate::event_code::EventCode;
 
 pub trait IoFrontend {
     fn init(&mut self, screen_width: u32, screen_height: u32);
@@ -8,5 +8,5 @@ pub trait IoFrontend {
 
     // True/false for key pressed/released.
     //
-    fn read_key_event(&mut self, blocking: bool) -> Option<(Keycode, bool)>;
+    fn read_event(&mut self, blocking: bool) -> Option<(EventCode, bool)>;
 }
