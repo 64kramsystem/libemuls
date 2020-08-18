@@ -1,6 +1,7 @@
 use interfaces::{EventCode, IoFrontend};
 
-use sdl2::{event::Event, pixels::Color, rect::Point, render::Canvas, video::Window};
+use sdl2::event::{Event, WindowEvent};
+use sdl2::{pixels::Color, rect::Point, render::Canvas, video::Window};
 use std::collections::HashMap;
 
 use sdl2::{keyboard::Keycode as SdlKeycode, EventPump};
@@ -11,6 +12,7 @@ pub struct FrontendSdl {
 
     custom_keys_mapping: HashMap<EventCode, EventCode>,
 
+    // Logical width (game resolution).
     screen_width: u32,
 }
 
@@ -24,14 +26,30 @@ impl FrontendSdl {
         let start_width = 0;
         let start_height = 0;
 
-        let window = sdl_context
+        let mut window = sdl_context
             .video()
             .unwrap()
             .window(window_title, start_width, start_height)
+            .maximized()
             .position_centered()
             .opengl()
             .build()
             .unwrap();
+
+        let mut event_pump = sdl_context.event_pump().unwrap();
+
+        for event in event_pump.poll_iter() {
+            if let Event::Window {
+                win_event: WindowEvent::SizeChanged(new_width, new_height),
+                ..
+            } = event
+            {
+                window
+                    .set_size(new_width as u32, new_height as u32)
+                    .unwrap();
+                break;
+            }
+        }
 
         let canvas = window
             .into_canvas()
@@ -39,8 +57,6 @@ impl FrontendSdl {
             .present_vsync()
             .build()
             .unwrap();
-
-        let event_pump = sdl_context.event_pump().unwrap();
 
         FrontendSdl {
             event_pump,
@@ -295,11 +311,18 @@ impl FrontendSdl {
 
 impl IoFrontend for FrontendSdl {
     fn init(&mut self, screen_width: u32, screen_height: u32) {
+        let window = self.canvas.window();
+
+        let (window_width, window_height) = window.size();
+
+        let min_scale = f32::min(
+            (window_width as f32) / (screen_width as f32).floor(),
+            (window_height as f32) / (screen_height as f32).floor(),
+        );
+
+        self.canvas.set_scale(min_scale, min_scale).unwrap();
+
         self.screen_width = screen_width;
-
-        let window = self.canvas.window_mut();
-
-        window.set_size(screen_width, screen_height).unwrap();
     }
 
     fn update_screen(&mut self, pixels: &[(u8, u8, u8)]) {
