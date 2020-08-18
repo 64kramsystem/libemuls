@@ -14,17 +14,9 @@ pub struct FrontendSdl {
 
     custom_keys_mapping: HashMap<EventCode, EventCode>,
 
-    // Screen update capping logic.
-    //
-    // If at least 1"/MAX_SCREEN_UPDATE_FREQUENCY hasn't passed since the last canvas update, draw
-    // pixels/canvas update are not perfomed.
-    // After, after the first canvas update (which is ignored), pixels are drawn, and the second
-    // update is perfomed; finally, the cycle restarts.
-    //
-    // This is effective for high frame rates. At low rates, it may cut the display rate in half.
-    //
+    screen_width: u32,
+
     last_canvas_update: Instant,
-    do_draw_pixels: bool,
 }
 
 impl FrontendSdl {
@@ -34,10 +26,13 @@ impl FrontendSdl {
     ) -> FrontendSdl {
         let sdl_context = sdl2::init().unwrap();
 
+        let start_width = 0;
+        let start_height = 0;
+
         let window = sdl_context
             .video()
             .unwrap()
-            .window(window_title, 0, 0)
+            .window(window_title, start_width, start_height)
             .position_centered()
             .opengl()
             .build()
@@ -54,8 +49,8 @@ impl FrontendSdl {
             sdl_context: sdl_context,
             canvas: canvas,
             custom_keys_mapping: custom_keys_mapping,
+            screen_width: start_width,
             last_canvas_update: Instant::now(),
-            do_draw_pixels: false,
         }
     }
 
@@ -304,34 +299,29 @@ impl FrontendSdl {
 
 impl IoFrontend for FrontendSdl {
     fn init(&mut self, screen_width: u32, screen_height: u32) {
+        self.screen_width = screen_width;
+
         let window = self.canvas.window_mut();
 
         window.set_size(screen_width, screen_height).unwrap();
     }
 
-    // Capped to MAX_SCREEN_UPDATE_FREQUENCY (see struct comments).
+    // Capped to MAX_SCREEN_UPDATE_FREQUENCY.
     //
-    fn draw_pixel(&mut self, x: u32, y: u32, r: u8, g: u8, b: u8) {
-        if self.do_draw_pixels {
-            self.canvas.set_draw_color(Color::RGB(r, g, b));
-
-            self.canvas
-                .draw_point(Point::new(x as i32, y as i32))
-                .unwrap();
-        }
-    }
-
-    // Capped to MAX_SCREEN_UPDATE_FREQUENCY (see struct comments).
-    //
-    fn update_screen(&mut self) {
+    fn update_screen(&mut self, pixels: &Vec<(u8, u8, u8)>) {
         if self.last_canvas_update.elapsed() >= Duration::new(1, 0) / MAX_SCREEN_UPDATE_FREQUENCY {
-            if self.do_draw_pixels {
-                self.canvas.present();
-                self.last_canvas_update = Instant::now();
-                self.do_draw_pixels = false
-            } else {
-                self.do_draw_pixels = true
+            for (y, line) in pixels.chunks(self.screen_width as usize).enumerate() {
+                for (x, (r, g, b)) in line.iter().enumerate() {
+                    self.canvas.set_draw_color(Color::RGB(*r, *g, *b));
+
+                    self.canvas
+                        .draw_point(Point::new(x as i32, y as i32))
+                        .unwrap();
+                }
             }
+
+            self.canvas.present();
+            self.last_canvas_update = Instant::now();
         }
     }
 

@@ -1,8 +1,7 @@
 pub trait IoFrontend {
     fn init(&mut self, screen_width: u32, screen_height: u32);
 
-    fn draw_pixel(&mut self, x: u32, y: u32, r: u8, g: u8, b: u8);
-    fn update_screen(&mut self);
+    fn update_screen(&mut self, pixels: &Vec<(u8, u8, u8)>);
 
     // The client struct is required to handle also non-input events, e.g. Quit (see EventCode).
     //
