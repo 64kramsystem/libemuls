@@ -14,7 +14,10 @@ const WINDOW_START_HEIGHT: u32 = 480;
 pub struct FrontendSdl {
     event_pump: EventPump,
     canvas: Canvas<Window>,
+
     custom_keys_mapping: HashMap<EventCode, EventCode>,
+
+    screen_width: u32,
 }
 
 impl FrontendSdl {
@@ -40,6 +43,7 @@ impl FrontendSdl {
             event_pump,
             canvas,
             custom_keys_mapping,
+            screen_width: WINDOW_START_WIDTH,
         }
     }
 
@@ -288,20 +292,24 @@ impl FrontendSdl {
 
 impl IoFrontend for FrontendSdl {
     fn init(&mut self, screen_width: u32, screen_height: u32) {
+        self.screen_width = screen_width;
+
         let window = self.canvas.window_mut();
 
         window.set_size(screen_width, screen_height).unwrap();
     }
 
-    fn draw_pixel(&mut self, x: u32, y: u32, r: u8, g: u8, b: u8) {
-        self.canvas.set_draw_color(Color::RGB(r, g, b));
+    fn update_screen(&mut self, pixels: &[(u8, u8, u8)]) {
+        for (y, line) in pixels.chunks(self.screen_width as usize).enumerate() {
+            for (x, (r, g, b)) in line.iter().enumerate() {
+                self.canvas.set_draw_color(Color::RGB(*r, *g, *b));
 
-        self.canvas
-            .draw_point(Point::new(x as i32, y as i32))
-            .unwrap();
-    }
+                self.canvas
+                    .draw_point(Point::new(x as i32, y as i32))
+                    .unwrap();
+            }
+        }
 
-    fn update_screen(&mut self) {
         self.canvas.present();
     }
 
