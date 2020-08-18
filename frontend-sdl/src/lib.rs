@@ -8,7 +8,10 @@ use sdl2::{keyboard::Keycode as SdlKeycode, EventPump};
 pub struct FrontendSdl {
     event_pump: EventPump,
     canvas: Canvas<Window>,
+
     custom_keys_mapping: HashMap<EventCode, EventCode>,
+
+    screen_width: u32,
 }
 
 impl FrontendSdl {
@@ -18,10 +21,13 @@ impl FrontendSdl {
     ) -> FrontendSdl {
         let sdl_context = sdl2::init().unwrap();
 
+        let start_width = 0;
+        let start_height = 0;
+
         let window = sdl_context
             .video()
             .unwrap()
-            .window(window_title, 0, 0)
+            .window(window_title, start_width, start_height)
             .position_centered()
             .opengl()
             .build()
@@ -40,6 +46,7 @@ impl FrontendSdl {
             event_pump,
             canvas,
             custom_keys_mapping,
+            screen_width: start_width,
         }
     }
 
@@ -288,20 +295,24 @@ impl FrontendSdl {
 
 impl IoFrontend for FrontendSdl {
     fn init(&mut self, screen_width: u32, screen_height: u32) {
+        self.screen_width = screen_width;
+
         let window = self.canvas.window_mut();
 
         window.set_size(screen_width, screen_height).unwrap();
     }
 
-    fn draw_pixel(&mut self, x: u32, y: u32, r: u8, g: u8, b: u8) {
-        self.canvas.set_draw_color(Color::RGB(r, g, b));
+    fn update_screen(&mut self, pixels: &[(u8, u8, u8)]) {
+        for (y, line) in pixels.chunks(self.screen_width as usize).enumerate() {
+            for (x, (r, g, b)) in line.iter().enumerate() {
+                self.canvas.set_draw_color(Color::RGB(*r, *g, *b));
 
-        self.canvas
-            .draw_point(Point::new(x as i32, y as i32))
-            .unwrap();
-    }
+                self.canvas
+                    .draw_point(Point::new(x as i32, y as i32))
+                    .unwrap();
+            }
+        }
 
-    fn update_screen(&mut self) {
         self.canvas.present();
     }
 
