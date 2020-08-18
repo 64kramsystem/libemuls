@@ -185,22 +185,19 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn draw_graphics(&mut self) {
-        for (i, pixel_on) in self.screen.iter().enumerate() {
-            let x = i % self.screen_width;
-            let y = i / self.screen_width;
+        let pixels = self
+            .screen
+            .iter()
+            .map(|pixel_on| {
+                if *pixel_on {
+                    (255, 255, 255)
+                } else {
+                    (0, 0, 0)
+                }
+            })
+            .collect::<Vec<(u8, u8, u8)>>();
 
-            let common_color_component = if *pixel_on { 255 } else { 0 };
-
-            self.io_frontend.draw_pixel(
-                x as u32,
-                y as u32,
-                common_color_component,
-                common_color_component,
-                common_color_component,
-            )
-        }
-
-        self.io_frontend.update_screen();
+        self.io_frontend.update_screen(&pixels);
     }
 
     // Return true if a quit event has been received.
