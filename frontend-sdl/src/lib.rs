@@ -1,7 +1,14 @@
 use interfaces::{EventCode, IoFrontend};
 
-use sdl2::event::{Event, WindowEvent};
-use sdl2::{pixels::Color, rect::Point, render::Canvas, video::Window, Sdl};
+use sdl2::{
+    event::{Event, WindowEvent},
+    pixels::Color,
+    rect::{Point, Rect},
+    render::{Canvas, TextureCreator},
+    video::{Window, WindowContext},
+    Sdl,
+};
+
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
@@ -17,6 +24,8 @@ pub struct FrontendSdl {
 
     // Logical width (game resolution).
     screen_width: u32,
+
+    texture_creator: TextureCreator<WindowContext>,
 
     last_canvas_update: Instant,
 }
@@ -63,11 +72,14 @@ impl FrontendSdl {
             .build()
             .unwrap();
 
+        let texture_creator = canvas.texture_creator();
+
         FrontendSdl {
             sdl_context: sdl_context,
             canvas: canvas,
             custom_keys_mapping: custom_keys_mapping,
             screen_width: start_width,
+            texture_creator: texture_creator,
             last_canvas_update: Instant::now(),
         }
     }
@@ -334,16 +346,33 @@ impl IoFrontend for FrontendSdl {
     // Capped to MAX_SCREEN_UPDATE_FREQUENCY.
     //
     fn update_screen(&mut self, pixels: &Vec<(u8, u8, u8)>) {
-        if self.last_canvas_update.elapsed() >= Duration::new(1, 0) / MAX_SCREEN_UPDATE_FREQUENCY {
-            for (y, line) in pixels.chunks(self.screen_width as usize).enumerate() {
-                for (x, (r, g, b)) in line.iter().enumerate() {
-                    self.canvas.set_draw_color(Color::RGB(*r, *g, *b));
+        let screen_height = (pixels.len() as u32) / self.screen_width;
+        let screen_width = self.screen_width;
 
-                    self.canvas
-                        .draw_point(Point::new(x as i32, y as i32))
-                        .unwrap();
-                }
-            }
+        let mut screen_texture = self
+            .texture_creator
+            .create_texture_target(None, self.screen_width, screen_height)
+            .unwrap();
+
+        if self.last_canvas_update.elapsed() >= Duration::new(1, 0) / MAX_SCREEN_UPDATE_FREQUENCY {
+            self.canvas
+                .with_texture_canvas(&mut screen_texture, |texture| {
+                    for (y, line) in pixels.chunks(screen_width as usize).enumerate() {
+                        for (x, (r, g, b)) in line.iter().enumerate() {
+                            texture.set_draw_color(Color::RGB(*r, *g, *b));
+                            texture.draw_point(Point::new(x as i32, y as i32)).unwrap();
+                        }
+                    }
+                })
+                .unwrap();
+
+            self.canvas
+                .copy(
+                    &screen_texture,
+                    None,
+                    Rect::new(0, 0, self.screen_width, screen_height),
+                )
+                .unwrap();
 
             self.canvas.present();
             self.last_canvas_update = Instant::now();
