@@ -18,6 +18,10 @@ const PROGRAMS_LOCATION: usize = 0x200;
 const CLOCK_SPEED: u32 = 500; // Herz
 const TIMERS_SPEED: u32 = 60; // Herz
 
+// Used for the beep speed. There's no standard, so this is the only reasonable (simple) approach.
+//
+const SPEED_FACTOR: f32 = CLOCK_SPEED as f32 / 500.0;
+
 const STANDARD_SCREEN_WIDTH: usize = 64;
 const STANDARD_SCREEN_HEIGHT: usize = 32;
 const HIRES_SCREEN_WIDTH: usize = 128;
@@ -236,7 +240,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         if self.sound_timer > 0 {
             if self.sound_timer == 1 {
-                self.io_frontend.beep();
+                self.io_frontend.beep(SPEED_FACTOR);
             }
             self.sound_timer -= 1;
         }

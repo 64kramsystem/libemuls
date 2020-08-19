@@ -5,7 +5,9 @@ pub trait IoFrontend {
 
     fn update_screen(&mut self, pixels: &[(u8, u8, u8)]);
 
-    fn beep(&mut self);
+    // speed_factor: 1.0 is the standard; higher numbers shorten the sound, and viceversa.
+    //
+    fn beep(&mut self, speed_factor: f32);
 
     // The client code is required to handle also non-input events, e.g. Quit (see EventCode).
     //
