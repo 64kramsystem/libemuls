@@ -1,10 +1,21 @@
 use interfaces::{EventCode, IoFrontend};
 
 use sdl2::event::{Event, WindowEvent};
-use sdl2::{pixels::Color, rect::Point, render::Canvas, video::Window};
-use std::collections::HashMap;
+use sdl2::{
+    audio::AudioSpecDesired, keyboard::Keycode as SdlKeycode, pixels::Color, rect::Point,
+    render::Canvas, video::Window, EventPump,
+};
 
-use sdl2::{keyboard::Keycode as SdlKeycode, EventPump};
+use std::collections::HashMap;
+use std::f64::consts::PI;
+
+// Frequencies are in Herz
+
+const DEVICE_FREQUENCY: u32 = 44100;
+const BEEP_FREQUENCY: f64 = 750.0;
+
+const BEEP_LENGTH: u32 = 400; // ms
+const BEEP_VOLUME: i32 = i32::MAX; // this is the max volume
 
 // We start from an arbitrary size - it needs to be a sensible size, because it's the size it
 // becomes by default when restoring (=opposite of maximizing).
@@ -15,6 +26,7 @@ const WINDOW_START_HEIGHT: u32 = 480;
 pub struct FrontendSdl {
     event_pump: EventPump,
     canvas: Canvas<Window>,
+    audio_queue: sdl2::audio::AudioQueue<i16>,
 
     custom_keys_mapping: HashMap<EventCode, EventCode>,
 
@@ -55,9 +67,20 @@ impl FrontendSdl {
 
         let canvas = window.into_canvas().present_vsync().build().unwrap();
 
+        let audio_subsystem = sdl_context.audio().unwrap();
+        let audio_spec = AudioSpecDesired {
+            freq: Some(DEVICE_FREQUENCY as i32),
+            channels: Some(1),
+            samples: None,
+        };
+        let audio_queue = audio_subsystem
+            .open_queue::<i16, _>(None, &audio_spec)
+            .unwrap();
+
         FrontendSdl {
             event_pump,
             canvas,
+            audio_queue,
             custom_keys_mapping,
             screen_width: WINDOW_START_WIDTH,
         }
@@ -334,6 +357,25 @@ impl IoFrontend for FrontendSdl {
         }
 
         self.canvas.present();
+    }
+
+    fn beep(&mut self) {
+        let period = DEVICE_FREQUENCY as f64 / BEEP_FREQUENCY;
+        let wave_samples_count = DEVICE_FREQUENCY * BEEP_LENGTH as u32 / 1000; // approx.
+
+        let wave_samples = (0..wave_samples_count)
+            .map(|sample_i| {
+                // Amusing way, which uses sign(sin()) instead of a conditional.
+                //
+                let period_number = sample_i as f64 / period;
+                let scale_sign = (period_number * PI).sin().signum();
+
+                (BEEP_VOLUME as f64 * scale_sign) as i16
+            })
+            .collect::<Vec<i16>>();
+
+        self.audio_queue.queue(&wave_samples);
+        self.audio_queue.resume();
     }
 
     fn read_event(&mut self, blocking: bool) -> Option<(EventCode, bool)> {

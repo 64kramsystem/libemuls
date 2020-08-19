@@ -5,6 +5,8 @@ pub trait IoFrontend {
 
     fn update_screen(&mut self, pixels: &[(u8, u8, u8)]);
 
+    fn beep(&mut self);
+
     // True/false for key pressed/released.
     //
     fn read_event(&mut self, blocking: bool) -> Option<(EventCode, bool)>;

@@ -239,7 +239,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         if self.sound_timer > 0 {
             if self.sound_timer == 1 {
-                println!("WRITEME: Beep");
+                self.io_frontend.beep();
             }
             self.sound_timer -= 1;
         }
