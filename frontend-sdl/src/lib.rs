@@ -14,7 +14,7 @@ use std::f64::consts::PI;
 const DEVICE_FREQUENCY: u32 = 44100;
 const BEEP_FREQUENCY: f64 = 750.0;
 
-const BEEP_LENGTH: u32 = 400; // ms
+const BEEP_BASE_LENGTH: u32 = 400; // ms
 const BEEP_VOLUME: i32 = i32::MAX; // this is the max volume
 
 // We start from an arbitrary size - it needs to be a sensible size, because it's the size it
@@ -359,9 +359,11 @@ impl IoFrontend for FrontendSdl {
         self.canvas.present();
     }
 
-    fn beep(&mut self) {
+    fn beep(&mut self, speed_factor: f32) {
+        let beep_length = BEEP_BASE_LENGTH as f32 / speed_factor;
+
         let period = DEVICE_FREQUENCY as f64 / BEEP_FREQUENCY;
-        let wave_samples_count = DEVICE_FREQUENCY * BEEP_LENGTH as u32 / 1000; // approx.
+        let wave_samples_count = DEVICE_FREQUENCY * beep_length as u32 / 1000; // approx.
 
         let wave_samples = (0..wave_samples_count)
             .map(|sample_i| {
