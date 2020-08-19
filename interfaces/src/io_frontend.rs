@@ -5,6 +5,8 @@ pub trait IoFrontend {
 
     fn update_screen(&mut self, pixels: &[(u8, u8, u8)]);
 
+    fn beep(&mut self);
+
     // The client code is required to handle also non-input events, e.g. Quit (see EventCode).
     //
     fn poll_event(&mut self) -> Option<EventCode>;
