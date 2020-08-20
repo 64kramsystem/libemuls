@@ -117,7 +117,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         chip8
     }
 
-    pub fn run(&mut self) {
+    pub fn run(&mut self, max_speed: bool) {
         let cycle_time_slice = Duration::new(0, 1_000_000_000 / CLOCK_SPEED);
         let timers_time_slice = Duration::new(0, 1_000_000_000 / TIMERS_SPEED);
 
@@ -158,12 +158,18 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
             let current_time = Instant::now();
 
-            if current_time < next_cycle_time {
-                thread::sleep(next_cycle_time - current_time);
-                last_cycle_time = next_cycle_time;
-            } else {
+            // WATCH OUT! Before checking if we're running at max speed, we need to check if we're
+            // running late, which takes priority!
+            //
+            if current_time > next_cycle_time {
                 last_cycle_time = current_time;
                 next_timers_time += current_time - next_cycle_time;
+            } else if max_speed {
+                last_cycle_time = current_time;
+                next_timers_time -= next_cycle_time - current_time;
+            } else {
+                thread::sleep(next_cycle_time - current_time);
+                last_cycle_time = next_cycle_time;
             }
         }
     }
