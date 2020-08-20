@@ -139,6 +139,9 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         let mut last_cycle_time = Instant::now();
         let mut next_timers_time = last_cycle_time;
 
+        let mut frames_count = 0_u32;
+        let mut frames_time = Instant::now();
+
         let mut emulation_running = true;
 
         while emulation_running {
@@ -149,6 +152,14 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             self.io_frontend.update_screen(&self.screen, false);
 
             self.set_keys(&mut emulation_running);
+
+            frames_count += 1;
+
+            if frames_count == 10000 {
+                println!("Time for 10k frames: {:?}", frames_time.elapsed());
+                frames_count = 0;
+                frames_time = Instant::now();
+            }
 
             // If there are no delays, use a fixed loop time (start time + N * cycle_time_slice).
             // If there is a delay, expand the current loop (time), and delay the timers' next tick.
