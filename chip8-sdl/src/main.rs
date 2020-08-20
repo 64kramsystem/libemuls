@@ -9,7 +9,7 @@ use interfaces::{EventCode, Logger, NullLogger, StdoutLogger};
 use std::error::Error;
 use std::fs;
 
-fn decode_commandline_arguments() -> (String, bool) {
+fn decode_commandline_arguments() -> (String, bool, bool) {
     let commandline_args = std::env::args().collect::<Vec<String>>();
 
     let matches = App::new("chip8")
@@ -20,16 +20,23 @@ fn decode_commandline_arguments() -> (String, bool) {
                 .long("debug")
                 .help("Enable debug mode (logs to stdout)"),
         )
+        .arg(
+            Arg::with_name("MAX_SPEED")
+                .short("m")
+                .long("max-speed")
+                .help("Set the maximum emulation speed (1000x)"),
+        )
         .get_matches_from(commandline_args);
 
     let game_rom_filename = matches.value_of("GAME_ROM").unwrap().to_string();
     let debug_mode = matches.is_present("DEBUG");
+    let max_speed = matches.is_present("MAX_SPEED");
 
-    (game_rom_filename, debug_mode)
+    (game_rom_filename, debug_mode, max_speed)
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let (game_rom_filename, debug_mode) = decode_commandline_arguments();
+    let (game_rom_filename, debug_mode, max_speed) = decode_commandline_arguments();
 
     let game_rom_data = fs::read(game_rom_filename)?;
 
@@ -59,7 +66,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut chip8 = libchip8::Chip8::new(&mut sdl_frontend, &mut logger, &game_rom_data);
 
-    chip8.run();
+    chip8.run(max_speed);
 
     Ok(())
 }
