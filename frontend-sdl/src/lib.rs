@@ -403,6 +403,11 @@ impl IoFrontend for FrontendSdl {
             }
         }
 
+        panic!("The below fails");
+
+        // See note on the enum definition.
+
+        #[allow(unreachable_code)]
         if let Some(event_code) = event_code {
             if let Some(mapped_event_code) = self.custom_keys_mapping.get(&event_code) {
                 Some(mapped_event_code.clone())

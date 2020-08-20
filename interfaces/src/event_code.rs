@@ -1,5 +1,11 @@
 // Ripped off from the SDL crate 😬
 //
+// This enum doesn't work well. While it's nice to embed the press status in the enum, it makes it
+// inconvenient to handle the enum in cases where we want the two concepts to be disassociated, ie.
+// custom key mappings. In that case, for example, the mappings hash needs two copies of each key
+// event, or, if we want to keep one, we need to enumerate all the variants, since we can't generalize
+// the type and pass it to the hash (`if let generic_type(status) => hash.get(generic_type(true))`.
+//
 #[derive(Clone, Eq, PartialEq, Hash)]
 pub enum EventCode {
     Quit,
