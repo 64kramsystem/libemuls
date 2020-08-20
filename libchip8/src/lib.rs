@@ -144,6 +144,9 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         //
         let mut draw_screen = false;
 
+        let mut frames_count = 0_u32;
+        let mut frames_time = Instant::now();
+
         loop {
             let quit_received = self.set_keys();
 
@@ -156,6 +159,14 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             if draw_screen {
                 self.draw_graphics();
                 draw_screen = false;
+            }
+
+            frames_count += 1;
+
+            if frames_count == 10000 {
+                println!("Time for 10k frames: {:?}", frames_time.elapsed());
+                frames_count = 0;
+                frames_time = Instant::now();
             }
 
             // If there are no delays, use a fixed loop time (start time + N * cycle_time_slice).
