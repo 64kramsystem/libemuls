@@ -15,12 +15,10 @@ const RAM_SIZE: usize = 4096;
 const FONTS_LOCATION: usize = 0; // There's no reference location, but this is common practice
 const PROGRAMS_LOCATION: usize = 0x200;
 
-const CLOCK_SPEED: u32 = 500; // Herz
-const TIMERS_SPEED: u32 = 60; // Herz
+const DEFAULT_CLOCK_SPEED: u32 = 500; // Herz
+const DEFAULT_TIMERS_SPEED: u32 = 60; // Herz
 
-// Used for the beep speed. There's no standard, so this is the only reasonable (simple) approach.
-//
-const SPEED_FACTOR: f32 = CLOCK_SPEED as f32 / 500.0;
+const MAX_SPEED_FACTOR: u32 = 1000; // Arbitrary; any very high value will do.
 
 const STANDARD_SCREEN_WIDTH: usize = 64;
 const STANDARD_SCREEN_HEIGHT: usize = 32;
@@ -121,9 +119,23 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         chip8
     }
 
-    pub fn run(&mut self) {
-        let cycle_time_slice = Duration::new(0, 1_000_000_000 / CLOCK_SPEED);
-        let timers_time_slice = Duration::new(0, 1_000_000_000 / TIMERS_SPEED);
+    pub fn run(&mut self, max_speed: bool) {
+        let (mut clock_speed, mut timers_speed) = (DEFAULT_CLOCK_SPEED, DEFAULT_TIMERS_SPEED);
+
+        // Simplest possible approach; it's not worth messing with the timers logic itself, as it's
+        // sensitive.
+        //
+        if max_speed {
+            clock_speed *= MAX_SPEED_FACTOR;
+            timers_speed *= MAX_SPEED_FACTOR;
+        }
+
+        let cycle_time_slice = Duration::new(0, 1_000_000_000 / clock_speed);
+        let timers_time_slice = Duration::new(0, 1_000_000_000 / timers_speed);
+
+        // There's no standard, so this is the only reasonable (simple) approach.
+        //
+        let beep_speed_factor = clock_speed as f32 / DEFAULT_CLOCK_SPEED as f32;
 
         let mut last_cycle_time = Instant::now();
         let mut next_timers_time = last_cycle_time;
@@ -156,7 +168,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             // at this step, is not recalculated.
             //
             if last_cycle_time <= next_timers_time && next_timers_time < next_cycle_time {
-                self.update_timers();
+                self.update_timers(beep_speed_factor);
                 next_timers_time += timers_time_slice;
             }
 
@@ -236,14 +248,14 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         }
     }
 
-    fn update_timers(&mut self) {
+    fn update_timers(&mut self, beep_speed_factor: f32) {
         if self.delay_timer > 0 {
             self.delay_timer -= 1;
         }
 
         if self.sound_timer > 0 {
             if self.sound_timer == 1 {
-                self.io_frontend.beep(SPEED_FACTOR);
+                self.io_frontend.beep(beep_speed_factor);
             }
             self.sound_timer -= 1;
         }
