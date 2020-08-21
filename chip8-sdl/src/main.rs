@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
          EventCode::KeyV => EventCode::KeyF,
     };
 
-    let mut sdl_frontend = FrontendSdl::new("CHIP-8!", custom_keys_mapping);
+    let mut sdl_frontend = FrontendSdl::new("CHIP-8!", custom_keys_mapping, Some(60));
 
     let mut logger: Option<Box<dyn Logger>> = if debug_mode {
         Some(Box::new(StdoutLogger::new()))

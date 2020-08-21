@@ -124,18 +124,15 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         let mut last_cycle_time = Instant::now();
         let mut next_timers_time = last_cycle_time;
 
-        // This is an optimization; the simplest approach is to pass the reference down the call stack.
-        //
-        let mut draw_screen = false;
-
         let mut emulation_running = true;
 
         while emulation_running {
-            self.emulate_cycle(&mut draw_screen, &mut emulation_running);
+            let mut screen_drawn = false;
 
-            if draw_screen {
-                self.draw_graphics();
-                draw_screen = false;
+            self.emulate_cycle(&mut emulation_running, &mut screen_drawn);
+
+            if !screen_drawn {
+                self.draw_graphics(false);
             }
 
             self.set_keys(&mut emulation_running);
@@ -180,17 +177,17 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             .init(self.screen_width as u32, self.screen_height as u32);
     }
 
-    fn emulate_cycle(&mut self, draw_screen: &mut bool, emulation_running: &mut bool) {
+    fn emulate_cycle(&mut self, emulation_running: &mut bool, screen_drawn: &mut bool) {
         // The decode/execute stages are conventionally split. In this system there is not real need
         // for this, so, for simplicity, they're merged. A separate-stages design would likely have
         // a function pointer and the operands as intermediate values.
         //
         let instruction = self.cycle_fetch();
 
-        self.cycle_decode_execute(instruction, draw_screen, emulation_running);
+        self.cycle_decode_execute(instruction, emulation_running, screen_drawn);
     }
 
-    fn draw_graphics(&mut self) {
+    fn draw_graphics(&mut self, force_update: bool) {
         let pixels = self
             .screen
             .iter()
@@ -203,7 +200,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             })
             .collect::<Vec<(u8, u8, u8)>>();
 
-        self.io_frontend.update_screen(&pixels);
+        self.io_frontend.update_screen(&pixels, force_update);
     }
 
     // Return true if a quit event has been received.
@@ -262,8 +259,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     fn cycle_decode_execute(
         &mut self,
         instruction: Word,
-        draw_screen: &mut bool,
         emulation_running: &mut bool,
+        screen_drawn: &mut bool,
     ) {
         // When used alone, nibble1 and/or nibble2 are always Vx/Vy; nibble0 and nibble3
         // are never used alone.
@@ -279,7 +276,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             //
             (0, 0, 0xD, _) => panic!("Unsupported instruction: 00DN (XO-CHIP)"),
             (0, 0, 0xE, 0) => {
-                self.execute_clear_screen(draw_screen);
+                self.execute_clear_screen();
             }
             (0, 0, 0xE, 0xE) => {
                 self.execute_return_from_subroutine();
@@ -374,7 +371,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             }
             (0xD, _, _, _) => {
                 let lines = (instruction & 0x00F) as usize;
-                self.execute_draw_sprite(Vx, Vy, lines, draw_screen);
+                self.execute_draw_sprite(Vx, Vy, lines);
             }
             (0xE, _, 9, 0xE) => {
                 self.execute_skip_next_instruction_if_Vx_key_pressed(Vx);
@@ -395,7 +392,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 self.execute_set_Vx_to_delay_timer(Vx);
             }
             (0xF, _, 0, 0xA) => {
-                self.execute_wait_keypress(Vx, emulation_running);
+                self.execute_wait_keypress(Vx, emulation_running, screen_drawn);
             }
             (0xF, _, 1, 5) => {
                 self.execute_set_delay_timer_to_Vx(Vx);
@@ -424,13 +421,11 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
     // OPCODE EXECUTION ////////////////////////////////////////////////////////////////////////////
 
-    fn execute_clear_screen(&mut self, draw_screen: &mut bool) {
+    fn execute_clear_screen(&mut self) {
         self.log(format!("[{:X}] CLS", self.PC));
 
         self.screen = vec![false; self.screen_width * self.screen_height];
         self.PC += 2;
-
-        *draw_screen = true;
     }
 
     fn execute_return_from_subroutine(&mut self) {
@@ -608,7 +603,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         self.PC += 2;
     }
 
-    fn execute_draw_sprite(&mut self, Vx: usize, Vy: usize, lines: usize, draw_screen: &mut bool) {
+    fn execute_draw_sprite(&mut self, Vx: usize, Vy: usize, lines: usize) {
         self.log(format!(
             "[{:X}] DRW V{}, V{}, {}; I={:X}, x={}, y={}",
             self.PC, Vx, Vy, lines, self.I, self.V[Vx], self.V[Vy],
@@ -651,8 +646,6 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         self.V[15] = sprite_collided;
         self.PC += 2;
-
-        *draw_screen = true;
     }
 
     fn execute_skip_next_instruction_if_Vx_key_pressed(&mut self, Vx: usize) {
@@ -689,8 +682,16 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         self.PC += 2;
     }
 
-    fn execute_wait_keypress(&mut self, Vx: usize, emulation_running: &mut bool) {
+    fn execute_wait_keypress(
+        &mut self,
+        Vx: usize,
+        emulation_running: &mut bool,
+        screen_drawn: &mut bool,
+    ) {
         self.log(format!("[{:X}] LD V{}, K", self.PC, Vx));
+
+        self.draw_graphics(true);
+        *screen_drawn = true;
 
         loop {
             if let Some((key_code, key_pressed)) = self.io_frontend.read_event(true) {

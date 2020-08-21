@@ -3,6 +3,7 @@ use interfaces::{EventCode, IoFrontend};
 use sdl2::event::{Event, WindowEvent};
 use sdl2::{pixels::Color, rect::Point, render::Canvas, video::Window};
 use std::collections::HashMap;
+use std::time::{Duration, Instant};
 
 use sdl2::{keyboard::Keycode as SdlKeycode, EventPump};
 
@@ -20,12 +21,16 @@ pub struct FrontendSdl {
 
     // Logical width (game resolution).
     screen_width: u32,
+
+    last_screen_update: Instant,
+    min_time_between_screen_updates: Duration,
 }
 
 impl FrontendSdl {
     pub fn new(
         window_title: &str,
         custom_keys_mapping: HashMap<EventCode, EventCode>,
+        framerate_cap: Option<u8>,
     ) -> FrontendSdl {
         let sdl_context = sdl2::init().unwrap();
 
@@ -55,11 +60,18 @@ impl FrontendSdl {
 
         let canvas = window.into_canvas().present_vsync().build().unwrap();
 
+        let min_time_between_screen_updates = match framerate_cap {
+            None => Duration::from_secs(0),
+            Some(frequency) => Duration::from_nanos(1_000_000_000 / frequency as u64),
+        };
+
         FrontendSdl {
             event_pump,
             canvas,
             custom_keys_mapping,
             screen_width: WINDOW_START_WIDTH,
+            last_screen_update: Instant::now(),
+            min_time_between_screen_updates,
         }
     }
 
@@ -322,18 +334,24 @@ impl IoFrontend for FrontendSdl {
         self.screen_width = screen_width;
     }
 
-    fn update_screen(&mut self, pixels: &[(u8, u8, u8)]) {
-        for (y, line) in pixels.chunks(self.screen_width as usize).enumerate() {
-            for (x, (r, g, b)) in line.iter().enumerate() {
-                self.canvas.set_draw_color(Color::RGB(*r, *g, *b));
+    fn update_screen(&mut self, pixels: &[(u8, u8, u8)], force_update: bool) {
+        let time_from_last_update = self.last_screen_update.elapsed();
 
-                self.canvas
-                    .draw_point(Point::new(x as i32, y as i32))
-                    .unwrap();
+        if time_from_last_update >= self.min_time_between_screen_updates || force_update {
+            for (y, line) in pixels.chunks(self.screen_width as usize).enumerate() {
+                for (x, (r, g, b)) in line.iter().enumerate() {
+                    self.canvas.set_draw_color(Color::RGB(*r, *g, *b));
+
+                    self.canvas
+                        .draw_point(Point::new(x as i32, y as i32))
+                        .unwrap();
+                }
             }
-        }
 
-        self.canvas.present();
+            self.canvas.present();
+
+            self.last_screen_update = Instant::now();
+        }
     }
 
     fn read_event(&mut self, blocking: bool) -> Option<(EventCode, bool)> {
