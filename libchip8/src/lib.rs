@@ -7,6 +7,10 @@ use std::time::{Duration, Instant};
 
 type Byte = u8;
 type Word = u16;
+type Pixel = (u8, u8, u8);
+
+const PIXEL_ON: (u8, u8, u8) = (255, 255, 255);
+const PIXEL_OFF: (u8, u8, u8) = (0, 0, 0);
 
 // Simplification: the below are words, however, since they're used in indexing, the required
 // casting makes usage very ugly, therefore, they're defined as usize.
@@ -44,7 +48,7 @@ const FONTSET: [Byte; 80] = [
 
 pub struct Chip8<'a, T: IoFrontend> {
     ram: [Byte; RAM_SIZE],
-    screen: Vec<bool>,
+    screen: Vec<Pixel>,
     stack: [usize; 16], // Simplification (exactly: word); see location constants comment.
 
     V: [Byte; 16],
@@ -85,7 +89,6 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 RAM_SIZE - PROGRAMS_LOCATION
             );
         }
-
         let mut chip8 = Chip8 {
             ram: [0; RAM_SIZE],
             screen: vec![],
@@ -132,7 +135,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             self.emulate_cycle(&mut emulation_running, &mut screen_drawn);
 
             if !screen_drawn {
-                self.draw_graphics(false);
+                self.io_frontend.update_screen(&self.screen, false);
             }
 
             self.set_keys(&mut emulation_running);
@@ -172,7 +175,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn setup_graphics(&mut self) {
-        self.screen = vec![false; self.screen_width * self.screen_height];
+        self.screen = vec![PIXEL_OFF; self.screen_width * self.screen_height];
         self.io_frontend
             .init(self.screen_width as u32, self.screen_height as u32);
     }
@@ -185,22 +188,6 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         let instruction = self.cycle_fetch();
 
         self.cycle_decode_execute(instruction, emulation_running, screen_drawn);
-    }
-
-    fn draw_graphics(&mut self, force_update: bool) {
-        let pixels = self
-            .screen
-            .iter()
-            .map(|pixel_on| {
-                if *pixel_on {
-                    (255, 255, 255)
-                } else {
-                    (0, 0, 0)
-                }
-            })
-            .collect::<Vec<(u8, u8, u8)>>();
-
-        self.io_frontend.update_screen(&pixels, force_update);
     }
 
     // Return true if a quit event has been received.
@@ -424,7 +411,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     fn execute_clear_screen(&mut self) {
         self.log(format!("[{:X}] CLS", self.PC));
 
-        self.screen = vec![false; self.screen_width * self.screen_height];
+        self.screen = vec![PIXEL_OFF; self.screen_width * self.screen_height];
         self.PC += 2;
     }
 
@@ -635,10 +622,14 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                     if pixel_value != 0 {
                         let pixel_screen_index = self.screen_width * pixel_y + pixel_x;
 
-                        if self.screen[pixel_screen_index] {
+                        // The two `screen` assignments constitute one XOR operation.
+                        //
+                        if self.screen[pixel_screen_index] == PIXEL_ON {
                             sprite_collided = 1;
+                            self.screen[pixel_screen_index] = PIXEL_OFF;
+                        } else {
+                            self.screen[pixel_screen_index] = PIXEL_ON;
                         }
-                        self.screen[pixel_screen_index] ^= true;
                     }
                 }
             }
@@ -690,7 +681,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     ) {
         self.log(format!("[{:X}] LD V{}, K", self.PC, Vx));
 
-        self.draw_graphics(true);
+        self.io_frontend.update_screen(&self.screen, true);
         *screen_drawn = true;
 
         loop {
