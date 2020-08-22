@@ -23,6 +23,8 @@ const BEEP_VOLUME: i32 = i32::MAX; // this is the max volume
 //
 const WINDOW_START_WIDTH: u32 = 640;
 const WINDOW_START_HEIGHT: u32 = 480;
+const TOP_BORDER_START_SIZE: i32 = 0;
+const LEFT_BORDER_START_SIZE: i32 = 0;
 
 pub struct FrontendSdl {
     event_pump: EventPump,
@@ -33,6 +35,9 @@ pub struct FrontendSdl {
 
     // Logical width (game resolution).
     screen_width: u32,
+    screen_height: u32,
+    top_border_size: i32,
+    left_border_size: i32,
 
     last_screen_update: Instant,
     min_time_between_screen_updates: Duration,
@@ -46,29 +51,20 @@ impl FrontendSdl {
     ) -> FrontendSdl {
         let sdl_context = sdl2::init().unwrap();
 
-        let mut window = sdl_context
+        // The resizing (due to `maximized()`) is going to be handled by the next `read_event()`
+        // invocation.
+        //
+        let window = sdl_context
             .video()
             .unwrap()
             .window(window_title, WINDOW_START_WIDTH, WINDOW_START_HEIGHT)
             .maximized()
             .position_centered()
+            .resizable()
             .build()
             .unwrap();
 
-        let mut event_pump = sdl_context.event_pump().unwrap();
-
-        for event in event_pump.poll_iter() {
-            if let Event::Window {
-                win_event: WindowEvent::SizeChanged(new_width, new_height),
-                ..
-            } = event
-            {
-                window
-                    .set_size(new_width as u32, new_height as u32)
-                    .unwrap();
-                break;
-            }
-        }
+        let event_pump = sdl_context.event_pump().unwrap();
 
         let canvas = window.into_canvas().present_vsync().build().unwrap();
 
@@ -93,9 +89,35 @@ impl FrontendSdl {
             audio_queue,
             custom_keys_mapping,
             screen_width: WINDOW_START_WIDTH,
+            screen_height: WINDOW_START_HEIGHT,
+            top_border_size: TOP_BORDER_START_SIZE,
+            left_border_size: LEFT_BORDER_START_SIZE,
             last_screen_update: Instant::now(),
             min_time_between_screen_updates,
         }
+    }
+
+    fn update_window_dimensions(&mut self, window_width: i32, window_height: i32) {
+        let min_scale = f32::min(
+            (window_width as f32) / (self.screen_width as f32).floor(),
+            (window_height as f32) / (self.screen_height as f32).floor(),
+        );
+
+        self.canvas.set_scale(min_scale, min_scale).unwrap();
+
+        // The FP accuracy is not worth considering.
+        //
+        self.top_border_size =
+            ((window_height as f32 / min_scale) as i32 - self.screen_height as i32) / 2;
+
+        self.left_border_size =
+            ((window_width as f32 / min_scale) as i32 - self.screen_width as i32) / 2;
+
+        // If we don't clear, if a part of the canvas is not covered due to mismatch between the
+        // screen and the window, will have undefined content.
+        //
+        self.canvas.set_draw_color(Color::RGB(0, 0, 0));
+        self.canvas.clear();
     }
 
     // Ugly but necessary, as we can't trivially map an enum to another enum
@@ -343,18 +365,8 @@ impl FrontendSdl {
 
 impl IoFrontend for FrontendSdl {
     fn init(&mut self, screen_width: u32, screen_height: u32) {
-        let window = self.canvas.window();
-
-        let (window_width, window_height) = window.size();
-
-        let min_scale = f32::min(
-            (window_width as f32) / (screen_width as f32).floor(),
-            (window_height as f32) / (screen_height as f32).floor(),
-        );
-
-        self.canvas.set_scale(min_scale, min_scale).unwrap();
-
         self.screen_width = screen_width;
+        self.screen_height = screen_height;
     }
 
     fn update_screen(&mut self, pixels: &[(u8, u8, u8)], force_update: bool) {
@@ -366,7 +378,10 @@ impl IoFrontend for FrontendSdl {
                     self.canvas.set_draw_color(Color::RGB(*r, *g, *b));
 
                     self.canvas
-                        .draw_point(Point::new(x as i32, y as i32))
+                        .draw_point(Point::new(
+                            self.left_border_size + x as i32,
+                            self.top_border_size + y as i32,
+                        ))
                         .unwrap();
                 }
             }
@@ -428,6 +443,12 @@ impl IoFrontend for FrontendSdl {
                         Some((key_code, false))
                     };
                 }
+            } else if let Some(Event::Window {
+                win_event: WindowEvent::SizeChanged(new_width, new_height),
+                ..
+            }) = event
+            {
+                self.update_window_dimensions(new_width, new_height);
             } else if let Some(Event::Quit { .. }) = event {
                 return Some((EventCode::Quit, true));
             } else if let None = event {
