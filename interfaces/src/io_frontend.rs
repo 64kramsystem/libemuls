@@ -1,9 +1,10 @@
 use crate::event_code::EventCode;
+use crate::pixel::Pixel;
 
 pub trait IoFrontend {
     fn init(&mut self, screen_width: u32, screen_height: u32);
 
-    fn update_screen(&mut self, pixels: &[(u8, u8, u8)], force_update: bool);
+    fn update_screen(&mut self, pixels: &[Pixel], force_update: bool);
 
     // True/false for key pressed/released.
     //

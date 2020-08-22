@@ -1,16 +1,12 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use interfaces::{EventCode, IoFrontend, Logger};
+use interfaces::{EventCode, IoFrontend, Logger, Pixel};
 use std::thread;
 use std::time::{Duration, Instant};
 
 type Byte = u8;
 type Word = u16;
-type Pixel = (u8, u8, u8);
-
-const PIXEL_ON: (u8, u8, u8) = (255, 255, 255);
-const PIXEL_OFF: (u8, u8, u8) = (0, 0, 0);
 
 // Simplification: the below are words, however, since they're used in indexing, the required
 // casting makes usage very ugly, therefore, they're defined as usize.
@@ -175,7 +171,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     }
 
     fn setup_graphics(&mut self) {
-        self.screen = vec![PIXEL_OFF; self.screen_width * self.screen_height];
+        self.screen = vec![Pixel::OFF; self.screen_width * self.screen_height];
         self.io_frontend
             .init(self.screen_width as u32, self.screen_height as u32);
     }
@@ -411,7 +407,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
     fn execute_clear_screen(&mut self) {
         self.log(format!("[{:X}] CLS", self.PC));
 
-        self.screen = vec![PIXEL_OFF; self.screen_width * self.screen_height];
+        self.screen = vec![Pixel::OFF; self.screen_width * self.screen_height];
         self.PC += 2;
     }
 
@@ -624,12 +620,11 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
                         // The two `screen` assignments constitute one XOR operation.
                         //
-                        if self.screen[pixel_screen_index] == PIXEL_ON {
+                        if self.screen[pixel_screen_index] == Pixel::ON {
                             sprite_collided = 1;
-                            self.screen[pixel_screen_index] = PIXEL_OFF;
-                        } else {
-                            self.screen[pixel_screen_index] = PIXEL_ON;
                         }
+
+                        self.screen[pixel_screen_index] ^= Pixel::ON;
                     }
                 }
             }

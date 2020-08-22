@@ -1,4 +1,4 @@
-use interfaces::{EventCode, IoFrontend};
+use interfaces::{EventCode, IoFrontend, Pixel};
 
 use sdl2::event::{Event, WindowEvent};
 use sdl2::{pixels::Color, rect::Point, render::Canvas, video::Window};
@@ -346,12 +346,13 @@ impl IoFrontend for FrontendSdl {
         self.screen_height = screen_height;
     }
 
-    fn update_screen(&mut self, pixels: &[(u8, u8, u8)], force_update: bool) {
+    fn update_screen(&mut self, pixels: &[Pixel], force_update: bool) {
         let time_from_last_update = self.last_screen_update.elapsed();
 
         if time_from_last_update >= self.min_time_between_screen_updates || force_update {
             for (y, line) in pixels.chunks(self.screen_width as usize).enumerate() {
-                for (x, (r, g, b)) in line.iter().enumerate() {
+                for (x, Pixel(r, g, b)) in line.iter().enumerate() {
+                    // for (x, pixel) in line.iter().enumerate() {
                     self.canvas.set_draw_color(Color::RGB(*r, *g, *b));
 
                     self.canvas

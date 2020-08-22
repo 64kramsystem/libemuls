@@ -6,9 +6,11 @@
 mod event_code;
 mod io_frontend;
 mod logger;
+mod pixel;
 mod stdout_logger;
 
 pub use crate::event_code::EventCode;
 pub use crate::io_frontend::IoFrontend;
 pub use crate::logger::Logger;
+pub use crate::pixel::Pixel;
 pub use crate::stdout_logger::StdoutLogger;
