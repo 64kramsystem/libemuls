@@ -1,7 +1,8 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use interfaces::{EventCode, IoFrontend, Logger, Pixel};
+use interfaces::{AudioDevice, EventCode, IoFrontend, Logger, Pixel, AUDIO_DEVICE_FREQUENCY};
+use std::f64::consts::PI;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -17,6 +18,9 @@ const PROGRAMS_LOCATION: usize = 0x200;
 
 const CLOCK_SPEED: u32 = 500; // Herz
 const TIMERS_SPEED: u32 = 60; // Herz
+
+const TONE_FREQUENCY: f64 = 750.0; // Herz; typical beep frequency!
+const AMPLITUDE: i16 = i16::MAX / 16; // Volume (i16::MAX = max)
 
 const STANDARD_SCREEN_WIDTH: usize = 64;
 const STANDARD_SCREEN_HEIGHT: usize = 32;
@@ -63,6 +67,7 @@ pub struct Chip8<'a, T: IoFrontend> {
     keys_status: [bool; 16],
 
     io_frontend: &'a mut T,
+    audio_device: Box<dyn AudioDevice>,
     logger: &'a mut Option<Box<dyn Logger>>,
 
     screen_width: usize,
@@ -85,6 +90,17 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 RAM_SIZE - PROGRAMS_LOCATION
             );
         }
+
+        fn wave_generator(sample_i: u32) -> i16 {
+            const PERIOD: f64 = AUDIO_DEVICE_FREQUENCY as f64 / TONE_FREQUENCY;
+
+            let period_number = sample_i as f64 / PERIOD;
+            let scale_factor = (period_number * 2.0 * PI).sin();
+            (AMPLITUDE as f64 * scale_factor) as i16
+        };
+
+        let audio_device = io_frontend.audio_device(wave_generator);
+
         let mut chip8 = Chip8 {
             ram: [0; RAM_SIZE],
             screen: vec![],
@@ -101,6 +117,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             keys_status: [false; 16],
 
             io_frontend,
+            audio_device,
             logger,
 
             screen_width: STANDARD_SCREEN_WIDTH,
@@ -127,6 +144,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
 
         while emulation_running {
             let mut screen_drawn = false;
+            let previous_sound_timer = self.sound_timer;
 
             self.emulate_cycle(&mut emulation_running, &mut screen_drawn);
 
@@ -151,6 +169,8 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
                 self.update_timers();
                 next_timers_time += timers_time_slice;
             }
+
+            self.handle_sound_playback(previous_sound_timer);
 
             let current_time = Instant::now();
 
@@ -224,10 +244,20 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
         }
 
         if self.sound_timer > 0 {
-            if self.sound_timer == 1 {
-                println!("WRITEME: Beep");
-            }
             self.sound_timer -= 1;
+        }
+    }
+
+    fn handle_sound_playback(&mut self, previous_sound_timer: Byte) {
+        #[allow(clippy::collapsible_if)]
+        if self.sound_timer == 0 {
+            if previous_sound_timer > 0 {
+                self.audio_device.pause();
+            }
+        } else {
+            if previous_sound_timer == 0 {
+                self.audio_device.play();
+            }
         }
     }
 
