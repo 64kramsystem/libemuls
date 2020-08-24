@@ -1,11 +1,16 @@
+use interfaces::AudioDevice as FrontendAudioDevice;
 use interfaces::{EventCode, IoFrontend, Pixel};
 
+use crate::audio_device_sdl::AudioDeviceSdl;
+
 use sdl2::event::{Event, WindowEvent};
-use sdl2::{pixels::Color, rect::Point, render::Canvas, video::Window};
+use sdl2::{
+    keyboard::Keycode as SdlKeycode, pixels::Color, rect::Point, render::Canvas, video::Window,
+    AudioSubsystem, EventPump,
+};
+
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
-
-use sdl2::{keyboard::Keycode as SdlKeycode, EventPump};
 
 // We start from an arbitrary size - it needs to be a sensible size, because it's the size it
 // becomes by default when restoring (=opposite of maximizing).
@@ -18,6 +23,7 @@ const LEFT_BORDER_START_SIZE: i32 = 0;
 pub struct FrontendSdl {
     event_pump: EventPump,
     canvas: Canvas<Window>,
+    audio_subsystem: AudioSubsystem,
 
     custom_keys_mapping: HashMap<EventCode, EventCode>,
 
@@ -56,6 +62,8 @@ impl FrontendSdl {
 
         let canvas = window.into_canvas().present_vsync().build().unwrap();
 
+        let audio_subsystem = sdl_context.audio().unwrap();
+
         let min_time_between_screen_updates = match framerate_cap {
             None => Duration::from_secs(0),
             Some(frequency) => Duration::from_nanos(1_000_000_000 / frequency as u64),
@@ -64,6 +72,7 @@ impl FrontendSdl {
         FrontendSdl {
             event_pump,
             canvas,
+            audio_subsystem,
             custom_keys_mapping,
             screen_width: WINDOW_START_WIDTH,
             screen_height: WINDOW_START_HEIGHT,
@@ -372,9 +381,11 @@ impl IoFrontend for FrontendSdl {
 
     fn audio_device(
         &mut self,
-        _generator: fn(sample_i: u32) -> i16,
-    ) -> Box<dyn interfaces::AudioDevice> {
-        todo!()
+        generator: fn(sample_i: u32) -> i16,
+    ) -> Box<dyn FrontendAudioDevice> {
+        let audio_device = AudioDeviceSdl::new(&self.audio_subsystem, generator);
+
+        Box::new(audio_device)
     }
 
     fn read_event(&mut self, blocking: bool) -> Option<(EventCode, bool)> {
