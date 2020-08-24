@@ -1,3 +1,4 @@
+use crate::audio_device::AudioDevice;
 use crate::event_code::EventCode;
 use crate::pixel::Pixel;
 
@@ -5,6 +6,8 @@ pub trait IoFrontend {
     fn init(&mut self, screen_width: u32, screen_height: u32);
 
     fn update_screen(&mut self, pixels: &[Pixel], force_update: bool);
+
+    fn audio_device(&mut self, generator: fn(sample_i: u32) -> i16) -> Box<dyn AudioDevice>;
 
     // True/false for key pressed/released.
     //

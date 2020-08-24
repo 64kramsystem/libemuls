@@ -370,6 +370,13 @@ impl IoFrontend for FrontendSdl {
         }
     }
 
+    fn audio_device(
+        &mut self,
+        _generator: fn(sample_i: u32) -> i16,
+    ) -> Box<dyn interfaces::AudioDevice> {
+        todo!()
+    }
+
     fn read_event(&mut self, blocking: bool) -> Option<(EventCode, bool)> {
         loop {
             let event = if blocking {
