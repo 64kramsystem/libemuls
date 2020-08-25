@@ -4,7 +4,7 @@ extern crate maplit;
 use clap::{self, App, Arg};
 
 use frontend_sdl::FrontendSdl;
-use interfaces::{EventCode, Logger, StdoutLogger};
+use interfaces::{events::EventCode, logging::Logger, logging::StdoutLogger};
 
 use std::error::Error;
 use std::fs;

@@ -3,18 +3,11 @@
 //
 #![allow(clippy::new_without_default)]
 
-mod audio_device;
-mod event_code;
 mod io_frontend;
-mod logger;
-mod pixel;
-mod stdout_logger;
 
-pub use crate::audio_device::AudioDevice;
-pub use crate::event_code::EventCode;
+pub mod audio;
+pub mod events;
+pub mod logging;
+pub mod video;
+
 pub use crate::io_frontend::IoFrontend;
-pub use crate::logger::Logger;
-pub use crate::pixel::Pixel;
-pub use crate::stdout_logger::StdoutLogger;
-
-pub use crate::audio_device::AUDIO_DEVICE_FREQUENCY;

@@ -1,7 +1,11 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use interfaces::{AudioDevice, EventCode, IoFrontend, Logger, Pixel, AUDIO_DEVICE_FREQUENCY};
+use interfaces::{
+    audio::AudioDevice, audio::AUDIO_DEVICE_FREQUENCY, events::EventCode, logging::Logger,
+    video::Pixel, IoFrontend,
+};
+
 use std::f64::consts::PI;
 use std::thread;
 use std::time::{Duration, Instant};

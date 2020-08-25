@@ -1,6 +1,6 @@
-use crate::audio_device::AudioDevice;
-use crate::event_code::EventCode;
-use crate::pixel::Pixel;
+use crate::audio::AudioDevice;
+use crate::events::EventCode;
+use crate::video::Pixel;
 
 pub trait IoFrontend {
     fn init(&mut self, screen_width: u32, screen_height: u32);

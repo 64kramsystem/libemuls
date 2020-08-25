@@ -1,4 +1,4 @@
-use interfaces::{AudioDevice, AUDIO_DEVICE_FREQUENCY};
+use interfaces::{audio::AudioDevice, audio::AUDIO_DEVICE_FREQUENCY};
 use sdl2::{
     audio::{AudioCallback, AudioSpecDesired},
     AudioSubsystem,

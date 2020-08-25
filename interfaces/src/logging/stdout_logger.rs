@@ -1,4 +1,4 @@
-use crate::logger::Logger;
+use super::Logger;
 
 pub struct StdoutLogger {}
 
