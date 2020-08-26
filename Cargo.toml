@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+  "chip8-sdl",
+  "interfaces",
+  "frontend-sdl",
+  "libchip8",
+]
