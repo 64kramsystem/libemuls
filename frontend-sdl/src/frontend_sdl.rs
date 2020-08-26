@@ -20,6 +20,10 @@ const WINDOW_START_HEIGHT: u32 = 480;
 const TOP_BORDER_START_SIZE: i32 = 0;
 const LEFT_BORDER_START_SIZE: i32 = 0;
 
+/// SDL-based implementation of IoFrontend.
+///
+/// Currently renders in a maximized, but resizable, window.
+///
 pub struct FrontendSdl {
     event_pump: EventPump,
     canvas: Canvas<Window>,
@@ -83,6 +87,8 @@ impl FrontendSdl {
         }
     }
 
+    // Reacts to window resizing events; takes care of clearing, centering, and updating the scale.
+    //
     fn update_window_dimensions(&mut self, window_width: i32, window_height: i32) {
         let min_scale = f32::min(
             (window_width as f32) / (self.screen_width as f32).floor(),
@@ -106,7 +112,9 @@ impl FrontendSdl {
         self.canvas.clear();
     }
 
-    // Ugly but necessary, as we can't trivially map an enum to another enum
+    // Ugly but necessary, as we can't trivially map an enum to another enum.
+    //
+    // Can't be a constant hashmap, due to language limitations.
     //
     fn sdl_to_io_frontend_keycode(sdl_keycode: SdlKeycode) -> EventCode {
         match sdl_keycode {

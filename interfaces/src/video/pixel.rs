@@ -1,5 +1,11 @@
 use std::ops;
 
+/// Data structure used to send pixels to the IoFrontend.
+///
+/// This is mostly an attempt to provide some convenient functions/constants. For performance
+/// reasons, it's advised for the platform libraries to use this format internally, as converting
+/// every frame is relatively expensive.
+///
 #[derive(Clone, PartialEq)]
 pub struct Pixel(pub u8, pub u8, pub u8);
 
