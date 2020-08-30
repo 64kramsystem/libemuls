@@ -1,13 +1,13 @@
 [package]
 authors = ["Saverio Miroddi <saverio.pub2@gmail.com>"]
 edition = "2018"
-name = "chip8-sdl"
+name = "emu-chip_8-sdl"
 version = "0.1.0"
 
 [dependencies]
 
 clap = "2.33.1"
+component-chip_8 = {path = "../component-chip_8"}
+frontend-interfaces = {path = "../frontend-interfaces"}
 frontend-sdl = {path = "../frontend-sdl"}
-interfaces = {path = "../interfaces"}
-libchip8 = {path = "../libchip8"}
 maplit = "1.0.2"

@@ -3,10 +3,10 @@ extern crate maplit;
 
 use clap::{self, App, Arg};
 
+use component_chip_8::Chip8;
+use frontend_interfaces::{events::EventCode, logging::Logger, logging::StdoutLogger};
 use frontend_sdl::FrontendSdl;
-use interfaces::{events::EventCode, logging::Logger, logging::StdoutLogger};
 
-use std::error::Error;
 use std::fs;
 
 fn decode_commandline_arguments() -> (String, bool, bool) {
@@ -35,10 +35,10 @@ fn decode_commandline_arguments() -> (String, bool, bool) {
     (game_rom_filename, debug_mode, max_speed)
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
     let (game_rom_filename, debug_mode, max_speed) = decode_commandline_arguments();
 
-    let game_rom_data = fs::read(game_rom_filename)?;
+    let game_rom_data = fs::read(game_rom_filename).unwrap();
 
     let custom_keys_mapping = hashmap! {
          EventCode::KeyNum4 => EventCode::KeyC,
@@ -64,9 +64,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         None
     };
 
-    let mut chip8 = libchip8::Chip8::new(&mut sdl_frontend, &game_rom_data, &mut logger);
+    let mut chip8 = Chip8::new(&mut sdl_frontend, &game_rom_data, &mut logger);
 
     chip8.run(max_speed);
-
-    Ok(())
 }
