@@ -1,0 +1,51 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "emu-chip_8-sdl",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=emu-chip_8-sdl",
+          "--package=emu-chip_8-sdl"
+        ],
+        "filter": {
+          "name": "emu-chip_8-sdl",
+          "kind": "bin"
+        }
+      },
+      "args": [
+        // "--debug",
+        // "--max-speed",
+        "${workspaceFolder}/extra/chip8/flightrunner.ch8"
+        // "${workspaceFolder}/extra/chip8/tombstontipp.ch8"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "RUST_BACKTRACE": "1"
+      }
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "playground",
+      "cargo": {
+        "args": [
+          "+nightly",
+          "build",
+          "--manifest-path=playground/Cargo.toml",
+          "--bin=playground",
+        ],
+      },
+      "args": [],
+      "env": {
+        "RUST_BACKTRACE": "1"
+      }
+    },
+  ]
+}
