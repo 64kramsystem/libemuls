@@ -23,7 +23,7 @@ Compatibility improvement contributions are always welcome, nonetheless.
 
 Since this is essentially an educative project, it's founded on clarity in every aspect, from the documentation, to the testing, down to the SCM metadata (history).
 
-Due to `libchip8` being primarily an exploration, it doesn't have any automated tests, however, all the future libraries will be specified and verified through test suites.
+Due to `component-chip_8` being primarily an exploration, it doesn't have any automated tests, however, all the future libraries will be specified and verified through test suites.
 
 ### Next developments
 
@@ -33,13 +33,26 @@ From a technical perspective, the system emulators will be designed as distribut
 
 Currently, a basic CHIP-8 emulator with SDL frontend is provided.
 
-It can be run from the project root, with `cargo run --bin chip8-sdl -- /path/to/rom`; help is provided via `cargo run --bin chip8-sdl -- --help`.
+It can be run from the project root, with `cargo run --bin emu-chip_8-sdl -- /path/to/rom`; help is provided via `cargo run --bin emu-chip_8-sdl -- --help`.
 
-## Current components
+## Current packages
 
-The project is composed of the following packages:
+The project is currently composed of the following packages:
 
-- `interfaces`: Frontend interfaces (traits)
+- `emu-chip_8-sdl`: SDL CHIP-8 full emulator
+- `component-chip_8`: CHIP-8 component/system
 - `frontend-sdl`: SDL frontend implementation
-- `chip8-sdl`: CHIP-8 library
-- `libchip8`: CHIP-8 emulator, composed from the CHIP-8 library, and the SDL frontend
+- `frontend-interfaces`: Frontend interfaces
+
+### Packages naming
+
+- full emulators: `emu-<system>-<frontend>`, e.g. `emu-chip_8-sdl`
+- systems: `system-<name>`, e.g. `system-commodore_64`
+- components: `component-<name>`, e.g. `component-chip_8`
+- periperals: `peripheral-<name>`, e.g. `peripheral-tv_pal`
+- frontends: `frontend-<name>`, e.g. `frontend-sdl`
+
+There are some exceptions/grey areas:
+
+- The frontend interfaces are in `frontend-interfaces`;
+- CHIP-8 is a component, but also a system; it's currently considered a component.
