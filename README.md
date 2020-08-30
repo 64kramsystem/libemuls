@@ -35,6 +35,14 @@ Currently, a basic CHIP-8 emulator with SDL frontend is provided.
 
 It can be run from the project root, with `cargo run --bin emu-chip_8-sdl -- /path/to/rom`; help is provided via `cargo run --bin emu-chip_8-sdl -- --help`.
 
+In order to quickly run a test game:
+
+```sh
+cargo run --bin emu-chip_8-sdl -- <(curl -L 'https://github.com/JohnEarnest/chip8Archive/blob/master/roms/flightrunner.ch8?raw=true')
+```
+
+Keys are `W`, `A`, `S`, `D`.
+
 ## Current packages
 
 The project is currently composed of the following packages:
