@@ -11,3 +11,6 @@ Cargo.lock
 
 # Place here anything that doesn't go into SCM.
 /temp/
+
+# For those who want to keep the wiki repository inside the project
+/wiki/
