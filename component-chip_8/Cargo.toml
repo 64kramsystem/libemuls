@@ -1,7 +1,9 @@
 [package]
 authors = ["Saverio Miroddi <saverio.pub2@gmail.com>"]
 edition = "2018"
-name = "interfaces"
+name = "component-chip_8"
 version = "0.1.0"
 
 [dependencies]
+frontend-interfaces = {path = "../frontend-interfaces"}
+rand = "0.7.3"

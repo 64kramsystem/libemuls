@@ -5,5 +5,5 @@ name = "frontend-sdl"
 version = "0.1.0"
 
 [dependencies]
-interfaces = {path = "../interfaces"}
+frontend-interfaces = {path = "../frontend-interfaces"}
 sdl2 = "0.34.2"

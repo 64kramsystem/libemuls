@@ -1,5 +1,5 @@
-use interfaces::audio::AudioDevice as FrontendAudioDevice;
-use interfaces::{events::EventCode, video::Pixel, IoFrontend};
+use frontend_interfaces::audio::AudioDevice as FrontendAudioDevice;
+use frontend_interfaces::{events::EventCode, video::Pixel, IoFrontend};
 
 use crate::audio_device_sdl::AudioDeviceSdl;
 

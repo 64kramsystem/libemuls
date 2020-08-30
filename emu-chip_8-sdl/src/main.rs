@@ -3,8 +3,9 @@ extern crate maplit;
 
 use clap::{self, App, Arg};
 
+use component_chip_8::Chip8;
+use frontend_interfaces::{events::EventCode, logging::Logger, logging::StdoutLogger};
 use frontend_sdl::FrontendSdl;
-use interfaces::{events::EventCode, logging::Logger, logging::StdoutLogger};
 
 use std::error::Error;
 use std::fs;
@@ -64,7 +65,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         None
     };
 
-    let mut chip8 = libchip8::Chip8::new(&mut sdl_frontend, &game_rom_data, &mut logger);
+    let mut chip8 = Chip8::new(&mut sdl_frontend, &game_rom_data, &mut logger);
 
     chip8.run(max_speed);
 

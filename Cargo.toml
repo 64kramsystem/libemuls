@@ -1,8 +1,8 @@
 [workspace]
 
 members = [
-  "chip8-sdl",
-  "interfaces",
+  "emu-chip_8-sdl",
+  "frontend-interfaces",
   "frontend-sdl",
-  "libchip8",
+  "component-chip_8",
 ]
