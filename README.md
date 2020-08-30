@@ -15,6 +15,7 @@ Table of contents:
   - [Current support, and running an emulator](#current-support-and-running-an-emulator)
   - [Current packages](#current-packages)
     - [Packages naming](#packages-naming)
+  - [Documentation](#documentation)
 
 ## Architecture
 
@@ -76,3 +77,9 @@ There are some exceptions/grey areas:
 
 - The frontend interfaces are in `frontend-interfaces`;
 - CHIP-8 is a component, but also a system; it's currently considered a component.
+
+## Documentation
+
+The code comments and documentation are intended to be expressive and thorough; the specifications are defined through the test suites.
+
+The [GitHub project wiki](../../wiki) includes additional information.
