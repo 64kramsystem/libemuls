@@ -4,6 +4,18 @@
 
 Although it provides binaries for emulating systems, it's not intended for end-users, instead, for developers interested in writing emulators.
 
+Table of contents:
+
+- [libemuls](#libemuls)
+  - [Architecture](#architecture)
+    - [Software support](#software-support)
+  - [Software engineering considerations](#software-engineering-considerations)
+    - [Clarity](#clarity)
+    - [Next developments](#next-developments)
+  - [Current support, and running an emulator](#current-support-and-running-an-emulator)
+  - [Current packages](#current-packages)
+    - [Packages naming](#packages-naming)
+
 ## Architecture
 
 The architecture is founded on separation of concerns, which is expressed in two areas:
