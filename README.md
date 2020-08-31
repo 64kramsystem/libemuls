@@ -36,7 +36,7 @@ Compatibility improvement contributions are always welcome, nonetheless.
 
 Since this is essentially an educative project, it's founded on clarity in every aspect, from the documentation, to the testing, down to the SCM metadata (history).
 
-Due to `component-chip_8` being primarily an exploration, it doesn't have any automated tests, however, all the future libraries will be specified and verified through test suites.
+Due to `system-chip_8` being primarily an exploration, it doesn't have any automated tests, however, all the future libraries will be specified and verified through test suites.
 
 ### Next developments
 
@@ -61,7 +61,7 @@ Keys are `W`, `A`, `S`, `D`.
 The project is currently composed of the following packages:
 
 - `emu-chip_8-sdl`: SDL CHIP-8 full emulator
-- `component-chip_8`: CHIP-8 component/system
+- `system-chip_8`: CHIP-8 (single-component) system
 - `frontend-sdl`: SDL frontend implementation
 - `frontend-interfaces`: Frontend interfaces
 
@@ -69,14 +69,11 @@ The project is currently composed of the following packages:
 
 - full emulators: `emu-<system>-<frontend>`, e.g. `emu-chip_8-sdl`
 - systems: `system-<name>`, e.g. `system-commodore_64`
-- components: `component-<name>`, e.g. `component-chip_8`
+- components: `component-<name>`, e.g. `system-chip_8`
 - periperals: `peripheral-<name>`, e.g. `peripheral-tv_pal`
 - frontends: `frontend-<name>`, e.g. `frontend-sdl`
 
-There are some exceptions/grey areas:
-
-- The frontend interfaces are in `frontend-interfaces`;
-- CHIP-8 is a component, but also a system; it's currently considered a component.
+The frontend interfaces are in `frontend-interfaces`;
 
 ## Documentation
 

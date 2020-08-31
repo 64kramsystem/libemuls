@@ -3,7 +3,7 @@ extern crate maplit;
 
 use clap::{self, App, Arg};
 
-use component_chip_8::Chip8;
+use system_chip_8::Chip8;
 use frontend_interfaces::{events::EventCode, logging::Logger, logging::StdoutLogger};
 use frontend_sdl::FrontendSdl;
 

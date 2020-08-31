@@ -4,5 +4,5 @@ members = [
   "emu-chip_8-sdl",
   "frontend-interfaces",
   "frontend-sdl",
-  "component-chip_8",
+  "system-chip_8",
 ]
