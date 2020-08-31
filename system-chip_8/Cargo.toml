@@ -1,7 +1,7 @@
 [package]
 authors = ["Saverio Miroddi <saverio.pub2@gmail.com>"]
 edition = "2018"
-name = "component-chip_8"
+name = "system-chip_8"
 version = "0.1.0"
 
 [dependencies]
