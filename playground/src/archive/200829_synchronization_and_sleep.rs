@@ -9,7 +9,7 @@ use std::{
 use test::bench::black_box;
 use thread::JoinHandle;
 
-const BENCH_RUNS: u32 = 1;
+const BENCH_RUNS: u32 = 3;
 
 fn bench(
     name: &str,
