@@ -8,8 +8,9 @@
 mod archive {
     pub mod _200831_clock_synchronization;
     pub mod _200831_sleep_and_concurrency;
+    pub mod _200901_schedulers;
 }
 
 fn main() {
-    archive::_200831_sleep_and_concurrency::execute();
+    archive::_200901_schedulers::execute();
 }

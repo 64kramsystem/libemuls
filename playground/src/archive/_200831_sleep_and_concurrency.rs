@@ -8,7 +8,7 @@ use std::{
     },
     thread,
     time::{Duration, Instant},
-}; // bring flush() into scope
+};
 
 const BENCH_RUNS: u32 = 3;
 
