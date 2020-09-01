@@ -91,7 +91,7 @@ fn mutex_recovery(cycles: u32, components: u32, instructions: u32) {
                 let mut last_executed_cycle = 0;
 
                 loop {
-                    let current_cycle = *current_cycle_mutex.lock().unwrap();
+                    let current_cycle = { *current_cycle_mutex.lock().unwrap() };
 
                     for _ in last_executed_cycle..current_cycle {
                         for _ in 0..instructions {
