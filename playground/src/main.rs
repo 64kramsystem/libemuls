@@ -7,9 +7,9 @@
 
 mod archive {
     pub mod _200831_clock_synchronization;
-    pub mod _200831_thread_sleep_overhead;
+    pub mod _200831_sleep_and_concurrency;
 }
 
 fn main() {
-    archive::_200831_clock_synchronization::execute();
+    archive::_200831_sleep_and_concurrency::execute();
 }
