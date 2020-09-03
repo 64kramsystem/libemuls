@@ -1,3 +1,4 @@
+use crate::utils;
 use rand::RngCore;
 
 // Preliminary, supersimplified implementation.
@@ -55,5 +56,38 @@ impl Cpu {
             cf: false,
             internal_ram,
         }
+    }
+
+    /// # Arguments/return value:
+    ///
+    /// * `instruction_bytes` - instruction, in bytes
+    /// * returns the number of clock ticks spent
+    ///
+    pub fn execute(&mut self, instruction_bytes: &[u8]) -> u8 {
+        match instruction_bytes {
+            [0x00] => self.execute_nop(),
+            _ => {
+                let formatted_instruction = utils::format_hex(instruction_bytes);
+                panic!("Unsupported instruction!: {}", formatted_instruction)
+            }
+        }
+    }
+
+    fn execute_nop(&mut self) -> u8 {
+        self.PC += 1;
+
+        4
+    }
+
+    // HELPERS /////////////////////////////////////////////////////////////////////////////////////
+
+    /// Convenience for testing.
+    ///
+    #[cfg(test)]
+    pub fn set_flags(&mut self, zf: bool, nf: bool, hf: bool, cf: bool) {
+        self.zf = zf;
+        self.nf = nf;
+        self.hf = hf;
+        self.cf = cf;
     }
 }

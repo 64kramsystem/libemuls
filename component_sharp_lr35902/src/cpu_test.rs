@@ -57,6 +57,38 @@ ruspec! {
             let internal_ram_sum: u32 = cpu.internal_ram.to_vec().iter().map(|&x| x as u32).sum();
 
             assert_ne!(internal_ram_sum, 0);
+
+            assert_eq!(cpu.A, 0);
+            assert_eq!(cpu.B, 0);
+            assert_eq!(cpu.C, 0);
+            assert_eq!(cpu.D, 0);
+            assert_eq!(cpu.E, 0);
+            assert_eq!(cpu.H, 0);
+            assert_eq!(cpu.L, 0);
+            assert_eq!(cpu.SP, 0);
+            assert_eq!(cpu.PC, 0);
+
+            assert_eq!(cpu.zf, false);
+            assert_eq!(cpu.nf, false);
+            assert_eq!(cpu.hf, false);
+            assert_eq!(cpu.cf, false);
+        }
+
+        context "executes" {
+            before { let mut cpu = Cpu::new(); }
+
+            it "NOP (0x00)" {
+                let instruction_bytes = [0x00];
+
+                test_cpu_execute(
+                    &mut cpu,
+                    false, false, false, false,
+                    &instruction_bytes,
+                    0, 0, 0, 0, 0, 0, 0, 0, 1,
+                    false, false, false, false,
+                    4
+                );
+            }
         }
     }
 }
