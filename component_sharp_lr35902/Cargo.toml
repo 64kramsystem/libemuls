@@ -1,0 +1,10 @@
+[package]
+authors = ["Saverio Miroddi <saverio.pub2@gmail.com>"]
+edition = "2018"
+name = "component_sharp_lr35902"
+version = "0.1.0"
+
+[dependencies]
+
+rand = "0.7.3"
+ruspec = "0.1.3"
