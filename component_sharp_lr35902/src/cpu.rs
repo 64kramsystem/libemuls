@@ -81,6 +81,11 @@ impl Cpu {
 
     // HELPERS /////////////////////////////////////////////////////////////////////////////////////
 
+    pub fn HL_location(&self) -> &u8 {
+        let HL = ((self.H as usize) << 8) + (self.L as usize);
+        &self.internal_ram[HL]
+    }
+
     /// Convenience for testing.
     ///
     #[cfg(test)]
