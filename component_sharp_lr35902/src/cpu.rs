@@ -85,14 +85,4 @@ impl Cpu {
         let HL = ((self.H as usize) << 8) + (self.L as usize);
         &self.internal_ram[HL]
     }
-
-    /// Convenience for testing.
-    ///
-    #[cfg(test)]
-    pub fn set_flags(&mut self, zf: bool, nf: bool, hf: bool, cf: bool) {
-        self.zf = zf;
-        self.nf = nf;
-        self.hf = hf;
-        self.cf = cf;
-    }
 }
