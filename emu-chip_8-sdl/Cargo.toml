@@ -7,7 +7,7 @@ version = "0.1.0"
 [dependencies]
 
 clap = "2.33.1"
-frontend-interfaces = {path = "../frontend-interfaces"}
 frontend-sdl = {path = "../frontend-sdl"}
+interfaces-frontend = {path = "../interfaces-frontend"}
 maplit = "1.0.2"
 system-chip_8 = {path = "../system-chip_8"}

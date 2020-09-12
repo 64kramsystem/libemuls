@@ -5,5 +5,5 @@ name = "system-chip_8"
 version = "0.1.0"
 
 [dependencies]
-frontend-interfaces = {path = "../frontend-interfaces"}
+interfaces-frontend = {path = "../interfaces-frontend"}
 rand = "0.7.3"

@@ -1,7 +1,7 @@
 // For clarity, any register reference is upper case.
 #![allow(non_snake_case)]
 
-use frontend_interfaces::{
+use interfaces_frontend::{
     audio::AudioDevice, audio::AUDIO_DEVICE_FREQUENCY, events::EventCode, logging::Logger,
     video::Pixel, IoFrontend,
 };
