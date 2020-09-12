@@ -40,7 +40,7 @@ Due to `system-chip_8` being primarily an exploration, it doesn't have any autom
 
 ### Next developments
 
-From a technical perspective, the system emulators will be designed as distributed systems; as a requirement, libraries will (need to) be able to run asynchronously, each running in its own thread, communicating with each other, and synchronizing with a central clock.
+The Game Boy system is currently under development.
 
 ## Current support, and running an emulator
 
