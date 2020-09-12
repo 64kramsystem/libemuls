@@ -6,5 +6,5 @@ version = "0.1.0"
 
 [dependencies]
 
+demonstrate = "0.4.3"
 rand = "0.7.3"
-ruspec = "0.1.3"

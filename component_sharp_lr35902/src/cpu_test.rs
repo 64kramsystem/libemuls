@@ -1,5 +1,5 @@
 use crate::cpu::Cpu;
-use ruspec::ruspec;
+use demonstrate::demonstrate;
 
 fn assert_cpu_execute(
     cpu: &mut Cpu,
@@ -148,9 +148,16 @@ macro_rules! assert_cpu_execute {
     };
 }
 
-ruspec! {
+demonstrate! {
     describe "CPU" {
-        before { let cpu = Cpu::new(); }
+        use super::*;
+
+        before {
+          // (Current) issue with declarative testing frameworks; see https://git.io/JUlar.
+          //
+          #[allow(unused_mut)]
+          let mut cpu = Cpu::new();
+        }
 
         // Can't really test random, but it's good practice to just make sure it's not been initialized
         // with zeros.
@@ -178,8 +185,6 @@ ruspec! {
         }
 
         context "executes" {
-          before { let mut cpu = Cpu::new(); }
-
           it "NOP (0x00)" {
               let instruction_bytes = [0x00];
 
