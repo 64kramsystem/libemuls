@@ -1,4 +1,4 @@
-use frontend_interfaces::{audio::AudioDevice, audio::AUDIO_DEVICE_FREQUENCY};
+use interfaces_frontend::{audio::AudioDevice, audio::AUDIO_DEVICE_FREQUENCY};
 use sdl2::{
     audio::{AudioCallback, AudioSpecDesired},
     AudioSubsystem,

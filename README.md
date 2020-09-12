@@ -40,7 +40,7 @@ Due to `system-chip_8` being primarily an exploration, it doesn't have any autom
 
 ### Next developments
 
-From a technical perspective, the system emulators will be designed as distributed systems; as a requirement, libraries will (need to) be able to run asynchronously, each running in its own thread, communicating with each other, and synchronizing with a central clock.
+The Game Boy system is currently under development.
 
 ## Current support, and running an emulator
 
@@ -63,7 +63,7 @@ The project is currently composed of the following packages:
 - `emu-chip_8-sdl`: SDL CHIP-8 full emulator
 - `system-chip_8`: CHIP-8 (single-component) system
 - `frontend-sdl`: SDL frontend implementation
-- `frontend-interfaces`: Frontend interfaces
+- `interfaces-frontend`: Frontend interfaces
 
 ### Packages naming
 
@@ -72,8 +72,7 @@ The project is currently composed of the following packages:
 - components: `component-<name>`, e.g. `system-chip_8`
 - periperals: `peripheral-<name>`, e.g. `peripheral-tv_pal`
 - frontends: `frontend-<name>`, e.g. `frontend-sdl`
-
-The frontend interfaces are in `frontend-interfaces`;
+- interfaes: `interface-<package_type>`, e.g. `interfaces-frontend`
 
 ## Documentation
 

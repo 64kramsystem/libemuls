@@ -2,7 +2,7 @@
 
 members = [
   "emu-chip_8-sdl",
-  "frontend-interfaces",
   "frontend-sdl",
+  "interfaces-frontend",
   "system-chip_8",
 ]
