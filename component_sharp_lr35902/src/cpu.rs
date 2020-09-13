@@ -65,7 +65,7 @@ impl Cpu {
     ///
     pub fn execute(&mut self, instruction_bytes: &[u8]) -> u8 {
         match instruction_bytes {
-            [0x00] => self.execute_nop(),
+            // __OPCODES_DECODING_REPLACEMENT_POINT__
             _ => {
                 let formatted_instruction = utils::format_hex(instruction_bytes);
                 panic!("Unsupported instruction!: {}", formatted_instruction)
@@ -73,16 +73,13 @@ impl Cpu {
         }
     }
 
-    fn execute_nop(&mut self) -> u8 {
-        self.PC += 1;
-
-        4
-    }
+    // __OPCODES_EXECUTION_REPLACEMENT_POINT__
 
     // HELPERS /////////////////////////////////////////////////////////////////////////////////////
 
-    pub fn HL_location(&self) -> &u8 {
-        let HL = ((self.H as usize) << 8) + (self.L as usize);
-        &self.internal_ram[HL]
+    // Composes an address from a high and a low byte.
+    //
+    pub fn compose_address(high_byte: u8, low_byte: u8) -> usize {
+        ((high_byte as usize) << 8) + (low_byte as usize)
     }
 }

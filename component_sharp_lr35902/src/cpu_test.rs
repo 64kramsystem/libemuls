@@ -185,16 +185,7 @@ demonstrate! {
         }
 
         context "executes" {
-          it "NOP (0x00)" {
-              let instruction_bytes = [0x00];
-
-              assert_cpu_execute!(
-                cpu,
-                instruction_bytes,
-                PC: 0 => 1,
-                cycles: 4
-              );
-            }
+            // __TESTS_REPLACEMENT_POINT__
         }
     }
 }
