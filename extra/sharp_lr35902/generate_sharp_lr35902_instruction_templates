@@ -1,0 +1,722 @@
+#!/usr/bin/env ruby
+
+require 'byebug'
+require 'shellwords'
+require 'json'
+require 'open-uri'
+
+module GitHelpers
+  extend self
+
+  def restore_files(*files)
+    command = "git checkout HEAD -- " + files.map { |file| file.shellescape }.join(" ")
+    execute command
+  end
+
+  private
+
+  def execute(command)
+    success = system(command)
+
+    exit $CHILD_STATUS.exitstatus if !success
+  end
+end
+
+module InstructionsData
+  REGISTER_OPERAND = :register
+  IMMEDIATE_OPERAND = :immediate
+  INDIRECT_REGISTER_OPERAND = :indirect_register
+  INDIRECT_IMMEDIATE_OPERAND = :indirect_immediate
+
+  REGISTERS_8B = %w[A B C D E H L]
+  REGISTERS_16B = %w[BC DE HL]
+
+  # Code generated is not efficient, in a few ways. This can be optimized, but it's not the scope of
+  # this tool.
+
+  # Specifications:
+  #
+  # - family_data
+  #   - operation_code:   if `zf` is set, then a boolean variable called `carry` must be set
+  #   - flags_code:       can be absent
+  #   - instruction_size: (added from json)
+  #   - flags_data:       (added from json)
+  #   - operand_types:    Array of REGISTER_OPERAND, IMMEDIATE_OPERAND, INDIRECT_REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND
+  #   - transform_opcode_data: Executed after fetching the opcode data from the JSON; destructive.
+  #
+  # Pan doc groups some instructions that have different operand types together, e.g. `LD r1, r2`,
+  # `LD r, n`, `LD r1, (r2)` and so on; this is correct in a way, but we need more a more specific
+  # taxonomy, so the families as represented here are different.
+  #
+  INSTRUCTIONS_DATA = {
+    "LD r, n" => {
+      prefixed: false,
+      opcodes: [0x06, 0x0E, 0x16, 0x1E, 0x26, 0x2E],
+      family_data: {
+        operation_code: <<-RUST,
+      *operand = value;
+        RUST
+      },
+    },
+    "LD r1, r2" => {
+      prefixed: false,
+      opcodes: [
+        0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x41, 0x42, 0x43, 0x44, 0x45, 0x48,
+        0x4A, 0x4B, 0x4C, 0x4D, 0x50, 0x51, 0x53, 0x54, 0x55, 0x58, 0x59, 0x5A,
+        0x5C, 0x5D, 0x60, 0x61, 0x62, 0x63, 0x65, 0x68, 0x69, 0x6A, 0x6B, 0x6C,
+      ],
+      family_data: {
+        operation_code: <<-RUST,
+      *operand = value;
+        RUST
+      },
+    },
+    "LD r1, (r2)" => {
+      prefixed: false,
+      opcodes: [
+        0x46, 0x4E, 0x56, 0x5E, 0x66, 0x6E, 0x7E, 0x0A, 0x1A
+      ],
+      family_data: {
+        operation_code: <<-RUST,
+      *operand = value;
+        RUST
+      },
+    },
+    "LD (r1), r2" => {
+      prefixed: false,
+      opcodes: [
+        0x70, 0x71, 0x72, 0x73, 0x74, 0x75
+      ],
+      family_data: {
+        operation_code: <<-RUST,
+      *operand = value;
+        RUST
+      },
+    },
+    # No-ops. They are troublesome because without special handling, the register variable is
+    # simultaneously borrowed as readonly and mutable, causing an error. There isn't a general way
+    # of solving this, without introducing conditional logic.
+    #
+    "LD r, r" => {
+      prefixed: false,
+      opcodes: [
+        0x7F, 0x40, 0x49, 0x52, 0x5B, 0x64, 0x6D
+      ],
+      transform_opcode_data: ->(data) do
+        data.fetch("operands").pop
+      end,
+      family_data: {
+        operation_code: <<-RUST,
+      *operand = *operand;
+        RUST
+      },
+    },
+    "LD (r), n" => {
+      prefixed: false,
+      opcodes: [
+        0x36
+      ],
+      family_data: {
+        operation_code: <<-RUST,
+      *operand = value;
+        RUST
+      },
+    },
+    "LD A, (nn)" => {
+      prefixed: false,
+      opcodes: [0xFA],
+      family_data: {
+        operation_code: <<-RUST,
+      *operand = value;
+        RUST
+      },
+    },
+    "LD A, n" => {
+      prefixed: false,
+      opcodes: [0x3E],
+      family_data: {
+        operation_code: <<-RUST,
+      *operand = value;
+        RUST
+      },
+    },
+    "INC r" => {
+      prefixed: false,
+      opcodes: [0x3C, 0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C],
+      family_data: {
+        operation_code: <<-RUST,
+      let (new_value, carry) = operand.overflowing_add(1);
+      *operand = new_value;
+        RUST
+        flags_code: <<-RUST,
+      if *operand & 0b0000_1111 == 0b000_0000 {
+        *hf = true;
+      }
+        RUST
+      },
+    },
+    "INC (HL)" => {
+      prefixed: false,
+      opcodes: [0x34],
+      family_data: {
+        operation_code: <<-RUST,
+      let (new_value, carry) = operand.overflowing_add(1);
+      *operand = new_value;
+        RUST
+        flags_code: <<-RUST,
+      if *operand & 0b0000_1111 == 0b000_0000 {
+        *hf = true;
+      }
+        RUST
+      },
+    },
+    "NOP" => {
+      prefixed: false,
+      opcodes: [0x00],
+      family_data: {
+        operation_code: ""
+      },
+    },
+  }
+end
+
+class CpuTemplatesGenerator
+  include InstructionsData
+
+  OPCODES_ADDRESS = 'https://gbdev.io/gb-opcodes/Opcodes.json'
+
+  DECODING_REPLACEMENT_POINT_PATTERN = '// __OPCODES_DECODING_REPLACEMENT_POINT__'
+  EXECUTION_REPLACEMENT_POINT_PATTERN = '// __OPCODES_EXECUTION_REPLACEMENT_POINT__'
+  TESTS_REPLACEMENT_POINT_PATTERN = '// __TESTS_REPLACEMENT_POINT__'
+
+  def initialize(opcodes_file, cpu_file, tests_file)
+    @opcodes_file = opcodes_file
+    @cpu_file = cpu_file
+    @tests_file = tests_file
+  end
+
+  def execute(only_opcode: nil)
+    check_instructions_data
+    download_json_page_content if !File.exists?(@opcodes_file)
+    json_page_content = find_and_read_json_page_content
+    json_data = JSON.parse(json_page_content)
+    cpu_decoding_code, cpu_execution_code, tests_code = generate_templates(json_data, only_opcode: only_opcode)
+    insert_content_in_source_files(cpu_decoding_code, cpu_execution_code, tests_code)
+  end
+
+  def check_instructions_data
+    opcodes_count = INSTRUCTIONS_DATA
+      .values
+      .flat_map { |instruction_data| instruction_data.fetch(:opcodes) }
+      .each_with_object({}) { |opcode, count| count[opcode] ||= 0; count[opcode] += 1 } # tally() on Ruby 2.7
+
+    duplicated_opcodes = opcodes_count.select { |_, count| count > 1}
+
+    if duplicated_opcodes.size > 0
+      duplicated_opcodes_hex = duplicated_opcodes.keys.map { |opcode| hex(opcode) }
+      raise "Found duplicated opcodes!: #{duplicated_opcodes_hex}"
+    end
+  end
+
+  def download_json_page_content
+    page_content = open(OPCODES_ADDRESS).read
+    prettified_data = JSON.pretty_generate(JSON.parse(page_content))
+    IO.write(@opcodes_file, prettified_data)
+  end
+
+  def find_and_read_json_page_content
+    IO.read(@opcodes_file)
+  end
+
+  # For samples, see the corresponding `.md` document.
+  #
+  def generate_templates(json_data, only_opcode:)
+    cpu_decoding_code =  StringIO.new
+    cpu_execution_code = StringIO.new
+    tests_code = StringIO.new
+
+    INSTRUCTIONS_DATA.each do |opcode_family, prefixed:, opcodes:, family_data:, transform_opcode_data: nil|
+      next if only_opcode && !opcodes.include?(only_opcode)
+
+      opcode_family_encoded = opcode_family
+        .gsub(/\((\w+)\)/, 'I\1')
+        .gsub(/,? /, "_")
+
+      prefixed_json_entry = prefixed ? "prefixed" : "unprefixed"
+
+      family_instruction_size = nil
+
+      opcodes.each do |opcode|
+        next if only_opcode && opcode != only_opcode
+
+        opcode_data = json_data.fetch(prefixed_json_entry).fetch(hex(opcode))
+
+        transform_opcode_data&.(opcode_data)
+
+        add_family_data_from_json!(opcode, opcode_family, family_data, opcode_data)
+
+        generate_cpu_decoding_code!(opcode, opcode_family_encoded, family_data, opcode_data, cpu_decoding_code)
+        generate_tests_code!(opcode, opcode_family, opcode_data, family_data, tests_code)
+      end
+
+      generate_cpu_execution_code!(opcode_family_encoded, family_data, cpu_execution_code)
+    end
+
+    # Remove the trailing empty line, if any.
+    #
+    [cpu_decoding_code, cpu_execution_code, tests_code].map { |buffer| buffer.string.sub(/^\n\Z/, '') }
+  end
+
+  def insert_content_in_source_files(cpu_decoding_code, cpu_execution_code, tests_code)
+    cpu_file_content = IO.read(@cpu_file)
+
+    new_cpu_file_content = cpu_file_content
+      .sub(/^ *#{DECODING_REPLACEMENT_POINT_PATTERN}\n/, cpu_decoding_code)
+      .sub(/^ *#{EXECUTION_REPLACEMENT_POINT_PATTERN}\n/, cpu_execution_code)
+
+    if cpu_file_content == new_cpu_file_content
+      raise "CPU file content hasn't been fully replaced!"
+    else
+      IO.write(@cpu_file, new_cpu_file_content)
+    end
+
+    tests_file_content = IO.read(@tests_file)
+
+    new_tests_file_content = tests_file_content
+      .sub(/^ *#{TESTS_REPLACEMENT_POINT_PATTERN}\n/, tests_code)
+
+    if tests_file_content == new_tests_file_content
+      raise "Tests file content hasn't been fully replaced!"
+    else
+      IO.write(@tests_file, new_tests_file_content)
+    end
+  end
+
+  ##################################################################################################
+  # HELPERS
+  ##################################################################################################
+
+  def add_family_data_from_json!(opcode, opcode_family, family_data, opcode_data)
+    flags_data = opcode_data.fetch("flags")
+    instruction_size = opcode_data.fetch("bytes")
+
+    operands_data = opcode_data.fetch("operands")
+
+    # WATCH OUT!! The JSON gets the "immediate" metadata wrong; the correct semantic is is the
+    # opposite (see https://git.io/JU8JY).
+    #
+    operand_types = operands_data.map do |operand_data|
+      operand_name = operand_data.fetch("name")
+      case operand_name
+      when "d8"
+        IMMEDIATE_OPERAND
+      when "a16"
+        INDIRECT_IMMEDIATE_OPERAND
+      when *REGISTERS_8B
+        REGISTER_OPERAND
+      when *REGISTERS_16B
+        INDIRECT_REGISTER_OPERAND
+      else
+        debugger
+        raise("Unsupported operand type for opcode %02X: #{operand_data}" % opcode)
+      end
+    end
+
+    if !family_data.key?(:flags_data)
+      family_data.merge!(
+        flags_data: flags_data,
+        instruction_size: instruction_size,
+        operand_types: operand_types
+      )
+    else
+      existing_family_data = family_data.fetch_values(:flags_data, :instruction_size, :operand_types)
+
+      if existing_family_data != [flags_data, instruction_size, operand_types]
+        puts "Opcode: #{hex(opcode)}"
+        puts "EXISTING: #{existing_family_data}"
+        puts "CURRENT:  #{[flags_data, instruction_size, operand_types]}"
+        debugger
+        raise "Mismatching family data!"
+      end
+    end
+  end
+
+  def hex(value)
+    "0x%02X" % value
+  end
+
+  # Returns {"flag" => "state" }.
+  #
+  def modified_flags(family_data)
+    family_data.fetch(:flags_data).select { |flag, state| state == "0" || state == "1" || flag == state }
+  end
+
+  ##################################################################################################
+  # GENERATION
+  ##################################################################################################
+
+  # This logic could go into a separate class, however, given how small the rest of the code is, it's
+  # ok to keep it here.
+  #
+  # While the instructions could be decoded algorithmically up to a certain extent, it's not worth
+  # the complexity. For example, `PUSH nn` and `INC nn` use different bitmasks for the registers
+  # (the 4th argument shares the same bitmask (base + 11), but point to different registers in the
+  # two cases).
+
+  def generate_cpu_decoding_code!(opcode, opcode_family, family_data, opcode_data, cpu_code)
+    opcode_hex = "%02X" % opcode
+    operand_types = family_data.fetch(:operand_types)
+
+    ############################################################################
+    # MATCHER
+    # e.g.: `[0x36, value @ _] => {`
+    ############################################################################
+
+    cpu_code.print "            [0x#{opcode_hex}"
+
+    case operand_types
+    when []
+      # Nothing
+    when [REGISTER_OPERAND]
+      # Nothing
+    when [INDIRECT_REGISTER_OPERAND]
+      # Nothing
+    when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      cpu_code.print ", value @ _"
+    when [REGISTER_OPERAND, REGISTER_OPERAND]
+      # Nothing
+    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
+      @cpu_code.print ", low_byte @ _, high_byte @ _"
+    when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
+      # Nothing
+    when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+      # Nothing
+    when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      cpu_code.print ", value @ _"
+    else
+      # This is for safety; it's easy to miss a tuple.
+      #
+      raise "Unrecognized operand types: #{operand_types}"
+    end
+
+    cpu_code.puts "] => {"
+
+    ############################################################################
+    # PRE-INVOCATION STATEMENTS
+    # e.g.: `let address = Self::compose_address(*high_byte, *low_byte);`
+    ############################################################################
+
+    operand_names = opcode_data.fetch("operands").map { |data| data["name"] }
+
+    operand_types.each_with_index do |operand_type, i|
+      case operand_type
+      when INDIRECT_IMMEDIATE_OPERAND
+        cpu_code.puts "                let address = Self::compose_address(*high_byte, *low_byte);"
+        break
+      when INDIRECT_REGISTER_OPERAND
+        high_byte_register, low_byte_register = operand_names[i].chars
+        cpu_code.puts "                let address = Self::compose_address(self.#{high_byte_register}, self.#{low_byte_register});"
+        break
+      end
+    end
+
+    ############################################################################
+    # EXECUTE METHOD CALL
+    # e.g. `Self::execute_LD_nn_n(&mut self.PC, &mut self.B, *value);`
+    ############################################################################
+
+    operand_params =
+      case operand_types
+      when []
+        # Nothing
+      when [REGISTER_OPERAND]
+        "&mut self.#{operand_names[0]}"
+      when [INDIRECT_REGISTER_OPERAND]
+        "&mut self.internal_ram[address]"
+      when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
+        [
+          "&mut self.#{operand_names[0]}",
+          "*value"
+        ]
+      when [REGISTER_OPERAND, REGISTER_OPERAND]
+        [
+          "&mut self.#{operand_names[0]}",
+          "self.#{operand_names[1]}"
+        ]
+      when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
+        [
+          "&mut self.#{operand_names[0]}",
+          "self.internal_ram[address]"
+        ]
+      when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
+        [
+          "&mut self.#{operand_names[0]}",
+          "self.internal_ram[address]"
+        ]
+      when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+        [
+          "&mut self.internal_ram[address]",
+          "self.#{operand_names[1]}"
+        ]
+      when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
+        [
+          "&mut self.internal_ram[address]",
+          "*value"
+        ]
+      else
+        raise "Unrecognized operand types: #{operand_types}"
+      end
+
+    flag_params = family_data.fetch(:flags_data).each_with_object([]) do |(flag, state), flag_params|
+      case state
+      when "0", "1", flag
+        flag_params << "&mut self.#{flag.downcase}f"
+      when "-"
+        # ignore
+      else
+        raise "Invalid flag state: #{state}"
+      end
+    end
+
+    all_execution_params = ["&mut self.PC", *operand_params, *flag_params].join(", ")
+
+    cpu_code.puts "                Self::execute_#{opcode_family}(#{all_execution_params});"
+
+    ############################################################################
+    # CLOSURE
+    # cycles and closing brace
+    ############################################################################
+
+    cycles = opcode_data.fetch("cycles")[0] || raise("Missing #{opcode_hex} cycles!")
+
+    cpu_code.puts <<-RUST
+                #{cycles}
+            }
+    RUST
+  end
+
+  def generate_cpu_execution_code!(opcode_family, family_data, cpu_code)
+    instruction_size = family_data.fetch(:instruction_size)
+    flags_data = family_data.fetch(:flags_data)
+    operand_types = family_data.fetch(:operand_types)
+
+    cpu_code.print "    fn execute_#{opcode_family}(PC: &mut u16"
+
+    case operand_types
+    when []
+      # nothing to add
+    when [REGISTER_OPERAND]
+      cpu_code.print ", operand: &mut u8"
+    when [INDIRECT_REGISTER_OPERAND]
+      cpu_code.print ", operand: &mut u8"
+    when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      cpu_code.print ", operand: &mut u8, value: u8"
+    when [REGISTER_OPERAND, REGISTER_OPERAND]
+      cpu_code.print ", operand: &mut u8, value: u8"
+    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
+      cpu_code.print ", operand: &mut u8, value: u8"
+    when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
+      cpu_code.print ", operand: &mut u8, value: u8"
+    when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+      cpu_code.print ", operand: &mut u8, value: u8"
+    when [INDIRECT_IMMEDIATE_OPERAND, IMMEDIATE_OPERAND]
+      cpu_code.print ", operand: &mut u8, value: u8"
+    when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      cpu_code.print ", operand: &mut u8, value: u8"
+    else
+      raise "Unrecognized operand types: #{operand_types}"
+  end
+
+    flags_data.each do |flag, state|
+      case state
+      when "0", "1", flag
+        cpu_code.print ", #{flag.downcase}f: &mut bool"
+      when "-"
+        # ignore
+      else
+        raise "Invalid flag state: #{state}"
+      end
+    end
+
+    cpu_code.puts ") {"
+
+    cpu_code.puts <<-RUST
+      *PC += #{instruction_size};
+
+    RUST
+
+    operation_code = family_data.fetch(:operation_code)
+
+    cpu_code.puts operation_code, "\n"
+
+    flags_code = family_data[:flags_code]
+
+    if flags_code
+      cpu_code.puts flags_code
+    end
+
+    flags_data.each do |flag, state|
+      case state
+      when "0"
+        cpu_code.puts "      *#{flag.downcase}f = false;"
+      when "1"
+        cpu_code.puts "      *#{flag.downcase}f = true;"
+      when flag
+        if flag == "Z"
+          cpu_code.puts <<-RUST
+      if carry {
+        *zf = true;
+      }
+          RUST
+        else
+          # Make sure the operation code takes care of it!
+          #
+          raise "Missing #{opcode_family} #{flag} flag setting!" if flags_code !~ /\*#{flag.downcase}f = /
+        end
+      when "-"
+        # do nothing
+      else
+        raise "Invalid flag state: #{state}"
+      end
+    end
+
+    cpu_code.puts <<-RUST
+    }
+
+    RUST
+  end
+
+  def generate_tests_code!(opcode, opcode_family, opcode_data, family_data, tests_code)
+    ############################################################################
+    # HEADER
+    # `context`, or `it` depending on flags being changed or not
+    ############################################################################
+
+    opcode_mnemonic = opcode_data.fetch("mnemonic")
+    opcode_operands = opcode_data.fetch("operands").map { |data| data.fetch("name") }
+
+    main_block_title = "#{opcode_mnemonic} #{opcode_operands.join(", ")} (#{hex(opcode)})"
+
+    if modified_flags(family_data).empty?
+      tests_code.puts %Q[            it "#{main_block_title}" {]
+    else
+      tests_code.puts %Q[            context "#{main_block_title}" {]
+    end
+
+    ############################################################################
+    # MAIN TEST
+    ############################################################################
+
+    # Adding straight `todo!()` in uncommented form causes a few troubles, and it's not worth the
+    # hassle.
+
+    instruction_size = family_data.fetch(:instruction_size)
+
+    start_pc = 0x21
+    end_pc = start_pc + instruction_size
+    cycles = opcode_data.fetch("cycles")[0]
+
+    if !modified_flags(family_data).empty?
+      main_test_padding = " " * 4
+      tests_code.puts %Q(                it "without flags modified" {)
+    end
+
+    if instruction_size > 1
+      tests_code.puts %Q[#{main_test_padding}                // todo!("extra instruction bytes");]
+    end
+
+    tests_code.print <<-RUBY.gsub(/^(?!$)/, "#{main_test_padding}")
+                let instruction_bytes = [#{hex(opcode)}];
+
+                assert_cpu_execute!(
+                    cpu,
+                    instruction_bytes,
+                    // todo!("register expectation");
+                    PC: #{hex(start_pc)} => #{hex(end_pc)},
+                    cycles: #{cycles}
+                );
+            }
+    RUBY
+
+    ############################################################################
+    # FLAG TESTS (OPTIONAL)
+    ############################################################################
+
+    modified_flags(family_data).each do |flag, state|
+      flag_state_expectation =
+        case state
+        when "0"
+          "#{flag.downcase}f: 1 => 0,"
+        when "1"
+          "#{flag.downcase}f: 0 => 1,"
+        when flag
+          %Q(// todo!("Flag #{flag.downcase}f"),)
+        else
+          raise "Unrecognized state: #{state}"
+        end
+
+      if instruction_size > 1
+        tests_code.puts %Q[#{main_test_padding}                    // todo!("extra instruction bytes");]
+      end
+
+      # Substantially similar to the main UT; deduplicating has pros/cons, but
+      # not really meaningful ones.
+      #
+      tests_code.print <<-RUBY
+
+                it "with flag #{flag} modified" {
+                    let instruction_bytes = [#{hex(opcode)}];
+      RUBY
+
+      tests_code.print <<-RUBY
+                    assert_cpu_execute!(
+                        cpu,
+                        instruction_bytes,
+                        // todo!("register expectation");
+                        PC: #{hex(start_pc)} => #{hex(end_pc)},
+                        #{flag_state_expectation}
+                        cycles: #{cycles}
+                    );
+                }
+      RUBY
+    end
+
+    ############################################################################
+    # CLOSING BRANCE
+    ############################################################################
+
+    if !modified_flags(family_data).empty?
+      tests_code.puts "            }"
+    end
+
+    tests_code.puts
+  end
+end
+
+module CommandlineDecoder
+  extend self
+
+  def execute
+    if (ARGV & %w[-h --help]).size > 0
+      puts "Usage: #{File.basename($PROGRAM_NAME)} [0x<opcode_hex>]"
+      exit 0
+    elsif ARGV.size > 1
+      puts "Usage: #{File.basename($PROGRAM_NAME)} [0x<opcode_hex>]"
+      exit 1
+    else
+      opcode = ARGV[0]&.hex
+    end
+  end
+end
+
+if __FILE__ == $PROGRAM_NAME
+  opcodes_file = File.expand_path("opcodes.json", __dir__)
+  cpu_file = File.expand_path("../../component_sharp_lr35902/src/cpu.rs", __dir__)
+  tests_file = File.expand_path("../../component_sharp_lr35902/src/cpu_test.rs", __dir__)
+
+  GitHelpers.restore_files(cpu_file, tests_file)
+
+  only_opcode = CommandlineDecoder.execute
+
+  CpuTemplatesGenerator.new(opcodes_file, cpu_file, tests_file).execute(only_opcode: only_opcode)
+end
