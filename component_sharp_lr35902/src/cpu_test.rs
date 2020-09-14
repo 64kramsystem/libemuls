@@ -1,6 +1,10 @@
+#![allow(unused_macros)]
+
 use crate::cpu::Cpu;
 use demonstrate::demonstrate;
 
+// - `post_mem_address`: set to negative value, in order to skip the mem(ory) assertion.
+//
 fn assert_cpu_execute(
     cpu: &mut Cpu,
     instruction_bytes: &[u8],
@@ -30,6 +34,7 @@ fn assert_cpu_execute(
     post_nf: bool,
     post_hf: bool,
     post_cf: bool,
+    post_mem: Option<(u16, u8)>,
     cycles_spent: u8,
 ) {
     cpu.zf = pre_zf;
@@ -64,6 +69,10 @@ fn assert_cpu_execute(
     assert_eq!(cpu.hf, post_hf);
     assert_eq!(cpu.cf, post_cf);
 
+    if let Some((post_mem_address, post_mem_value)) = post_mem {
+        assert_eq!(cpu.internal_ram[post_mem_address as usize], post_mem_value);
+    }
+
     assert_eq!(actual_cycles_spent, cycles_spent);
 }
 
@@ -91,6 +100,7 @@ macro_rules! assert_cpu_execute {
         $( nf: $nf_pre_value:literal => $nf_post_value:literal , )?
         $( hf: $hf_pre_value:literal => $hf_post_value:literal , )?
         $( cf: $cf_pre_value:literal => $cf_post_value:literal , )?
+        $( mem[$post_mem_address:literal] => $post_mem_value:literal, )?
         cycles: $cycles:literal
 ) => {
         // Alternatives to this have been evaluated here: https://users.rust-lang.org/t/any-way-to-cleanly-set-a-default-value-for-a-pseudo-named-parameter-in-a-macro/48682/6
@@ -136,6 +146,12 @@ macro_rules! assert_cpu_execute {
         let pre_cf = if (0 $( + $cf_pre_value )?) == 0 { false } else { true };
         let post_cf = if (0 $( + $cf_post_value )?) == 0 { false } else { true };
 
+        // The numerical workaround doesn't work here, unless we use some array silliness.
+        //
+        #[allow(unused_variables)]
+        let post_mem = None::<(u16, u8)>;
+        $( let post_mem = Some(($post_mem_address, $post_mem_value)); )?
+
         assert_cpu_execute(
             &mut $cpu,
             &$instruction_bytes,
@@ -143,6 +159,7 @@ macro_rules! assert_cpu_execute {
             pre_zf, pre_nf, pre_hf, pre_cf,
             post_A, post_B, post_C, post_D, post_E, post_H, post_L, post_SP, post_PC,
             post_zf, post_nf, post_hf, post_cf,
+            post_mem,
             $cycles,
         )
     };
