@@ -185,9 +185,12 @@ class CpuTemplatesGenerator
 
   OPCODES_ADDRESS = 'https://gbdev.io/gb-opcodes/Opcodes.json'
 
-  DECODING_REPLACEMENT_POINT_PATTERN = '// __OPCODES_DECODING_REPLACEMENT_POINT__'
-  EXECUTION_REPLACEMENT_POINT_PATTERN = '// __OPCODES_EXECUTION_REPLACEMENT_POINT__'
-  TESTS_REPLACEMENT_POINT_PATTERN = '// __TESTS_REPLACEMENT_POINT__'
+  DECODING_REPLACEMENT_START_PATTERN = '// __OPCODES_DECODING_REPLACEMENT_START__'
+  DECODING_REPLACEMENT_END_PATTERN = '// __OPCODES_DECODING_REPLACEMENT_END__'
+  EXECUTION_REPLACEMENT_START_PATTERN = '// __OPCODES_EXECUTION_REPLACEMENT_START__'
+  EXECUTION_REPLACEMENT_END_PATTERN = '// __OPCODES_EXECUTION_REPLACEMENT_END__'
+  TESTS_REPLACEMENT_START_PATTERN = '// __TESTS_REPLACEMENT_START__'
+  TESTS_REPLACEMENT_END_PATTERN = '// __TESTS_REPLACEMENT_END__'
 
   def initialize(opcodes_file, cpu_file, tests_file)
     @opcodes_file = opcodes_file
@@ -271,25 +274,17 @@ class CpuTemplatesGenerator
     cpu_file_content = IO.read(@cpu_file)
 
     new_cpu_file_content = cpu_file_content
-      .sub(/^ *#{DECODING_REPLACEMENT_POINT_PATTERN}\n/, cpu_decoding_code)
-      .sub(/^ *#{EXECUTION_REPLACEMENT_POINT_PATTERN}\n/, cpu_execution_code)
+      .sub(/^( *#{DECODING_REPLACEMENT_START_PATTERN}\n).*(^ *#{DECODING_REPLACEMENT_END_PATTERN}\n)/m, "\\1#{cpu_decoding_code}\\2")
+      .sub(/^( *#{EXECUTION_REPLACEMENT_START_PATTERN}\n).*(^ *#{EXECUTION_REPLACEMENT_END_PATTERN}\n)/m, "\\1#{cpu_execution_code}\\2")
 
-    if cpu_file_content == new_cpu_file_content
-      raise "CPU file content hasn't been fully replaced!"
-    else
-      IO.write(@cpu_file, new_cpu_file_content)
-    end
+    IO.write(@cpu_file, new_cpu_file_content)
 
     tests_file_content = IO.read(@tests_file)
 
     new_tests_file_content = tests_file_content
-      .sub(/^ *#{TESTS_REPLACEMENT_POINT_PATTERN}\n/, tests_code)
+      .sub(/^( *#{TESTS_REPLACEMENT_START_PATTERN}\n).*(^ *#{TESTS_REPLACEMENT_END_PATTERN})/m, "\\1#{tests_code}\\2")
 
-    if tests_file_content == new_tests_file_content
-      raise "Tests file content hasn't been fully replaced!"
-    else
-      IO.write(@tests_file, new_tests_file_content)
-    end
+    IO.write(@tests_file, new_tests_file_content)
   end
 
   ##################################################################################################

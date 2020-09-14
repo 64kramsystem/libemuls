@@ -65,7 +65,8 @@ impl Cpu {
     ///
     pub fn execute(&mut self, instruction_bytes: &[u8]) -> u8 {
         match instruction_bytes {
-            // __OPCODES_DECODING_REPLACEMENT_POINT__
+            // __OPCODES_DECODING_REPLACEMENT_START__
+            // __OPCODES_DECODING_REPLACEMENT_END__
             _ => {
                 let formatted_instruction = utils::format_hex(instruction_bytes);
                 panic!("Unsupported instruction!: {}", formatted_instruction)
@@ -73,7 +74,8 @@ impl Cpu {
         }
     }
 
-    // __OPCODES_EXECUTION_REPLACEMENT_POINT__
+    // __OPCODES_EXECUTION_REPLACEMENT_START__
+    // __OPCODES_EXECUTION_REPLACEMENT_END__
 
     // HELPERS /////////////////////////////////////////////////////////////////////////////////////
 

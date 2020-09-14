@@ -202,7 +202,8 @@ demonstrate! {
         }
 
         context "executes" {
-            // __TESTS_REPLACEMENT_POINT__
-        }
+            // __TESTS_REPLACEMENT_START__
+            // __TESTS_REPLACEMENT_END__
+          }
     }
 }
