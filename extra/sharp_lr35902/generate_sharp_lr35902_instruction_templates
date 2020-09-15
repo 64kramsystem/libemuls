@@ -22,7 +22,17 @@ module GitHelpers
   end
 end
 
+module FormattingHelpers
+  def hex(value)
+    "0x%02X" % value
+  end
+end
+
 module InstructionsData
+  include FormattingHelpers
+
+  extend self
+
   REGISTER_OPERAND = :register
   IMMEDIATE_OPERAND = :immediate
   INDIRECT_REGISTER_OPERAND = :indirect_register
@@ -334,10 +344,6 @@ class CpuTemplatesGenerator
         raise "Mismatching family data!"
       end
     end
-  end
-
-  def hex(value)
-    "0x%02X" % value
   end
 
   # Returns {"flag" => "state" }.
