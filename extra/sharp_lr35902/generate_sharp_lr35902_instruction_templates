@@ -46,28 +46,30 @@ module InstructionsData
 
   # Specifications:
   #
-  # - family_data
-  #   - operation_code:   if `zf` is set, then a boolean variable called `carry` must be set
-  #   - flags_code:       can be absent
-  #   - instruction_size: (added from json)
-  #   - flags_data:       (added from json)
-  #   - operand_types:    Array of REGISTER_OPERAND, IMMEDIATE_OPERAND, INDIRECT_REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND
-  #   - transform_opcode_data: Executed after fetching the opcode data from the JSON; destructive.
-  #   - testing:          Proc taking (*operands), returns {:extra_instruction_bytes, :data_preset, :register_expectation}
+  # ## Predefined data
+  #
+  # - operation_code:        (optional) if `zf` is set, then a boolean variable called `carry` must be set
+  # - flags_code:            (optional)
+  # - operand_types:         Array of REGISTER_OPERAND, IMMEDIATE_OPERAND, INDIRECT_REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND
+  # - transform_opcode_data: (optional) Executed after fetching the opcode data from the JSON; destructive.
+  # - testing:               Proc taking (*operands), returns {:extra_instruction_bytes, :data_preset, :register_expectation}
+  #
+  # ## Computed data
+  #
+  # - instruction_size
+  # - flags_data
   #
   # Pan doc groups some instructions that have different operand types together, e.g. `LD r1, r2`,
   # `LD r, n`, `LD r1, (r2)` and so on; this is correct in a way, but we need more a more specific
-  # taxonomy, so the families as represented here are different.
+  # taxonomy, so the families as represented here are more granular.
   #
   INSTRUCTIONS_DATA = {
     "LD r, n" => {
       prefixed: false,
       opcodes: [0x06, 0x0E, 0x16, 0x1E, 0x26, 0x2E],
-      family_data: {
-        operation_code: <<-RUST,
-      *operand = value;
-        RUST
-      },
+      operation_code: <<~RUST,
+        *operand = value;
+      RUST
       testing: ->(register, _) {
         {
           extra_instruction_bytes: [0x21],
@@ -82,11 +84,9 @@ module InstructionsData
         0x4A, 0x4B, 0x4C, 0x4D, 0x50, 0x51, 0x53, 0x54, 0x55, 0x58, 0x59, 0x5A,
         0x5C, 0x5D, 0x60, 0x61, 0x62, 0x63, 0x65, 0x68, 0x69, 0x6A, 0x6B, 0x6C,
       ],
-      family_data: {
-        operation_code: <<-RUST,
-      *operand = value;
-        RUST
-      },
+      operation_code: <<~RUST,
+        *operand = value;
+      RUST
       testing: ->(register1, register2) {
         {
           data_preset: "cpu.#{register2} = 0x21;",
@@ -99,22 +99,28 @@ module InstructionsData
       opcodes: [
         0x46, 0x4E, 0x56, 0x5E, 0x66, 0x6E, 0x7E, 0x0A, 0x1A
       ],
-      family_data: {
-        operation_code: <<-RUST,
-      *operand = value;
-        RUST
-      },
+      operation_code: <<~RUST,
+        *operand = value;
+      RUST
+      testing: ->(*operands) {
+        {
+          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+        }
+      }
     },
     "LD (r1), r2" => {
       prefixed: false,
       opcodes: [
         0x70, 0x71, 0x72, 0x73, 0x74, 0x75
       ],
-      family_data: {
-        operation_code: <<-RUST,
-      *operand = value;
-        RUST
-      },
+      operation_code: <<~RUST,
+        *operand = value;
+      RUST
+      testing: ->(*operands) {
+        {
+          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+        }
+      }
     },
     # No-ops. They are troublesome because without special handling, the register variable is
     # simultaneously borrowed as readonly and mutable, causing an error. There isn't a general way
@@ -128,84 +134,557 @@ module InstructionsData
       transform_opcode_data: ->(data) do
         data.fetch("operands").pop
       end,
-      family_data: {
-        operation_code: <<-RUST,
-      *operand = *operand;
-        RUST
-      },
+      operation_code: <<~RUST,
+        *operand = *operand;
+      RUST
+      testing: ->(*operands) {
+        {
+          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+        }
+      }
     },
     "LD (r), n" => {
       prefixed: false,
       opcodes: [
         0x36
       ],
-      family_data: {
-        operation_code: <<-RUST,
-      *operand = value;
-        RUST
-      },
+      operation_code: <<~RUST,
+        *operand = value;
+      RUST
+      testing: ->(*operands) {
+        {
+          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+        }
+      }
     },
     "LD A, (nn)" => {
       prefixed: false,
       opcodes: [0xFA],
-      family_data: {
-        operation_code: <<-RUST,
-      *operand = value;
-        RUST
-      },
+      operation_code: <<~RUST,
+        *operand = value;
+      RUST
+      testing: ->(*operands) {
+        {
+          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+        }
+      }
     },
     "LD A, n" => {
       prefixed: false,
       opcodes: [0x3E],
-      family_data: {
-        operation_code: <<-RUST,
-      *operand = value;
-        RUST
-      },
+      operation_code: <<~RUST,
+        *operand = value;
+      RUST
+      testing: ->(*operands) {
+        {
+          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+        }
+      }
     },
     "INC r" => {
       prefixed: false,
       opcodes: [0x3C, 0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C],
-      family_data: {
-        operation_code: <<-RUST,
-      let (new_value, carry) = operand.overflowing_add(1);
-      *operand = new_value;
-        RUST
-        flags_code: <<-RUST,
-      if *operand & 0b0000_1111 == 0b000_0000 {
-        *hf = true;
+      operation_code: <<~RUST,
+        let (new_value, carry) = operand.overflowing_add(1);
+        *operand = new_value;
+      RUST
+      flags_code: <<~RUST,
+        if *operand & 0b0000_1111 == 0b000_0000 {
+          *hf = true;
+        }
+      RUST
+      testing: ->(*operands) {
+        {
+          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+        }
       }
-        RUST
-      },
     },
     "INC (HL)" => {
       prefixed: false,
       opcodes: [0x34],
-      family_data: {
-        operation_code: <<-RUST,
-      let (new_value, carry) = operand.overflowing_add(1);
-      *operand = new_value;
-        RUST
-        flags_code: <<-RUST,
-      if *operand & 0b0000_1111 == 0b000_0000 {
-        *hf = true;
+      operation_code: <<~RUST,
+        let (new_value, carry) = operand.overflowing_add(1);
+        *operand = new_value;
+      RUST
+      flags_code: <<~RUST,
+        if *operand & 0b0000_1111 == 0b000_0000 {
+          *hf = true;
+        }
+      RUST
+      testing: ->(*operands) {
+        {
+          register_expectation: %Q[// todo!("Write opcode testing metadata!");],
+        }
       }
-        RUST
-      },
     },
     "NOP" => {
       prefixed: false,
       opcodes: [0x00],
-      family_data: {
-        operation_code: ""
-      },
-      testing: ->() {
-        {
-          # does nothing
-        }
-      }
+      testing: -> { {} }
     },
   }
+end
+
+class CpuDecodingTemplateGenerator
+  include InstructionsData
+  include FormattingHelpers
+
+  def initialize
+    @buffer = StringIO.new
+  end
+
+  # While the instructions could be decoded algorithmically up to a certain extent, it's not worth
+  # the complexity. For example, `PUSH nn` and `INC nn` use different bitmasks for the registers
+  # (the 4th argument shares the same bitmask (base + 11), but point to different registers in the
+  # two cases).
+
+  def add_code!(opcode, opcode_family, opcode_data, instruction_data)
+    opcode_hex = "%02X" % opcode
+    operand_types = instruction_data.fetch(:operand_types)
+    operand_names = opcode_data.fetch("operands").map { |data| data["name"] }
+
+    generate_matcher_line!(opcode_hex, operand_types)
+    generate_variable_assignments!(opcode_data, operand_types, operand_names)
+    generate_execution_method_call!(opcode_family, instruction_data, operand_types, operand_names)
+    generate_closure!(opcode_data, opcode_hex)
+  end
+
+  def code
+    @buffer.string
+  end
+
+  private
+
+  # Matcher line. Example:
+  #
+  #     [0x36, value @ _] => {
+  #
+  def generate_matcher_line!(opcode_hex, operand_types)
+    @buffer.print "            [0x#{opcode_hex}"
+
+    case operand_types
+    when []
+      # Nothing
+    when [REGISTER_OPERAND]
+      # Nothing
+    when [INDIRECT_REGISTER_OPERAND]
+      # Nothing
+    when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      @buffer.print ", value @ _"
+    when [REGISTER_OPERAND, REGISTER_OPERAND]
+      # Nothing
+    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
+      @buffer.print ", low_byte @ _, high_byte @ _"
+    when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
+      # Nothing
+    when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+      # Nothing
+    when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      @buffer.print ", value @ _"
+    else
+      # This is for safety; it's easy to miss a tuple.
+      #
+      raise "Unrecognized operand types: #{operand_types}"
+    end
+
+    @buffer.puts "] => {"
+  end
+
+  # Optional variables assigned before invoking the execution code. Example:
+  #
+  #     let address = Self::compose_address(*high_byte, *low_byte);
+  #
+  def generate_variable_assignments!(opcode_data, operand_types, operand_names)
+    operand_types.each_with_index do |operand_type, i|
+      case operand_type
+      when INDIRECT_IMMEDIATE_OPERAND
+        @buffer.puts "                let address = Self::compose_address(*high_byte, *low_byte);"
+        break
+      when INDIRECT_REGISTER_OPERAND
+        high_byte_register, low_byte_register = operand_names[i].chars
+        @buffer.puts "                let address = Self::compose_address(self.#{high_byte_register}, self.#{low_byte_register});"
+        break
+      end
+    end
+  end
+
+  # Execution method call. Example:
+  #
+  #     Self::execute_LD_nn_n(&mut self.PC, &mut self.B, *value);
+  #
+  def generate_execution_method_call!(opcode_family, instruction_data, operand_types, operand_names)
+    operand_params =
+      case operand_types
+      when []
+        # Nothing
+      when [REGISTER_OPERAND]
+        "&mut self.#{operand_names[0]}"
+      when [INDIRECT_REGISTER_OPERAND]
+        "&mut self.internal_ram[address]"
+      when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
+        [
+          "&mut self.#{operand_names[0]}",
+          "*value"
+        ]
+      when [REGISTER_OPERAND, REGISTER_OPERAND]
+        [
+          "&mut self.#{operand_names[0]}",
+          "self.#{operand_names[1]}"
+        ]
+      when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
+        [
+          "&mut self.#{operand_names[0]}",
+          "self.internal_ram[address]"
+        ]
+      when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
+        [
+          "&mut self.#{operand_names[0]}",
+          "self.internal_ram[address]"
+        ]
+      when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+        [
+          "&mut self.internal_ram[address]",
+          "self.#{operand_names[1]}"
+        ]
+      when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
+        [
+          "&mut self.internal_ram[address]",
+          "*value"
+        ]
+      else
+        raise "Unrecognized operand types: #{operand_types}"
+      end
+
+    flag_params = instruction_data.fetch(:flags_data).each_with_object([]) do |(flag, state), flag_params|
+      case state
+      when "0", "1", flag
+        flag_params << "&mut self.#{flag.downcase}f"
+      when "-"
+        # ignore
+      else
+        raise "Invalid flag state: #{state}"
+      end
+    end
+
+    all_execution_params = ["&mut self.PC", *operand_params, *flag_params].join(", ")
+
+    @buffer.puts "                Self::execute_#{opcode_family}(#{all_execution_params});"
+  end
+
+  # Closure (cycles and closing brace)
+  #
+  def generate_closure!(opcode_data, opcode_hex)
+    cycles = opcode_data.fetch("cycles")[0] || raise("Missing #{opcode_hex} cycles!")
+
+    @buffer.puts <<-RUST
+                #{cycles}
+            }
+    RUST
+  end
+end
+
+class CpuExecutionTemplatesGenerator
+  include InstructionsData
+
+  def initialize
+    @buffer = StringIO.new
+  end
+
+  def add_code!(opcode_family, instruction_data)
+    generate_method_signature!(opcode_family, instruction_data)
+    generate_register_operations!(instruction_data)
+    generate_flag_operations!(instruction_data)
+    generate_closure!
+  end
+
+  def code
+    @buffer.string
+  end
+
+  private
+
+  # Execution method call. Example:
+  #
+  #     fn execute_LD_r_n(PC: &mut u16, operand: &mut u8, value: u8) {
+  #
+  def generate_method_signature!(opcode_family, instruction_data)
+    operand_types = instruction_data.fetch(:operand_types)
+
+    @buffer.print "    fn execute_#{opcode_family}(PC: &mut u16"
+
+    case operand_types
+    when []
+      # nothing to add
+    when [REGISTER_OPERAND]
+      @buffer.print ", operand: &mut u8"
+    when [INDIRECT_REGISTER_OPERAND]
+      @buffer.print ", operand: &mut u8"
+    when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      @buffer.print ", operand: &mut u8, value: u8"
+    when [REGISTER_OPERAND, REGISTER_OPERAND]
+      @buffer.print ", operand: &mut u8, value: u8"
+    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
+      @buffer.print ", operand: &mut u8, value: u8"
+    when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
+      @buffer.print ", operand: &mut u8, value: u8"
+    when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+      @buffer.print ", operand: &mut u8, value: u8"
+    when [INDIRECT_IMMEDIATE_OPERAND, IMMEDIATE_OPERAND]
+      @buffer.print ", operand: &mut u8, value: u8"
+    when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      @buffer.print ", operand: &mut u8, value: u8"
+    else
+      raise "Unrecognized operand types: #{operand_types}"
+    end
+
+    flags_data = instruction_data.fetch(:flags_data)
+
+    flags_data.each do |flag, state|
+      case state
+      when "0", "1", flag
+        @buffer.print ", #{flag.downcase}f: &mut bool"
+      when "-"
+        # ignore
+      else
+        raise "Invalid flag state: #{state}"
+      end
+    end
+
+    @buffer.puts ") {"
+  end
+
+  # Operations involving registers. Example:
+  #
+  #     *PC += 1;
+  #
+  #     let (new_value, carry) = operand.overflowing_add(1);
+  #     *operand = new_value;
+  #
+  def generate_register_operations!(instruction_data)
+    instruction_size = instruction_data.fetch(:instruction_size)
+
+    @buffer.puts <<-RUST
+      *PC += #{instruction_size};
+
+    RUST
+
+    operation_code = instruction_data[:operation_code]
+
+    if operation_code
+      operation_code.each_line do |operation_statement|
+        @buffer.puts "      #{operation_statement}"
+      end
+      @buffer.puts
+    end
+  end
+
+  # Operations involving flags. Example:
+  #
+  #     if carry {
+  #       *zf = true;
+  #     }
+  #     *nf = false;
+  #
+  def generate_flag_operations!(instruction_data)
+    flags_code = instruction_data[:flags_code]
+
+    if flags_code
+      flags_code.each_line do |flag_statement|
+        @buffer.print "      #{flag_statement}"
+      end
+    end
+
+    flags_data = instruction_data.fetch(:flags_data)
+
+    flags_data.each do |flag, state|
+      case state
+      when "0"
+        @buffer.puts "      *#{flag.downcase}f = false;"
+      when "1"
+        @buffer.puts "      *#{flag.downcase}f = true;"
+      when flag
+        if flag == "Z"
+          @buffer.puts <<-RUST
+      if carry {
+        *zf = true;
+      }
+          RUST
+        else
+          # Make sure the operation code takes care of it!
+          #
+          raise "Missing #{opcode_family} #{flag} flag setting!" if flags_code !~ /\*#{flag.downcase}f = /
+        end
+      when "-"
+        # do nothing
+      else
+        raise "Invalid flag state: #{state}"
+      end
+    end
+  end
+
+  # Closing brace.
+  #
+  def generate_closure!
+    @buffer.puts <<-RUST
+    }
+
+    RUST
+  end
+end
+
+class TestTemplatesGenerator
+  include FormattingHelpers
+
+  def initialize
+    @buffer = StringIO.new
+  end
+
+  # This is a bit annoying, because in some cases there is a context, and in some there isn't.
+  #
+  def add_code!(opcode, opcode_family, opcode_data, instruction_data)
+    generate_header!(opcode, opcode_data, instruction_data)
+
+    if modified_flags(instruction_data).size > 0
+      test_padding = " " * 4
+    end
+
+    # Main test
+    #
+    generate_test_body!(opcode, opcode_data, instruction_data, nil, test_padding)
+
+    # Flag tests (invokes :generate_test_body!)
+    #
+    generate_flag_tests!(opcode, opcode_data, instruction_data, test_padding)
+
+    generate_closure!(instruction_data)
+  end
+
+  def code
+    @buffer.string
+  end
+
+  private
+
+  # "Header": Context (optional), and main test method.
+  #
+  # `context`, or `it` depending on flags being changed or not
+  #
+  def generate_header!(opcode, opcode_data, instruction_data)
+    opcode_mnemonic = opcode_data.fetch("mnemonic")
+    opcode_operands = opcode_data.fetch("operands").map { |data| data.fetch("name") }
+
+    main_block_title = "#{opcode_mnemonic} #{opcode_operands.join(", ")} (#{hex(opcode)})"
+
+    if modified_flags(instruction_data).empty?
+      @buffer.puts %Q[            it "#{main_block_title}" {]
+    else
+      @buffer.puts %Q[            context "#{main_block_title}" {]
+      @buffer.puts %Q(                it "without flags modified" {)
+    end
+  end
+
+  # Adding straight `todo!()` in uncommented form causes a few troubles, and it's not worth the
+  # hassle.
+  #
+  def generate_test_body!(opcode, opcode_data, instruction_data, flag_expectation, pad)
+    opcode_operands = opcode_data.fetch("operands").map { |data| data.fetch("name") }
+    testing_block = instruction_data.fetch(:testing)
+
+    extra_instruction_bytes, data_preset, register_expectation = testing_block
+      .(*opcode_operands)
+      .values_at(:extra_instruction_bytes, :data_preset, :register_expectation)
+
+    extra_instruction_bytes_str = extra_instruction_bytes.to_a.map { |byte| ", #{hex(byte)}" }.join
+
+    @buffer.print <<-RUST
+#{pad}                let instruction_bytes = [#{hex(opcode)}#{extra_instruction_bytes_str}];
+    RUST
+
+    data_preset.to_s.each_line.each_with_index do |preset_statement, i|
+      @buffer.puts if i == 0
+      @buffer.print <<-RUST
+#{pad}                #{preset_statement.strip}
+      RUST
+    end
+
+    @buffer.print <<-RUBY.gsub(/^(?!$)/, "#{pad}")
+
+                assert_cpu_execute!(
+                    cpu,
+                    instruction_bytes,
+    RUBY
+
+    instruction_size = instruction_data.fetch(:instruction_size)
+    start_pc = 0x21
+    end_pc = start_pc + instruction_size
+    cycles = opcode_data.fetch("cycles")[0]
+
+    pc_expectation = "PC: #{hex(start_pc)} => #{hex(end_pc)},"
+
+    # The memory expectation is technically a register expectation, but needs to go before the flags,
+    # so we need to perform sorting.
+    #
+    # Note that we compact(), since the register expectation is optional.
+    #
+    all_register_expectations = [register_expectation, pc_expectation].compact.sort_by do |expectation|
+      expectation.start_with?('mem[') ? 1 : -1
+    end
+
+    all_register_expectations.each do |expectation|
+      @buffer.puts "#{pad}                    #{expectation}"
+    end
+
+    @buffer.puts "#{pad}                    #{flag_expectation}" if flag_expectation
+
+    @buffer.print <<-RUBY.gsub(/^(?!$)/, "#{pad}")
+                    cycles: #{cycles}
+                );
+            }
+    RUBY
+  end
+
+  def generate_flag_tests!(opcode, opcode_data, instruction_data, test_padding)
+    modified_flags(instruction_data).each do |flag, state|
+      flag_expectation =
+        case state
+        when "0"
+          "#{flag.downcase}f: 1 => 0,"
+        when "1"
+          "#{flag.downcase}f: 0 => 1,"
+        when flag
+          %Q(// todo!("Flag #{flag.downcase}f"),)
+        else
+          raise "Unrecognized state: #{state}"
+        end
+
+      @buffer.print <<-RUBY
+
+                it "with flag #{flag} modified" {
+      RUBY
+
+      generate_test_body!(opcode, opcode_data, instruction_data, flag_expectation, test_padding)
+    end
+  end
+
+  # Optional closing brace (if there was a context).
+  #
+  def generate_closure!(instruction_data)
+    if !modified_flags(instruction_data).empty?
+      @buffer.puts "            }"
+    end
+
+    @buffer.puts
+  end
+
+  ##################################################################################################
+  # HELPERS
+  ##################################################################################################
+
+  # Returns {"flag" => "state" }.
+  #
+  def modified_flags(instruction_data)
+    instruction_data.fetch(:flags_data).select { |flag, state| state == "0" || state == "1" || flag == state }
+  end
 end
 
 class CpuTemplatesGenerator
@@ -262,20 +741,26 @@ class CpuTemplatesGenerator
   # For samples, see the corresponding `.md` document.
   #
   def generate_templates(json_data, only_opcode:)
-    cpu_decoding_code =  StringIO.new
-    cpu_execution_code = StringIO.new
-    tests_code = StringIO.new
+    decoding_generator = CpuDecodingTemplateGenerator.new
+    execution_generator = CpuExecutionTemplatesGenerator.new
+    tests_generator = TestTemplatesGenerator.new
 
-    INSTRUCTIONS_DATA.each do |opcode_family, prefixed:, opcodes:, family_data:, transform_opcode_data: nil, testing: nil|
+    # Instruction data is mutated. Due to the Proc stored, there's no trivial solution to perform a
+    # deep clone; since the data is consumed only once, keeping the worklflow simple is an acceptable
+    # solution.
+    #
+    INSTRUCTIONS_DATA.each do |opcode_family, instruction_data|
+      opcodes = instruction_data.fetch(:opcodes)
+
       next if only_opcode && !opcodes.include?(only_opcode)
 
       opcode_family_encoded = opcode_family
         .gsub(/\((\w+)\)/, 'I\1')
         .gsub(/,? /, "_")
 
-      prefixed_json_entry = prefixed ? "prefixed" : "unprefixed"
+      prefixed_json_entry = instruction_data.fetch(:prefixed) ? "prefixed" : "unprefixed"
 
-      family_instruction_size = nil
+      transform_opcode_data = instruction_data[:transform_opcode_data]
 
       opcodes.each do |opcode|
         next if only_opcode && opcode != only_opcode
@@ -284,18 +769,27 @@ class CpuTemplatesGenerator
 
         transform_opcode_data&.(opcode_data)
 
-        add_family_data_from_json!(opcode, opcode_family, family_data, opcode_data)
-
-        generate_cpu_decoding_code!(opcode, opcode_family_encoded, family_data, opcode_data, cpu_decoding_code)
-        generate_tests_code!(opcode, opcode_family, opcode_data, family_data, testing, tests_code)
+        # This procedure is essentially a denormalization of the (extra) instruction data.
+        #
+        extra_instruction_data = extract_instructions_data_from_opcode_data(opcode_data)
+        checked_copy_extra_instruction_data!(opcode, extra_instruction_data, instruction_data)
       end
 
-      generate_cpu_execution_code!(opcode_family_encoded, family_data, cpu_execution_code)
+      opcodes.each do |opcode|
+        next if only_opcode && opcode != only_opcode
+
+        opcode_data = json_data.fetch(prefixed_json_entry).fetch(hex(opcode))
+
+        decoding_generator.add_code!(opcode, opcode_family_encoded, opcode_data, instruction_data)
+        tests_generator.add_code!(opcode, opcode_family, opcode_data, instruction_data)
+      end
+
+      execution_generator.add_code!(opcode_family_encoded, instruction_data)
     end
 
     # Remove the trailing empty line, if any.
     #
-    [cpu_decoding_code, cpu_execution_code, tests_code].map { |buffer| buffer.string.sub(/^\n\Z/, '') }
+    [decoding_generator, execution_generator, tests_generator].map { |generator| generator.code.sub(/^\n\Z/, '') }
   end
 
   def insert_content_in_source_files(cpu_decoding_code, cpu_execution_code, tests_code)
@@ -316,13 +810,14 @@ class CpuTemplatesGenerator
   end
 
   ##################################################################################################
-  # HELPERS
+  # DATA MANIPULATION
   ##################################################################################################
 
-  def add_family_data_from_json!(opcode, opcode_family, family_data, opcode_data)
+  # Returns [flags_data, instruction_size, operand_types].
+  #
+  def extract_instructions_data_from_opcode_data(opcode_data)
     flags_data = opcode_data.fetch("flags")
     instruction_size = opcode_data.fetch("bytes")
-
     operands_data = opcode_data.fetch("operands")
 
     # WATCH OUT!! The JSON gets the "immediate" metadata wrong; the correct semantic is is the
@@ -330,6 +825,7 @@ class CpuTemplatesGenerator
     #
     operand_types = operands_data.map do |operand_data|
       operand_name = operand_data.fetch("name")
+
       case operand_name
       when "d8"
         IMMEDIATE_OPERAND
@@ -345,387 +841,27 @@ class CpuTemplatesGenerator
       end
     end
 
-    if !family_data.key?(:flags_data)
-      family_data.merge!(
-        flags_data: flags_data,
-        instruction_size: instruction_size,
-        operand_types: operand_types
-      )
-    else
-      existing_family_data = family_data.fetch_values(:flags_data, :instruction_size, :operand_types)
+    {
+      flags_data: flags_data,
+      instruction_size: instruction_size,
+      operand_types: operand_types,
+    }
+  end
 
-      if existing_family_data != [flags_data, instruction_size, operand_types]
+  def checked_copy_extra_instruction_data!(opcode, extra_instruction_data, instruction_data)
+    if !instruction_data.key?(:flags_data)
+      instruction_data.merge!(extra_instruction_data)
+    else
+      subset_instruction_data = instruction_data.slice(:flags_data, :instruction_size, :operand_types)
+
+      if extra_instruction_data != subset_instruction_data
         puts "Opcode: #{hex(opcode)}"
-        puts "EXISTING: #{existing_family_data}"
-        puts "CURRENT:  #{[flags_data, instruction_size, operand_types]}"
+        puts "EXISTING: #{subset_instruction_data}"
+        puts "CURRENT:  #{extra_instruction_data}"
         debugger
         raise "Mismatching family data!"
       end
     end
-  end
-
-  # Returns {"flag" => "state" }.
-  #
-  def modified_flags(family_data)
-    family_data.fetch(:flags_data).select { |flag, state| state == "0" || state == "1" || flag == state }
-  end
-
-  ##################################################################################################
-  # GENERATION
-  ##################################################################################################
-
-  # This logic could go into a separate class, however, given how small the rest of the code is, it's
-  # ok to keep it here.
-  #
-  # While the instructions could be decoded algorithmically up to a certain extent, it's not worth
-  # the complexity. For example, `PUSH nn` and `INC nn` use different bitmasks for the registers
-  # (the 4th argument shares the same bitmask (base + 11), but point to different registers in the
-  # two cases).
-
-  def generate_cpu_decoding_code!(opcode, opcode_family, family_data, opcode_data, cpu_code)
-    opcode_hex = "%02X" % opcode
-    operand_types = family_data.fetch(:operand_types)
-
-    ############################################################################
-    # MATCHER
-    # e.g.: `[0x36, value @ _] => {`
-    ############################################################################
-
-    cpu_code.print "            [0x#{opcode_hex}"
-
-    case operand_types
-    when []
-      # Nothing
-    when [REGISTER_OPERAND]
-      # Nothing
-    when [INDIRECT_REGISTER_OPERAND]
-      # Nothing
-    when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
-      cpu_code.print ", value @ _"
-    when [REGISTER_OPERAND, REGISTER_OPERAND]
-      # Nothing
-    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
-      @cpu_code.print ", low_byte @ _, high_byte @ _"
-    when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
-      # Nothing
-    when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
-      # Nothing
-    when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
-      cpu_code.print ", value @ _"
-    else
-      # This is for safety; it's easy to miss a tuple.
-      #
-      raise "Unrecognized operand types: #{operand_types}"
-    end
-
-    cpu_code.puts "] => {"
-
-    ############################################################################
-    # PRE-INVOCATION STATEMENTS
-    # e.g.: `let address = Self::compose_address(*high_byte, *low_byte);`
-    ############################################################################
-
-    operand_names = opcode_data.fetch("operands").map { |data| data["name"] }
-
-    operand_types.each_with_index do |operand_type, i|
-      case operand_type
-      when INDIRECT_IMMEDIATE_OPERAND
-        cpu_code.puts "                let address = Self::compose_address(*high_byte, *low_byte);"
-        break
-      when INDIRECT_REGISTER_OPERAND
-        high_byte_register, low_byte_register = operand_names[i].chars
-        cpu_code.puts "                let address = Self::compose_address(self.#{high_byte_register}, self.#{low_byte_register});"
-        break
-      end
-    end
-
-    ############################################################################
-    # EXECUTE METHOD CALL
-    # e.g. `Self::execute_LD_nn_n(&mut self.PC, &mut self.B, *value);`
-    ############################################################################
-
-    operand_params =
-      case operand_types
-      when []
-        # Nothing
-      when [REGISTER_OPERAND]
-        "&mut self.#{operand_names[0]}"
-      when [INDIRECT_REGISTER_OPERAND]
-        "&mut self.internal_ram[address]"
-      when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
-        [
-          "&mut self.#{operand_names[0]}",
-          "*value"
-        ]
-      when [REGISTER_OPERAND, REGISTER_OPERAND]
-        [
-          "&mut self.#{operand_names[0]}",
-          "self.#{operand_names[1]}"
-        ]
-      when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
-        [
-          "&mut self.#{operand_names[0]}",
-          "self.internal_ram[address]"
-        ]
-      when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
-        [
-          "&mut self.#{operand_names[0]}",
-          "self.internal_ram[address]"
-        ]
-      when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
-        [
-          "&mut self.internal_ram[address]",
-          "self.#{operand_names[1]}"
-        ]
-      when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
-        [
-          "&mut self.internal_ram[address]",
-          "*value"
-        ]
-      else
-        raise "Unrecognized operand types: #{operand_types}"
-      end
-
-    flag_params = family_data.fetch(:flags_data).each_with_object([]) do |(flag, state), flag_params|
-      case state
-      when "0", "1", flag
-        flag_params << "&mut self.#{flag.downcase}f"
-      when "-"
-        # ignore
-      else
-        raise "Invalid flag state: #{state}"
-      end
-    end
-
-    all_execution_params = ["&mut self.PC", *operand_params, *flag_params].join(", ")
-
-    cpu_code.puts "                Self::execute_#{opcode_family}(#{all_execution_params});"
-
-    ############################################################################
-    # CLOSURE
-    # cycles and closing brace
-    ############################################################################
-
-    cycles = opcode_data.fetch("cycles")[0] || raise("Missing #{opcode_hex} cycles!")
-
-    cpu_code.puts <<-RUST
-                #{cycles}
-            }
-    RUST
-  end
-
-  def generate_cpu_execution_code!(opcode_family, family_data, cpu_code)
-    instruction_size = family_data.fetch(:instruction_size)
-    flags_data = family_data.fetch(:flags_data)
-    operand_types = family_data.fetch(:operand_types)
-
-    cpu_code.print "    fn execute_#{opcode_family}(PC: &mut u16"
-
-    case operand_types
-    when []
-      # nothing to add
-    when [REGISTER_OPERAND]
-      cpu_code.print ", operand: &mut u8"
-    when [INDIRECT_REGISTER_OPERAND]
-      cpu_code.print ", operand: &mut u8"
-    when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
-      cpu_code.print ", operand: &mut u8, value: u8"
-    when [REGISTER_OPERAND, REGISTER_OPERAND]
-      cpu_code.print ", operand: &mut u8, value: u8"
-    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
-      cpu_code.print ", operand: &mut u8, value: u8"
-    when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
-      cpu_code.print ", operand: &mut u8, value: u8"
-    when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
-      cpu_code.print ", operand: &mut u8, value: u8"
-    when [INDIRECT_IMMEDIATE_OPERAND, IMMEDIATE_OPERAND]
-      cpu_code.print ", operand: &mut u8, value: u8"
-    when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
-      cpu_code.print ", operand: &mut u8, value: u8"
-    else
-      raise "Unrecognized operand types: #{operand_types}"
-  end
-
-    flags_data.each do |flag, state|
-      case state
-      when "0", "1", flag
-        cpu_code.print ", #{flag.downcase}f: &mut bool"
-      when "-"
-        # ignore
-      else
-        raise "Invalid flag state: #{state}"
-      end
-    end
-
-    cpu_code.puts ") {"
-
-    cpu_code.puts <<-RUST
-      *PC += #{instruction_size};
-
-    RUST
-
-    operation_code = family_data.fetch(:operation_code)
-
-    cpu_code.puts operation_code, "\n"
-
-    flags_code = family_data[:flags_code]
-
-    if flags_code
-      cpu_code.puts flags_code
-    end
-
-    flags_data.each do |flag, state|
-      case state
-      when "0"
-        cpu_code.puts "      *#{flag.downcase}f = false;"
-      when "1"
-        cpu_code.puts "      *#{flag.downcase}f = true;"
-      when flag
-        if flag == "Z"
-          cpu_code.puts <<-RUST
-      if carry {
-        *zf = true;
-      }
-          RUST
-        else
-          # Make sure the operation code takes care of it!
-          #
-          raise "Missing #{opcode_family} #{flag} flag setting!" if flags_code !~ /\*#{flag.downcase}f = /
-        end
-      when "-"
-        # do nothing
-      else
-        raise "Invalid flag state: #{state}"
-      end
-    end
-
-    cpu_code.puts <<-RUST
-    }
-
-    RUST
-  end
-
-  def generate_tests_code!(opcode, opcode_family, opcode_data, family_data, testing_block, tests_code)
-    ############################################################################
-    # HEADER
-    # `context`, or `it` depending on flags being changed or not
-    ############################################################################
-
-    opcode_mnemonic = opcode_data.fetch("mnemonic")
-    opcode_operands = opcode_data.fetch("operands").map { |data| data.fetch("name") }
-
-    main_block_title = "#{opcode_mnemonic} #{opcode_operands.join(", ")} (#{hex(opcode)})"
-
-    if modified_flags(family_data).empty?
-      tests_code.puts %Q[            it "#{main_block_title}" {]
-    else
-      tests_code.puts %Q[            context "#{main_block_title}" {]
-      tests_code.puts %Q(                it "without flags modified" {)
-
-      test_padding = " " * 4
-    end
-
-    ############################################################################
-    # TEST BODY
-    ############################################################################
-
-    generate_test_body!(opcode, opcode_data, family_data, testing_block, nil, test_padding, tests_code)
-
-    modified_flags(family_data).each do |flag, state|
-      flag_expectation =
-        case state
-        when "0"
-          "#{flag.downcase}f: 1 => 0,"
-        when "1"
-          "#{flag.downcase}f: 0 => 1,"
-        when flag
-          %Q(// todo!("Flag #{flag.downcase}f"),)
-        else
-          raise "Unrecognized state: #{state}"
-        end
-
-      tests_code.print <<-RUBY
-
-                it "with flag #{flag} modified" {
-      RUBY
-
-      generate_test_body!(opcode, opcode_data, family_data, testing_block, flag_expectation, test_padding, tests_code)
-    end
-
-    ############################################################################
-    # CLOSING BRANCE
-    ############################################################################
-
-    if !modified_flags(family_data).empty?
-      tests_code.puts "            }"
-    end
-
-    tests_code.puts
-  end
-
-  # Adding straight `todo!()` in uncommented form causes a few troubles, and it's not worth the
-  # hassle.
-  #
-  def generate_test_body!(opcode, opcode_data, family_data, testing_block, flag_expectation, pad, tests_code)
-    opcode_operands = opcode_data.fetch("operands").map { |data| data.fetch("name") }
-    instruction_size = family_data.fetch(:instruction_size)
-
-    start_pc = 0x21
-    end_pc = start_pc + instruction_size
-    cycles = opcode_data.fetch("cycles")[0]
-
-    if testing_block
-      extra_instruction_bytes, data_preset, register_expectation = testing_block
-        .(*opcode_operands)
-        .values_at(:extra_instruction_bytes, :data_preset, :register_expectation)
-
-      # Optional.
-      extra_instruction_bytes_str = extra_instruction_bytes.to_a.map { |byte| ", #{hex(byte)}" }.join
-
-      tests_code.puts "#{pad}                let instruction_bytes = [#{hex(opcode)}#{extra_instruction_bytes_str}];"
-      tests_code.puts "#{pad}                #{data_preset}" if data_preset
-    else
-      if instruction_size == 0
-        tests_code.puts "#{pad}                let instruction_bytes = [#{hex(opcode)}];"
-      else
-        tests_code.print <<-RUST.gsub(/^(?!$)/, "#{pad}")
-                // todo!("extra instruction bytes");
-                let instruction_bytes = [#{hex(opcode)}];
-        RUST
-      end
-
-      register_expectation = %Q(// todo!("register expectation");)
-    end
-
-    tests_code.print <<-RUBY.gsub(/^(?!$)/, "#{pad}")
-
-                assert_cpu_execute!(
-                    cpu,
-                    instruction_bytes,
-    RUBY
-
-    pc_expectation = "PC: #{hex(start_pc)} => #{hex(end_pc)},"
-
-    # The memory expectation is technically a register expectation, but needs to go before the flags,
-    # so we need to perform sorting.
-    #
-    # Note that we compact(), since the register expectation is optional.
-    #
-    all_register_expectations = [register_expectation, pc_expectation].compact.sort_by do |expectation|
-      expectation.start_with?('mem[') ? 1 : -1
-    end
-
-    all_register_expectations.each do |expectation|
-      tests_code.puts "#{pad}                    #{expectation}"
-    end
-
-    tests_code.puts "#{pad}                    #{flag_expectation}" if flag_expectation
-
-    tests_code.print <<-RUBY.gsub(/^(?!$)/, "#{pad}")
-                    cycles: #{cycles}
-                );
-            }
-    RUBY
   end
 end
 
