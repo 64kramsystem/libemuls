@@ -53,6 +53,7 @@ module InstructionsData
   #   - flags_data:       (added from json)
   #   - operand_types:    Array of REGISTER_OPERAND, IMMEDIATE_OPERAND, INDIRECT_REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND
   #   - transform_opcode_data: Executed after fetching the opcode data from the JSON; destructive.
+  #   - testing:          Proc taking (*operands), returns {:extra_instruction_bytes, :data_preset, :register_expectation}
   #
   # Pan doc groups some instructions that have different operand types together, e.g. `LD r1, r2`,
   # `LD r, n`, `LD r1, (r2)` and so on; this is correct in a way, but we need more a more specific
@@ -67,6 +68,12 @@ module InstructionsData
       *operand = value;
         RUST
       },
+      testing: ->(register, _) {
+        {
+          extra_instruction_bytes: [0x21],
+          register_expectation: "#{register}: 0x00 => 0x21,"
+        }
+      }
     },
     "LD r1, r2" => {
       prefixed: false,
@@ -80,6 +87,12 @@ module InstructionsData
       *operand = value;
         RUST
       },
+      testing: ->(register1, register2) {
+        {
+          data_preset: "cpu.#{register2} = 0x21;",
+          register_expectation: "#{register1}: 0x00 => 0x21,",
+        }
+      }
     },
     "LD r1, (r2)" => {
       prefixed: false,
@@ -186,6 +199,11 @@ module InstructionsData
       family_data: {
         operation_code: ""
       },
+      testing: ->() {
+        {
+          # does nothing
+        }
+      }
     },
   }
 end
@@ -248,7 +266,7 @@ class CpuTemplatesGenerator
     cpu_execution_code = StringIO.new
     tests_code = StringIO.new
 
-    INSTRUCTIONS_DATA.each do |opcode_family, prefixed:, opcodes:, family_data:, transform_opcode_data: nil|
+    INSTRUCTIONS_DATA.each do |opcode_family, prefixed:, opcodes:, family_data:, transform_opcode_data: nil, testing: nil|
       next if only_opcode && !opcodes.include?(only_opcode)
 
       opcode_family_encoded = opcode_family
@@ -269,7 +287,7 @@ class CpuTemplatesGenerator
         add_family_data_from_json!(opcode, opcode_family, family_data, opcode_data)
 
         generate_cpu_decoding_code!(opcode, opcode_family_encoded, family_data, opcode_data, cpu_decoding_code)
-        generate_tests_code!(opcode, opcode_family, opcode_data, family_data, tests_code)
+        generate_tests_code!(opcode, opcode_family, opcode_data, family_data, testing, tests_code)
       end
 
       generate_cpu_execution_code!(opcode_family_encoded, family_data, cpu_execution_code)
@@ -587,7 +605,7 @@ class CpuTemplatesGenerator
     RUST
   end
 
-  def generate_tests_code!(opcode, opcode_family, opcode_data, family_data, tests_code)
+  def generate_tests_code!(opcode, opcode_family, opcode_data, family_data, testing_block, tests_code)
     ############################################################################
     # HEADER
     # `context`, or `it` depending on flags being changed or not
@@ -602,49 +620,19 @@ class CpuTemplatesGenerator
       tests_code.puts %Q[            it "#{main_block_title}" {]
     else
       tests_code.puts %Q[            context "#{main_block_title}" {]
-    end
-
-    ############################################################################
-    # MAIN TEST
-    ############################################################################
-
-    # Adding straight `todo!()` in uncommented form causes a few troubles, and it's not worth the
-    # hassle.
-
-    instruction_size = family_data.fetch(:instruction_size)
-
-    start_pc = 0x21
-    end_pc = start_pc + instruction_size
-    cycles = opcode_data.fetch("cycles")[0]
-
-    if !modified_flags(family_data).empty?
-      main_test_padding = " " * 4
       tests_code.puts %Q(                it "without flags modified" {)
+
+      test_padding = " " * 4
     end
 
-    if instruction_size > 1
-      tests_code.puts %Q[#{main_test_padding}                // todo!("extra instruction bytes");]
-    end
-
-    tests_code.print <<-RUBY.gsub(/^(?!$)/, "#{main_test_padding}")
-                let instruction_bytes = [#{hex(opcode)}];
-
-                assert_cpu_execute!(
-                    cpu,
-                    instruction_bytes,
-                    // todo!("register expectation");
-                    PC: #{hex(start_pc)} => #{hex(end_pc)},
-                    cycles: #{cycles}
-                );
-            }
-    RUBY
-
     ############################################################################
-    # FLAG TESTS (OPTIONAL)
+    # TEST BODY
     ############################################################################
+
+    generate_test_body!(opcode, opcode_data, family_data, testing_block, nil, test_padding, tests_code)
 
     modified_flags(family_data).each do |flag, state|
-      flag_state_expectation =
+      flag_expectation =
         case state
         when "0"
           "#{flag.downcase}f: 1 => 0,"
@@ -656,30 +644,12 @@ class CpuTemplatesGenerator
           raise "Unrecognized state: #{state}"
         end
 
-      if instruction_size > 1
-        tests_code.puts %Q[#{main_test_padding}                    // todo!("extra instruction bytes");]
-      end
-
-      # Substantially similar to the main UT; deduplicating has pros/cons, but
-      # not really meaningful ones.
-      #
       tests_code.print <<-RUBY
 
                 it "with flag #{flag} modified" {
-                    let instruction_bytes = [#{hex(opcode)}];
       RUBY
 
-      tests_code.print <<-RUBY
-                    assert_cpu_execute!(
-                        cpu,
-                        instruction_bytes,
-                        // todo!("register expectation");
-                        PC: #{hex(start_pc)} => #{hex(end_pc)},
-                        #{flag_state_expectation}
-                        cycles: #{cycles}
-                    );
-                }
-      RUBY
+      generate_test_body!(opcode, opcode_data, family_data, testing_block, flag_expectation, test_padding, tests_code)
     end
 
     ############################################################################
@@ -691,6 +661,71 @@ class CpuTemplatesGenerator
     end
 
     tests_code.puts
+  end
+
+  # Adding straight `todo!()` in uncommented form causes a few troubles, and it's not worth the
+  # hassle.
+  #
+  def generate_test_body!(opcode, opcode_data, family_data, testing_block, flag_expectation, pad, tests_code)
+    opcode_operands = opcode_data.fetch("operands").map { |data| data.fetch("name") }
+    instruction_size = family_data.fetch(:instruction_size)
+
+    start_pc = 0x21
+    end_pc = start_pc + instruction_size
+    cycles = opcode_data.fetch("cycles")[0]
+
+    if testing_block
+      extra_instruction_bytes, data_preset, register_expectation = testing_block
+        .(*opcode_operands)
+        .values_at(:extra_instruction_bytes, :data_preset, :register_expectation)
+
+      # Optional.
+      extra_instruction_bytes_str = extra_instruction_bytes.to_a.map { |byte| ", #{hex(byte)}" }.join
+
+      tests_code.puts "#{pad}                let instruction_bytes = [#{hex(opcode)}#{extra_instruction_bytes_str}];"
+      tests_code.puts "#{pad}                #{data_preset}" if data_preset
+    else
+      if instruction_size == 0
+        tests_code.puts "#{pad}                let instruction_bytes = [#{hex(opcode)}];"
+      else
+        tests_code.print <<-RUST.gsub(/^(?!$)/, "#{pad}")
+                // todo!("extra instruction bytes");
+                let instruction_bytes = [#{hex(opcode)}];
+        RUST
+      end
+
+      register_expectation = %Q(// todo!("register expectation");)
+    end
+
+    tests_code.print <<-RUBY.gsub(/^(?!$)/, "#{pad}")
+
+                assert_cpu_execute!(
+                    cpu,
+                    instruction_bytes,
+    RUBY
+
+    pc_expectation = "PC: #{hex(start_pc)} => #{hex(end_pc)},"
+
+    # The memory expectation is technically a register expectation, but needs to go before the flags,
+    # so we need to perform sorting.
+    #
+    # Note that we compact(), since the register expectation is optional.
+    #
+    all_register_expectations = [register_expectation, pc_expectation].compact.sort_by do |expectation|
+      expectation.start_with?('mem[') ? 1 : -1
+    end
+
+    all_register_expectations.each do |expectation|
+      tests_code.puts "#{pad}                    #{expectation}"
+    end
+
+    tests_code.puts "#{pad}                    #{flag_expectation}" if flag_expectation
+
+    tests_code.print <<-RUBY.gsub(/^(?!$)/, "#{pad}")
+                    cycles: #{cycles}
+                );
+            }
+    RUBY
   end
 end
 
