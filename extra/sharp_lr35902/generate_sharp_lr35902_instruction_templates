@@ -102,12 +102,20 @@ module InstructionsData
       operation_code: <<~RUST,
         *operand = value;
       RUST
-      testing: ->(*operands) {
+      testing: ->(register1, register2) {
         {
-          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+          data_preset: <<~RUST,
+            cpu.internal_ram[0x0CAF] = 0x21;
+            cpu.#{register2[0]} = 0x0C;
+            cpu.#{register2[1]} = 0xAF;
+          RUST
+          register_expectation: "#{register1}: 0x00 => 0x21,",
         }
       }
     },
+    # Supporting 0x74 and 0x75 (`LD (HL), H/L`) makes the logic a bit more complex (and, for these
+    # two cases, part redundant).
+    #
     "LD (r1), r2" => {
       prefixed: false,
       opcodes: [
@@ -116,9 +124,16 @@ module InstructionsData
       operation_code: <<~RUST,
         *operand = value;
       RUST
-      testing: ->(*operands) {
+      testing: ->(register1, register2) {
         {
-          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+          data_preset: <<~RUST,
+            cpu.#{register2} = 0x21;
+            cpu.#{register1[0]} = 0x0C;
+            cpu.#{register1[1]} = 0xAF;
+
+            let expected_value = cpu.#{register2};
+          RUST
+          register_expectation: "mem[0x0CAF] => expected_value,",
         }
       }
     },
@@ -137,9 +152,10 @@ module InstructionsData
       operation_code: <<~RUST,
         *operand = *operand;
       RUST
-      testing: ->(*operands) {
+      testing: ->(register) {
         {
-          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+          data_preset: "cpu.#{register} = 0x21;",
+          register_expectation: "#{register}: 0x21 => 0x21,",
         }
       }
     },
@@ -151,9 +167,14 @@ module InstructionsData
       operation_code: <<~RUST,
         *operand = value;
       RUST
-      testing: ->(*operands) {
+      testing: ->(register, _) {
         {
-          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+          extra_instruction_bytes: [0x21],
+          data_preset: <<~RUST,
+            cpu.#{register[0]} = 0x0C;
+            cpu.#{register[1]} = 0xAF;
+          RUST
+          register_expectation: "mem[0x0CAF] => 0x21,",
         }
       }
     },
@@ -163,9 +184,11 @@ module InstructionsData
       operation_code: <<~RUST,
         *operand = value;
       RUST
-      testing: ->(*operands) {
+      testing: ->(_, _) {
         {
-          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+          extra_instruction_bytes: [0xAF, 0x0C],
+          data_preset: "cpu.internal_ram[0x0CAF] = 0x21;",
+          register_expectation: "A: 0x00 => 0x21,",
         }
       }
     },
@@ -175,9 +198,10 @@ module InstructionsData
       operation_code: <<~RUST,
         *operand = value;
       RUST
-      testing: ->(*operands) {
+      testing: ->(_, _) {
         {
-          register_expectation: %Q[// todo!("Write opcode testing metadata!")],
+          extra_instruction_bytes: [0x21],
+          register_expectation: "A: 0x00 => 0x21,",
         }
       }
     },
