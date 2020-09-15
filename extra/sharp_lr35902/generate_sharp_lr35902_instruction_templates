@@ -563,22 +563,30 @@ class TestTemplatesGenerator
     @buffer = StringIO.new
   end
 
-  # This is a bit annoying, because in some cases there is a context, and in some there isn't.
+  # Creates tests with the form:
+  #
+  #     context "INC A (0x3C)" {
+  #         it "without conditional flag modifications" {
+  #             // ...
+  #         }
+  #
+  #         it "with flag Z modified" {
+  #             // ...
+  #         }
+  #
+  # Originally, for instuctions that don't have conditional flag modifications, the context
+  # was not created (the only test would carry that description) , however, this was a headache, and
+  # it's perfectly ok to always have a context (from the consistency point of view, it's actually
+  # better).
+  #
+  # The exact naming of the flag concepts is a bit too verbose, so we oversimplify, and use
+  # "un/conditional".
   #
   def add_code!(opcode, opcode_family, opcode_data, instruction_data)
     generate_header!(opcode, opcode_data, instruction_data)
 
-    if modified_flags(instruction_data).size > 0
-      test_padding = " " * 4
-    end
-
-    # Main test
-    #
-    generate_test_body!(opcode, opcode_data, instruction_data, nil, test_padding)
-
-    # Flag tests (invokes :generate_test_body!)
-    #
-    generate_flag_tests!(opcode, opcode_data, instruction_data, test_padding)
+    generate_unconditional_test!(opcode, opcode_data, instruction_data)
+    generate_conditional_test!(opcode, opcode_data, instruction_data)
 
     generate_closure!(instruction_data)
   end
@@ -597,20 +605,56 @@ class TestTemplatesGenerator
     opcode_mnemonic = opcode_data.fetch("mnemonic")
     opcode_operands = opcode_data.fetch("operands").map { |data| data.fetch("name") }
 
-    main_block_title = "#{opcode_mnemonic} #{opcode_operands.join(", ")} (#{hex(opcode)})"
+    @buffer.print <<-RUST
+            context "#{opcode_mnemonic} #{opcode_operands.join(", ")} (#{hex(opcode)})" {
+    RUST
+  end
 
-    if modified_flags(instruction_data).empty?
-      @buffer.puts %Q[            it "#{main_block_title}" {]
-    else
-      @buffer.puts %Q[            context "#{main_block_title}" {]
-      @buffer.puts %Q(                it "without flags modified" {)
+  def generate_unconditional_test!(opcode, opcode_data, instruction_data)
+    title = %Q[it "without conditional flag modifications" {]
+
+    flag_data = instruction_data.fetch(:flags_data)
+
+    unconditional_flags = flag_data.select { |_, state| state == "0" || state == "1" }
+    boolean = {"0" => "false", "1" => "true"}
+    reverse = {"0" => "1", "1" => "0"}
+
+    flags_preset = unconditional_flags.map do |flag, state|
+      "cpu.#{flag.downcase}f = #{boolean[reverse[state]]};"
+    end
+
+    flag_expectations = unconditional_flags.map do |flag, state|
+      "#{flag.downcase}f: #{reverse[state]} => #{state},"
+    end
+
+    generate_test_body!(opcode, opcode_data, instruction_data, title, flags_preset, flag_expectations)
+  end
+
+  def generate_conditional_test!(opcode, opcode_data, instruction_data)
+    flag_data = instruction_data.fetch(:flags_data)
+
+    conditional_flags = flag_data.select { |flag, state| flag == state }
+
+    conditional_flags.each do |flag, state|
+      @buffer.puts
+
+      title = %Q[it "with flag #{flag} modified" {]
+
+      flag_preset = %Q[// todo!("Preset flag #{flag}");]
+      flag_expectation = %Q[// todo!("Test flag #{flag}");]
+
+      generate_test_body!(opcode, opcode_data, instruction_data, title, [flag_preset], [flag_expectation])
     end
   end
 
   # Adding straight `todo!()` in uncommented form causes a few troubles, and it's not worth the
   # hassle.
   #
-  def generate_test_body!(opcode, opcode_data, instruction_data, flag_expectation, pad)
+  def generate_test_body!(opcode, opcode_data, instruction_data, title, flags_preset, flag_expectations)
+    @buffer.print <<-RUST
+                #{title}
+    RUST
+
     opcode_operands = opcode_data.fetch("operands").map { |data| data.fetch("name") }
     testing_block = instruction_data.fetch(:testing)
 
@@ -621,22 +665,33 @@ class TestTemplatesGenerator
     extra_instruction_bytes_str = extra_instruction_bytes.to_a.map { |byte| ", #{hex(byte)}" }.join
 
     @buffer.print <<-RUST
-#{pad}                let instruction_bytes = [#{hex(opcode)}#{extra_instruction_bytes_str}];
+                    let instruction_bytes = [#{hex(opcode)}#{extra_instruction_bytes_str}];
     RUST
 
-    data_preset.to_s.each_line.each_with_index do |preset_statement, i|
-      @buffer.puts if i == 0
+    @buffer.puts if data_preset || flags_preset.size > 0
+
+    data_preset.to_s.each_line.map(&:strip).each do |preset_statement|
+      if preset_statement.empty?
+        @buffer.puts
+      else
+        @buffer.print <<-RUST
+                    #{preset_statement}
+        RUST
+      end
+    end
+
+    flags_preset.each do |preset_statement|
       @buffer.print <<-RUST
-#{pad}                #{preset_statement.strip}
+                    #{preset_statement}
       RUST
     end
 
-    @buffer.print <<-RUBY.gsub(/^(?!$)/, "#{pad}")
+    @buffer.print <<-RUST
 
-                assert_cpu_execute!(
-                    cpu,
-                    instruction_bytes,
-    RUBY
+                    assert_cpu_execute!(
+                        cpu,
+                        instruction_bytes,
+    RUST
 
     instruction_size = instruction_data.fetch(:instruction_size)
     start_pc = 0x21
@@ -655,59 +710,27 @@ class TestTemplatesGenerator
     end
 
     all_register_expectations.each do |expectation|
-      @buffer.puts "#{pad}                    #{expectation}"
+      @buffer.puts "                        #{expectation}"
     end
 
-    @buffer.puts "#{pad}                    #{flag_expectation}" if flag_expectation
-
-    @buffer.print <<-RUBY.gsub(/^(?!$)/, "#{pad}")
-                    cycles: #{cycles}
-                );
-            }
-    RUBY
-  end
-
-  def generate_flag_tests!(opcode, opcode_data, instruction_data, test_padding)
-    modified_flags(instruction_data).each do |flag, state|
-      flag_expectation =
-        case state
-        when "0"
-          "#{flag.downcase}f: 1 => 0,"
-        when "1"
-          "#{flag.downcase}f: 0 => 1,"
-        when flag
-          %Q(// todo!("Flag #{flag.downcase}f"),)
-        else
-          raise "Unrecognized state: #{state}"
-        end
-
-      @buffer.print <<-RUBY
-
-                it "with flag #{flag} modified" {
-      RUBY
-
-      generate_test_body!(opcode, opcode_data, instruction_data, flag_expectation, test_padding)
+    flag_expectations.each do |expectation|
+      @buffer.puts "                        #{expectation}"
     end
+
+    @buffer.print <<-RUST
+                        cycles: #{cycles}
+                    );
+                }
+    RUST
   end
 
-  # Optional closing brace (if there was a context).
+  # Closing brace, with trailing space.
   #
   def generate_closure!(instruction_data)
-    if !modified_flags(instruction_data).empty?
-      @buffer.puts "            }"
-    end
+    @buffer.puts <<-RUST
+            }
 
-    @buffer.puts
-  end
-
-  ##################################################################################################
-  # HELPERS
-  ##################################################################################################
-
-  # Returns {"flag" => "state" }.
-  #
-  def modified_flags(instruction_data)
-    instruction_data.fetch(:flags_data).select { |flag, state| state == "0" || state == "1" || flag == state }
+    RUST
   end
 end
 
