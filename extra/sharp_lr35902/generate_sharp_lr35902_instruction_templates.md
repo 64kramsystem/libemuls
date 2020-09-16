@@ -118,7 +118,7 @@ The `immediate` field is wrong, both in the semantic and the data (see https://g
 ### cpu_test.rs
 
 ```rust
-            context "LD B, d8 (0x06)" {
+            context "LD B, d8 [0x06]" {
                 it "without conditional flag modifications" {
                     let instruction_bytes = [0x06, 0x21];
 
@@ -132,35 +132,39 @@ The `immediate` field is wrong, both in the semantic and the data (see https://g
                 }
             }
 
-            context "INC A (0x3C)" {
+            context "INC (HL) [0x34]" {
                 it "without conditional flag modifications" {
-                    let instruction_bytes = [0x3C];
+                    let instruction_bytes = [0x34];
 
-                    cpu.A = 0x21;
+                    cpu.internal_ram[0x0CAF] = 0x21;
+                    cpu.H = 0x0C;
+                    cpu.L = 0xAF;
                     cpu.nf = true;
 
                     assert_cpu_execute!(
                         cpu,
                         instruction_bytes,
-                        A: 0x21 => 0x22,
                         PC: 0x21 => 0x22,
                         nf: 1 => 0,
-                        cycles: 4
+                        mem[0x0CAF] => 0x22,
+                        cycles: 12
                     );
                 }
 
                 it "with flag Z modified" {
-                    let instruction_bytes = [0x3C];
+                    let instruction_bytes = [0x34];
 
-                    cpu.A = 0xFF;
+                    cpu.internal_ram[0x0CAF] = 0xFF;
+                    cpu.H = 0x0C;
+                    cpu.L = 0xAF;
 
                     assert_cpu_execute!(
                         cpu,
                         instruction_bytes,
-                        A: 0xFF => 0x00,
                         PC: 0x21 => 0x22,
                         zf: 0 => 1,
-                        cycles: 4
+                        mem[0x0CAF] => 0x0,
+                        cycles: 12
                     );
                 }
                 // AND SO ON

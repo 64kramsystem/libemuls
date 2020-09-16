@@ -681,10 +681,17 @@ class TestTemplatesGenerator
   #
   def generate_header!(opcode, opcode_data, instruction_data)
     mnemonic = opcode_data.fetch("mnemonic")
-    operand_names = opcode_data.fetch("operands").map { |data| data.fetch("name") }
+    operand_names = opcode_data.fetch("operands")
+    operand_types = instruction_data.fetch(:operand_types)
+
+    operands_description = operand_names
+      .map { |data| data.fetch("name") }
+      .zip(operand_types)
+      .map { |name, type| type == INDIRECT_REGISTER_OPERAND || type == INDIRECT_IMMEDIATE_OPERAND ? "(#{name})" : name }
+      .join(", ")
 
     @buffer.print <<-RUST
-            context "#{mnemonic} #{operand_names.join(", ")} (#{hex(opcode)})" {
+            context "#{mnemonic} #{operands_description} [#{hex(opcode)}]" {
     RUST
   end
 
