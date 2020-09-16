@@ -118,28 +118,33 @@ The `immediate` field is wrong, both in the semantic and the data (see https://g
 ### cpu_test.rs
 
 ```rust
-            it "LD B, d8 (0x06)" {
-                // todo!("extra instruction bytes");
-                let instruction_bytes = [0x06];
-
-                assert_cpu_execute!(
-                    cpu,
-                    instruction_bytes,
-                    // todo!("register expectation");
-                    PC: 0x21 => 0x23,
-                    cycles: 8
-                );
-            }
-
-            context "INC A (0x3C)" {
-                it "without flags modified" {
-                    let instruction_bytes = [0x3C];
+            context "LD B, d8 (0x06)" {
+                it "without conditional flag modifications" {
+                    let instruction_bytes = [0x06, 0x21];
 
                     assert_cpu_execute!(
                         cpu,
                         instruction_bytes,
-                        // todo!("register expectation");
+                        B: 0x00 => 0x21,
+                        PC: 0x21 => 0x23,
+                        cycles: 8
+                    );
+                }
+            }
+
+            context "INC A (0x3C)" {
+                it "without conditional flag modifications" {
+                    let instruction_bytes = [0x3C];
+
+                    cpu.A = 0x21;
+                    cpu.nf = true;
+
+                    assert_cpu_execute!(
+                        cpu,
+                        instruction_bytes,
+                        A: 0x21 => 0x22,
                         PC: 0x21 => 0x22,
+                        nf: 1 => 0,
                         cycles: 4
                     );
                 }
@@ -147,12 +152,14 @@ The `immediate` field is wrong, both in the semantic and the data (see https://g
                 it "with flag Z modified" {
                     let instruction_bytes = [0x3C];
 
+                    cpu.A = 0xFF;
+
                     assert_cpu_execute!(
                         cpu,
                         instruction_bytes,
-                        // todo!("register expectation");
+                        A: 0xFF => 0x00,
                         PC: 0x21 => 0x22,
-                        // todo!("Flag zf"),
+                        zf: 0 => 1,
                         cycles: 4
                     );
                 }

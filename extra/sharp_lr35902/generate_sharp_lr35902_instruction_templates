@@ -55,14 +55,14 @@ module InstructionsData
   #
   # - operation_code:        (optional) if `zf` is set, then a boolean variable called `carry` must be set
   # - flags_code:            (optional)
-  # - operand_types:         Array of REGISTER_OPERAND, IMMEDIATE_OPERAND, INDIRECT_REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND
   # - transform_opcode_data: (optional) Executed after fetching the opcode data from the JSON; destructive.
-  # - testing:               Proc taking (*operands), returns a hash {"flag_type" => {:extra_instruction_bytes, :data_preset, :register_expectation}}
+  # - testing:               Proc taking (*operands), returns a hash {"flag_type" => {:extra_instruction_bytes, :presets, :expectations}}
   #
   # ## Computed data
   #
   # - instruction_size
   # - flags_data
+  # - operand_types:         Array of REGISTER_OPERAND, IMMEDIATE_OPERAND, INDIRECT_REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND
   #
   # Pan doc groups some instructions that have different operand types together, e.g. `LD r1, r2`,
   # `LD r, n`, `LD r1, (r2)` and so on; this is correct in a way, but we need more a more specific
@@ -79,7 +79,7 @@ module InstructionsData
         {
           BASE => {
             extra_instruction_bytes: [0x21],
-            register_expectation: "#{register}: 0x00 => 0x21,"
+            expectations: "#{register}: 0x00 => 0x21,"
           }
         }
       }
@@ -97,8 +97,8 @@ module InstructionsData
       testing: ->(register1, register2) {
         {
           BASE => {
-            data_preset: "cpu.#{register2} = 0x21;",
-            register_expectation: "#{register1}: 0x00 => 0x21,",
+            presets: "cpu.#{register2} = 0x21;",
+            expectations: "#{register1}: 0x00 => 0x21,",
           }
         }
       }
@@ -114,12 +114,12 @@ module InstructionsData
       testing: ->(register1, register2) {
         {
           BASE => {
-            data_preset: <<~RUST,
+            presets: <<~RUST,
               cpu.internal_ram[0x0CAF] = 0x21;
               cpu.#{register2[0]} = 0x0C;
               cpu.#{register2[1]} = 0xAF;
             RUST
-            register_expectation: "#{register1}: 0x00 => 0x21,",
+            expectations: "#{register1}: 0x00 => 0x21,",
           }
         }
       }
@@ -138,14 +138,14 @@ module InstructionsData
       testing: ->(register1, register2) {
         {
           BASE => {
-            data_preset: <<~RUST,
+            presets: <<~RUST,
               cpu.#{register2} = 0x21;
               cpu.#{register1[0]} = 0x0C;
               cpu.#{register1[1]} = 0xAF;
 
               let expected_value = cpu.#{register2};
             RUST
-            register_expectation: "mem[0x0CAF] => expected_value,",
+            expectations: "mem[0x0CAF] => expected_value,",
           }
         }
       }
@@ -168,8 +168,8 @@ module InstructionsData
       testing: ->(register) {
         {
           BASE => {
-            data_preset: "cpu.#{register} = 0x21;",
-            register_expectation: "#{register}: 0x21 => 0x21,",
+            presets: "cpu.#{register} = 0x21;",
+            expectations: "#{register}: 0x21 => 0x21,",
           }
         }
       }
@@ -186,11 +186,11 @@ module InstructionsData
         {
           BASE => {
             extra_instruction_bytes: [0x21],
-            data_preset: <<~RUST,
+            presets: <<~RUST,
               cpu.#{register[0]} = 0x0C;
               cpu.#{register[1]} = 0xAF;
             RUST
-            register_expectation: "mem[0x0CAF] => 0x21,",
+            expectations: "mem[0x0CAF] => 0x21,",
           }
         }
       }
@@ -205,8 +205,8 @@ module InstructionsData
         {
           BASE => {
             extra_instruction_bytes: [0xAF, 0x0C],
-            data_preset: "cpu.internal_ram[0x0CAF] = 0x21;",
-            register_expectation: "A: 0x00 => 0x21,",
+            presets: "cpu.internal_ram[0x0CAF] = 0x21;",
+            expectations: "A: 0x00 => 0x21,",
           }
         }
       }
@@ -221,7 +221,7 @@ module InstructionsData
         {
           BASE => {
             extra_instruction_bytes: [0x21],
-            register_expectation: "A: 0x00 => 0x21,",
+            expectations: "A: 0x00 => 0x21,",
           }
         }
       }
@@ -241,22 +241,22 @@ module InstructionsData
       testing: ->(register) {
         {
           BASE => {
-            data_preset: "cpu.#{register} = 0x21;",
-            register_expectation: <<~RUST
+            presets: "cpu.#{register} = 0x21;",
+            expectations: <<~RUST
               #{register}: 0x21 => 0x22,
             RUST
           },
           'Z' => {
-            data_preset: "cpu.#{register} = 0xFF;",
-            register_expectation: <<~RUST
+            presets: "cpu.#{register} = 0xFF;",
+            expectations: <<~RUST
               #{register}: 0xFF => 0x00,
               zf: 0 => 1,
               hf: 0 => 1,
             RUST
           },
           'H' => {
-            data_preset: "cpu.#{register} = 0x1F;",
-            register_expectation: <<~RUST
+            presets: "cpu.#{register} = 0x1F;",
+            expectations: <<~RUST
               #{register}: 0x1F => 0x20,
               hf: 0 => 1,
             RUST
@@ -279,34 +279,34 @@ module InstructionsData
       testing: ->(_) {
         {
           BASE => {
-            data_preset: <<~RUST,
+            presets: <<~RUST,
               cpu.internal_ram[0x0CAF] = 0x21;
               cpu.H = 0x0C;
               cpu.L = 0xAF;
             RUST
-            register_expectation: <<~RUST
+            expectations: <<~RUST
               mem[0x0CAF] => 0x22,
             RUST
           },
           'Z' => {
-            data_preset: <<~RUST,
+            presets: <<~RUST,
               cpu.internal_ram[0x0CAF] = 0xFF;
               cpu.H = 0x0C;
               cpu.L = 0xAF;
             RUST
-            register_expectation: <<~RUST
+            expectations: <<~RUST
               mem[0x0CAF] => 0x0,
               zf: 0 => 1,
               hf: 0 => 1,
             RUST
           },
           'H' => {
-            data_preset: <<~RUST,
+            presets: <<~RUST,
               cpu.internal_ram[0x0CAF] = 0x1F;
               cpu.H = 0x0C;
               cpu.L = 0xAF;
             RUST
-            register_expectation: <<~RUST
+            expectations: <<~RUST
               mem[0x0CAF] => 0x20,
               hf: 0 => 1,
             RUST
@@ -680,11 +680,11 @@ class TestTemplatesGenerator
   # `context`, or `it` depending on flags being changed or not
   #
   def generate_header!(opcode, opcode_data, instruction_data)
-    opcode_mnemonic = opcode_data.fetch("mnemonic")
-    opcode_operands = opcode_data.fetch("operands").map { |data| data.fetch("name") }
+    mnemonic = opcode_data.fetch("mnemonic")
+    operand_names = opcode_data.fetch("operands").map { |data| data.fetch("name") }
 
     @buffer.print <<-RUST
-            context "#{opcode_mnemonic} #{opcode_operands.join(", ")} (#{hex(opcode)})" {
+            context "#{mnemonic} #{operand_names.join(", ")} (#{hex(opcode)})" {
     RUST
   end
 
@@ -734,11 +734,11 @@ class TestTemplatesGenerator
     opcode_operands = opcode_data.fetch("operands").map { |data| data.fetch("name") }
     testing_block = instruction_data.fetch(:testing)
 
-    extra_instruction_bytes, data_preset, register_expectation = begin
+    extra_instruction_bytes, presets, expectations = begin
         testing_block
           .(*opcode_operands)
           .fetch(flag)
-          .values_at(:extra_instruction_bytes, :data_preset, :register_expectation)
+          .values_at(:extra_instruction_bytes, :presets, :expectations)
         rescue KeyError
           raise "Flag #{flag} testing metadata not found for opcode #{hex(opcode)}"
         end
@@ -749,9 +749,9 @@ class TestTemplatesGenerator
                     let instruction_bytes = [#{hex(opcode)}#{extra_instruction_bytes_str}];
     RUST
 
-    @buffer.puts if data_preset || flags_preset.size > 0
+    @buffer.puts if presets || flags_preset.size > 0
 
-    data_preset.to_s.each_line.map(&:strip).each do |preset_statement|
+    presets.to_s.each_line.map(&:strip).each do |preset_statement|
       if preset_statement.empty?
         @buffer.puts
       else
@@ -781,11 +781,11 @@ class TestTemplatesGenerator
 
     pc_expectation = "PC: #{hex(start_pc)} => #{hex(end_pc)},"
 
-    all_register_expectations = register_expectation.to_s.lines.push(pc_expectation).concat(flag_expectations)
+    all_expectations = expectations.to_s.lines.push(pc_expectation).concat(flag_expectations)
 
     # Sorting is mandated by the macro.
     #
-    all_register_expectations = all_register_expectations.sort_by do |expectation|
+    all_expectations = all_expectations.sort_by do |expectation|
       case expectation
       when /^[A-Z]/
         -1
@@ -798,7 +798,7 @@ class TestTemplatesGenerator
       end
     end
 
-    all_register_expectations.each do |expectation|
+    all_expectations.each do |expectation|
       @buffer.puts "                        #{expectation}"
     end
 
