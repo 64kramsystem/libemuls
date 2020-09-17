@@ -37,6 +37,7 @@ module InstructionsData
   IMMEDIATE_OPERAND = :immediate
   INDIRECT_REGISTER_OPERAND = :indirect_register
   INDIRECT_IMMEDIATE_OPERAND = :indirect_immediate
+  INDIRECT_IMMEDIATE_REGISTER_OPERAND = :indirect_immediate_register
 
   REGISTERS_8B = %w[A B C D E H L]
   REGISTERS_16B = %w[BC DE HL]
@@ -232,6 +233,27 @@ module InstructionsData
         }
       }
     },
+    "LD A, ($FF00 + C)" => {
+      prefixed: false,
+      opcodes: [0xF2],
+      transform_opcode_data: ->(data) do
+        data.fetch("operands")[1]["name"] = "FF00 + C"
+      end,
+      operation_code: <<~RUST,
+        *operand = value;
+      RUST
+      testing: ->(_, _) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu.C = 0x13;
+              cpu.internal_ram[0xFF13] = 0x21;
+            RUST
+            expectations: "A => 0x21,",
+          }
+        }
+      }
+    },
     "INC r" => {
       prefixed: false,
       opcodes: [0x3C, 0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C],
@@ -390,6 +412,8 @@ class CpuDecodingTemplateGenerator
       @buffer.print ", value @ _"
     when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
       @buffer.print ", low_byte @ _, high_byte @ _"
+    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
+      # Nothing
     else
       # This is for safety; it's easy to miss a tuple.
       #
@@ -464,6 +488,12 @@ class CpuDecodingTemplateGenerator
         [
           "&mut self.internal_ram[address]",
           "self.#{operand_names[1]}"
+        ]
+      when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
+        displacement, register = operand_names[1].split(' + ')
+        [
+          "&mut self.#{operand_names[0]}",
+          "self.internal_ram[0x#{displacement} + self.#{register} as usize]",
         ]
       else
         raise "Unrecognized operand types: #{operand_types}"
@@ -548,6 +578,8 @@ class CpuExecutionTemplatesGenerator
     when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
       @buffer.print ", operand: &mut u8, value: u8"
     when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
+      @buffer.print ", operand: &mut u8, value: u8"
+    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
       @buffer.print ", operand: &mut u8, value: u8"
     else
       raise "Unrecognized operand types: #{operand_types}"
@@ -911,7 +943,8 @@ class CpuTemplatesGenerator
       next if only_opcode && !opcodes.include?(only_opcode)
 
       opcode_family_encoded = opcode_family
-        .gsub(/\((\w+)\)/, 'I\1')
+        .gsub(/\((\w+)\)/, 'I\1')               # indirect:        `(HL)` -> `IHL`
+        .gsub(/\(\$(\w+) \+ (\w)\)/, 'I_\1_\2') # Indirect+displ.: `($FF00 + C)` -> I_FF00_C
         .gsub(/,? /, "_")
 
       prefixed_json_entry = instruction_data.fetch(:prefixed) ? "prefixed" : "unprefixed"
@@ -987,6 +1020,8 @@ class CpuTemplatesGenerator
         IMMEDIATE_OPERAND
       when "a16"
         INDIRECT_IMMEDIATE_OPERAND
+      when /\w \+ [0-9A-F]/
+        INDIRECT_IMMEDIATE_REGISTER_OPERAND
       when *REGISTERS_8B
         REGISTER_OPERAND
       when *REGISTERS_16B
