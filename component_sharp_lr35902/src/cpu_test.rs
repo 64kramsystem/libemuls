@@ -24,23 +24,52 @@ fn assert_cpu_execute(
 ) {
     let actual_cycles_spent = cpu.execute(&instruction_bytes);
 
-    assert_eq!(cpu.A, A);
-    assert_eq!(cpu.B, B);
-    assert_eq!(cpu.C, C);
-    assert_eq!(cpu.D, D);
-    assert_eq!(cpu.E, E);
-    assert_eq!(cpu.H, H);
-    assert_eq!(cpu.L, L);
-    assert_eq!(cpu.SP, SP);
-    assert_eq!(cpu.PC, PC);
+    assert_eq!(cpu.A, A, "Unexpected `A`: actual={}, expected={}", cpu.A, A);
+    assert_eq!(cpu.B, B, "Unexpected `B`: actual={}, expected={}", cpu.B, B);
+    assert_eq!(cpu.C, C, "Unexpected `C`: actual={}, expected={}", cpu.C, C);
+    assert_eq!(cpu.D, D, "Unexpected `D`: actual={}, expected={}", cpu.D, D);
+    assert_eq!(cpu.E, E, "Unexpected `E`: actual={}, expected={}", cpu.E, E);
+    assert_eq!(cpu.H, H, "Unexpected `H`: actual={}, expected={}", cpu.H, H);
+    assert_eq!(cpu.L, L, "Unexpected `L`: actual={}, expected={}", cpu.L, L);
+    assert_eq!(
+        cpu.SP, SP,
+        "Unexpected `SP`: actual={}, expected={}",
+        cpu.SP, SP
+    );
+    assert_eq!(
+        cpu.PC, PC,
+        "Unexpected `PC`: actual={}, expected={}",
+        cpu.PC, PC
+    );
 
-    assert_eq!(cpu.zf, zf);
-    assert_eq!(cpu.nf, nf);
-    assert_eq!(cpu.hf, hf);
-    assert_eq!(cpu.cf, cf);
+    assert_eq!(
+        cpu.zf, zf,
+        "Unexpected `zf`: actual={}, expected={}",
+        cpu.zf as u8, zf as u8
+    );
+    assert_eq!(
+        cpu.nf, nf,
+        "Unexpected nf: actual={}, expected={}",
+        cpu.nf as u8, nf as u8
+    );
+    assert_eq!(
+        cpu.hf, hf,
+        "Unexpected `hf`: actual={}, expected={}",
+        cpu.hf as u8, hf as u8
+    );
+    assert_eq!(
+        cpu.cf, cf,
+        "Unexpected `cf`: actual={}, expected={}",
+        cpu.cf as u8, cf as u8
+    );
 
     if let Some((mem_address, mem_value)) = mem {
-        assert_eq!(cpu.internal_ram[mem_address as usize], mem_value);
+        let actual_value = cpu.internal_ram[mem_address as usize];
+        assert_eq!(
+            actual_value, mem_value,
+            "Unexpected mem[{}]: actual={}, expected={}",
+            mem_address, actual_value, mem_value,
+        );
     }
 
     assert_eq!(actual_cycles_spent, cycles_spent);
