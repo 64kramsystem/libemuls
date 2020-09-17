@@ -71,7 +71,10 @@ module InstructionsData
   INSTRUCTIONS_DATA = {
     "LD r, n" => {
       prefixed: false,
-      opcodes: [0x06, 0x0E, 0x16, 0x1E, 0x26, 0x2E],
+      opcodes: [
+        0x06, 0x0E, 0x16, 0x1E, 0x26, 0x2E,
+        0x3E
+      ],
       operation_code: <<~RUST,
         *operand = value;
       RUST
@@ -90,6 +93,7 @@ module InstructionsData
         0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x41, 0x42, 0x43, 0x44, 0x45, 0x48,
         0x4A, 0x4B, 0x4C, 0x4D, 0x50, 0x51, 0x53, 0x54, 0x55, 0x58, 0x59, 0x5A,
         0x5C, 0x5D, 0x60, 0x61, 0x62, 0x63, 0x65, 0x68, 0x69, 0x6A, 0x6B, 0x6C,
+        0x47, 0x4F, 0x57, 0x5F, 0x67, 0x6F
       ],
       operation_code: <<~RUST,
         *operand = value;
@@ -130,7 +134,8 @@ module InstructionsData
     "LD (r1), r2" => {
       prefixed: false,
       opcodes: [
-        0x70, 0x71, 0x72, 0x73, 0x74, 0x75
+        0x70, 0x71, 0x72, 0x73, 0x74, 0x75,
+        0x02, 0x12, 0x77
       ],
       operation_code: <<~RUST,
         *operand = value;
@@ -211,17 +216,18 @@ module InstructionsData
         }
       }
     },
-    "LD A, n" => {
+    "LD (nn), A" => {
       prefixed: false,
-      opcodes: [0x3E],
+      opcodes: [0xEA],
       operation_code: <<~RUST,
         *operand = value;
       RUST
       testing: ->(_, _) {
         {
           BASE => {
-            extra_instruction_bytes: [0x21],
-            expectations: "A => 0x21,",
+            extra_instruction_bytes: [0xAF, 0x0C],
+            presets: "cpu.A = 0x21;",
+            expectations: "mem[0x0CAF] => 0x21,",
           }
         }
       }
@@ -382,6 +388,8 @@ class CpuDecodingTemplateGenerator
       # Nothing
     when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
       @buffer.print ", value @ _"
+    when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
+      @buffer.print ", low_byte @ _, high_byte @ _"
     else
       # This is for safety; it's easy to miss a tuple.
       #
@@ -451,6 +459,11 @@ class CpuDecodingTemplateGenerator
         [
           "&mut self.internal_ram[address]",
           "*value"
+        ]
+      when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
+        [
+          "&mut self.internal_ram[address]",
+          "self.#{operand_names[1]}"
         ]
       else
         raise "Unrecognized operand types: #{operand_types}"
@@ -533,6 +546,8 @@ class CpuExecutionTemplatesGenerator
     when [INDIRECT_IMMEDIATE_OPERAND, IMMEDIATE_OPERAND]
       @buffer.print ", operand: &mut u8, value: u8"
     when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      @buffer.print ", operand: &mut u8, value: u8"
+    when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
       @buffer.print ", operand: &mut u8, value: u8"
     else
       raise "Unrecognized operand types: #{operand_types}"
