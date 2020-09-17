@@ -99,7 +99,7 @@ macro_rules! assert_cpu_execute {
         $( nf => $expected_nf:literal , )?
         $( hf => $expected_hf:literal , )?
         $( cf => $expected_cf:literal , )?
-        $( mem[$mem_address:literal] => $mem_value:literal, )?
+        $( mem[$mem_address:literal] => $mem_value:expr, )?
         cycles: $cycles:literal
 ) => {
         let current_A = $cpu.A;
