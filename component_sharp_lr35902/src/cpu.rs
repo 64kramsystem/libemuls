@@ -30,14 +30,14 @@ pub struct Cpu {
     pub hf: bool,
     pub cf: bool,
 
-    // Internal RAM
+    // Internal RAM. Until there is properly memory management, this is kept trivial.
     //
-    pub internal_ram: [u8; 0x2000],
+    pub internal_ram: [u8; 0x10_000],
 }
 
 impl Cpu {
     pub fn new() -> Self {
-        let mut internal_ram = [0; 0x2000];
+        let mut internal_ram = [0; 0x10_000];
         rand::thread_rng().fill_bytes(&mut internal_ram);
 
         Cpu {
