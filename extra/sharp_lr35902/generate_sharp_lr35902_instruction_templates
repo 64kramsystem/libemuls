@@ -254,6 +254,27 @@ module InstructionsData
         }
       }
     },
+    "LD ($FF00 + C), A" => {
+      prefixed: false,
+      opcodes: [0xE2],
+      transform_opcode_data: ->(data) do
+        data.fetch("operands")[0]["name"] = "FF00 + C"
+      end,
+      operation_code: <<~RUST,
+        *operand = value;
+      RUST
+      testing: ->(_, _) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu.A = 0x21;
+              cpu.C = 0x13;
+            RUST
+            expectations: "mem[0xFF13] => 0x21,",
+          }
+        }
+      }
+    },
     "INC r" => {
       prefixed: false,
       opcodes: [0x3C, 0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C],
@@ -414,6 +435,8 @@ class CpuDecodingTemplateGenerator
       @buffer.print ", low_byte @ _, high_byte @ _"
     when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
       # Nothing
+    when [INDIRECT_IMMEDIATE_REGISTER_OPERAND, REGISTER_OPERAND]
+      # Nothing
     else
       # This is for safety; it's easy to miss a tuple.
       #
@@ -494,6 +517,12 @@ class CpuDecodingTemplateGenerator
         [
           "&mut self.#{operand_names[0]}",
           "self.internal_ram[0x#{displacement} + self.#{register} as usize]",
+        ]
+      when [INDIRECT_IMMEDIATE_REGISTER_OPERAND, REGISTER_OPERAND]
+        displacement, register = operand_names[0].split(' + ')
+        [
+          "&mut self.internal_ram[0x#{displacement} + self.#{register} as usize]",
+          "self.#{operand_names[1]}",
         ]
       else
         raise "Unrecognized operand types: #{operand_types}"
@@ -580,6 +609,8 @@ class CpuExecutionTemplatesGenerator
     when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
       @buffer.print ", operand: &mut u8, value: u8"
     when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
+      @buffer.print ", operand: &mut u8, value: u8"
+    when [INDIRECT_IMMEDIATE_REGISTER_OPERAND, REGISTER_OPERAND]
       @buffer.print ", operand: &mut u8, value: u8"
     else
       raise "Unrecognized operand types: #{operand_types}"
