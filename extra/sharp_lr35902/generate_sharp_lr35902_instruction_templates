@@ -982,12 +982,12 @@ class CpuTemplatesGenerator
         opcode_data = json_data.fetch(prefixed_json_entry).fetch(hex(opcode))
 
         transform_opcode_data&.(opcode_data)
-
-        # This procedure is essentially a denormalization of the (extra) instruction data.
-        #
-        extra_instruction_data = extract_instructions_data_from_opcode_data(opcode_data)
-        checked_copy_extra_instruction_data!(opcode, extra_instruction_data, instruction_data)
       end
+
+      # This procedure is essentially a denormalization of the (extra) instruction data.
+      #
+      extra_instruction_data = check_and_extract_instruction_data_from_opcodes_data(opcodes, json_data, prefixed_json_entry, instruction_data)
+      instruction_data.merge!(extra_instruction_data)
 
       opcodes.each do |opcode|
         next if only_opcode && opcode != only_opcode
@@ -1027,56 +1027,52 @@ class CpuTemplatesGenerator
   # DATA MANIPULATION
   ##################################################################################################
 
-  # Returns [flags_data, instruction_size, operand_types].
+  # Returns {flags_data, instruction_size, operand_types}.
   #
-  def extract_instructions_data_from_opcode_data(opcode_data)
-    flags_data = opcode_data.fetch("flags")
-    instruction_size = opcode_data.fetch("bytes")
-    operands_data = opcode_data.fetch("operands")
+  def check_and_extract_instruction_data_from_opcodes_data(opcodes, json_data, prefixed_json_entry, instruction_data)
+    all_instruction_data = opcodes.map do |opcode|
+      opcode_data = json_data.fetch(prefixed_json_entry).fetch(hex(opcode))
 
-    # WATCH OUT!! The JSON gets the "immediate" metadata wrong; the correct semantic is is the
-    # opposite (see https://git.io/JU8JY).
-    #
-    operand_types = operands_data.map do |operand_data|
-      operand_name = operand_data.fetch("name")
+      flags_data = opcode_data.fetch("flags")
+      instruction_size = opcode_data.fetch("bytes")
+      operands_data = opcode_data.fetch("operands")
 
-      case operand_name
-      when "d8"
-        IMMEDIATE_OPERAND
-      when "a16"
-        INDIRECT_IMMEDIATE_OPERAND
-      when /\w \+ [0-9A-F]/
-        INDIRECT_IMMEDIATE_REGISTER_OPERAND
-      when *REGISTERS_8B
-        REGISTER_OPERAND
-      when *REGISTERS_16B
-        INDIRECT_REGISTER_OPERAND
-      else
-        debugger
-        raise("Unsupported operand type for opcode %02X: #{operand_data}" % opcode)
+      # WATCH OUT!! The JSON gets the "immediate" metadata wrong; the correct semantic is is the
+      # opposite (see https://git.io/JU8JY).
+      #
+      operand_types = operands_data.map do |operand_data|
+        operand_name = operand_data.fetch("name")
+
+        case operand_name
+        when "d8"
+          IMMEDIATE_OPERAND
+        when "a16"
+          INDIRECT_IMMEDIATE_OPERAND
+        when /\w \+ [0-9A-F]/
+          INDIRECT_IMMEDIATE_REGISTER_OPERAND
+        when *REGISTERS_8B
+          REGISTER_OPERAND
+        when *REGISTERS_16B
+          INDIRECT_REGISTER_OPERAND
+        else
+          debugger
+          raise("Unsupported operand type for opcode %02X: #{operand_data}" % opcode)
+        end
       end
+
+      {
+        flags_data: flags_data,
+        instruction_size: instruction_size,
+        operand_types: operand_types,
+      }
     end
 
-    {
-      flags_data: flags_data,
-      instruction_size: instruction_size,
-      operand_types: operand_types,
-    }
-  end
+    unique_instruction_data = all_instruction_data.uniq
 
-  def checked_copy_extra_instruction_data!(opcode, extra_instruction_data, instruction_data)
-    if !instruction_data.key?(:flags_data)
-      instruction_data.merge!(extra_instruction_data)
+    if unique_instruction_data.size == 1
+      unique_instruction_data[0]
     else
-      subset_instruction_data = instruction_data.slice(:flags_data, :instruction_size, :operand_types)
-
-      if extra_instruction_data != subset_instruction_data
-        puts "Opcode: #{hex(opcode)}"
-        puts "EXISTING: #{subset_instruction_data}"
-        puts "CURRENT:  #{extra_instruction_data}"
-        debugger
-        raise "Mismatching family data!"
-      end
+      raise "Instruction data not unique for opcodes set: #{opcodes.map(&method(:hex))}"
     end
   end
 end
