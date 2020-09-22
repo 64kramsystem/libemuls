@@ -651,7 +651,11 @@ class CpuExecutionTemplatesGenerator
 
     if operation_code
       operation_code.each_line do |operation_statement|
-        @buffer.puts "      #{operation_statement}"
+        if operation_statement.strip.empty?
+          @buffer.puts
+        else
+          @buffer.puts "      #{operation_statement}"
+        end
       end
       @buffer.puts
     end
@@ -668,8 +672,12 @@ class CpuExecutionTemplatesGenerator
     flags_code = instruction_data[:flags_code]
 
     if flags_code
-      flags_code.each_line do |flag_statement|
-        @buffer.print "      #{flag_statement}"
+      flags_code.each_line.each do |flag_statement|
+        if flag_statement.strip.empty?
+          @buffer.puts
+        else
+          @buffer.puts "      #{flag_statement}"
+        end
       end
     end
 
