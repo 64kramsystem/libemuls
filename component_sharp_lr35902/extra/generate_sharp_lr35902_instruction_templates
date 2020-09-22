@@ -1139,8 +1139,8 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   opcodes_file = File.expand_path("opcodes.json", __dir__)
-  cpu_file = File.expand_path("../../component_sharp_lr35902/src/cpu.rs", __dir__)
-  tests_file = File.expand_path("../../component_sharp_lr35902/src/cpu_test.rs", __dir__)
+  cpu_file = File.expand_path("../src/cpu.rs", __dir__)
+  tests_file = File.expand_path("../src/cpu_test.rs", __dir__)
 
   GitHelpers.restore_files(cpu_file, tests_file)
 
