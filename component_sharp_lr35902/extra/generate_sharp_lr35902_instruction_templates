@@ -267,6 +267,150 @@ module InstructionsData
         }
       }
     },
+    "LDD A, (HL)" => {
+      prefixed: false,
+      opcodes: [0x3A],
+      transform_opcode_data: ->(data) do
+        # The source data uses "LD", but includes a "decrement" attribute in the operand.
+        data["mnemonic"] = "LDD"
+      end,
+      operation_code: <<~RUST,
+        let address = Self::compose_address(*src_register_high, *src_register_low);
+        *dst_register = internal_ram[address];
+
+        let (new_value_low, carry) = src_register_low.overflowing_sub(1);
+        *src_register_low = new_value_low;
+
+        if carry {
+          let (new_value_high, _) = src_register_high.overflowing_sub(1);
+          *src_register_high = new_value_high;
+        }
+      RUST
+      testing: ->(_, _) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu.H = 0x00;
+              cpu.L = 0x00;
+              cpu.internal_ram[0x0000] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x21,
+              H => 0xFF,
+              L => 0xFF,
+            RUST
+          }
+        }
+      }
+    },
+    "LDD (HL), A" => {
+      prefixed: false,
+      opcodes: [0x32],
+      transform_opcode_data: ->(data) do
+        # Same considerations as `LDD A, (HL)`
+        data["mnemonic"] = "LDD"
+      end,
+      operation_code: <<~RUST,
+        let address = Self::compose_address(*dst_register_high, *dst_register_low);
+        internal_ram[address] = *src_register;
+
+        let (new_value_low, carry) = dst_register_low.overflowing_sub(1);
+        *dst_register_low = new_value_low;
+
+        if carry {
+          let (new_value_high, _) = dst_register_high.overflowing_sub(1);
+          *dst_register_high = new_value_high;
+        }
+      RUST
+      testing: ->(_, _) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu.A = 0x21;
+              cpu.H = 0x00;
+              cpu.L = 0x00;
+            RUST
+            expectations: <<~RUST
+              H => 0xFF,
+              L => 0xFF,
+              mem[0x0000] => 0x21,
+            RUST
+          }
+        }
+      }
+    },
+    "LDI A, (HL)" => {
+      prefixed: false,
+      opcodes: [0x2A],
+      transform_opcode_data: ->(data) do
+        # Similar considerations as `LDD A, (HL)`
+        data["mnemonic"] = "LDI"
+      end,
+      operation_code: <<~RUST,
+        let address = Self::compose_address(*src_register_high, *src_register_low);
+        *dst_register = internal_ram[address];
+
+        let (new_value_low, carry) = src_register_low.overflowing_add(1);
+        *src_register_low = new_value_low;
+
+        if carry {
+          let (new_value_high, _) = src_register_high.overflowing_add(1);
+          *src_register_high = new_value_high;
+        }
+      RUST
+      testing: ->(_, _) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu.H = 0xFF;
+              cpu.L = 0xFF;
+              cpu.internal_ram[0xFFFF] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x21,
+              H => 0x00,
+              L => 0x00,
+            RUST
+          }
+        }
+      }
+    },
+    "LDI (HL), A" => {
+      prefixed: false,
+      opcodes: [0x22],
+      transform_opcode_data: ->(data) do
+        # Same considerations as `LDD A, (HL)`
+        data["mnemonic"] = "LDI"
+      end,
+      operation_code: <<~RUST,
+        let address = Self::compose_address(*dst_register_high, *dst_register_low);
+        internal_ram[address] = *src_register;
+
+        let (new_value_low, carry) = dst_register_low.overflowing_add(1);
+        *dst_register_low = new_value_low;
+
+        if carry {
+          let (new_value_high, _) = dst_register_high.overflowing_add(1);
+          *dst_register_high = new_value_high;
+        }
+      RUST
+      testing: ->(_, _) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu.A = 0x21;
+              cpu.H = 0xFF;
+              cpu.L = 0xFF;
+            RUST
+            expectations: <<~RUST
+              H => 0x00,
+              L => 0x00,
+              mem[0xFFFF] => 0x21,
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       prefixed: false,
       opcodes: [0x3C, 0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C],
