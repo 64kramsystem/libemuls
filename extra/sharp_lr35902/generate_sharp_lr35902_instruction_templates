@@ -55,7 +55,6 @@ module InstructionsData
   # ## Predefined data
   #
   # - operation_code:        (optional) if `zf` is set, then a boolean variable called `carry` must be set
-  # - flags_code:            (optional)
   # - transform_opcode_data: (optional) Executed after fetching the opcode data from the JSON; destructive.
   # - testing:               Proc taking (*operands), returns a hash {"flag_type" => {:extra_instruction_bytes, :presets, :expectations}}
   #
@@ -281,8 +280,7 @@ module InstructionsData
       operation_code: <<~RUST,
         let (new_value, carry) = operand.overflowing_add(1);
         *operand = new_value;
-      RUST
-      flags_code: <<~RUST,
+
         if *operand & 0b0000_1111 == 0b000_0000 {
           *hf = true;
         }
@@ -319,8 +317,7 @@ module InstructionsData
       operation_code: <<~RUST,
         let (new_value, carry) = operand.overflowing_add(1);
         *operand = new_value;
-      RUST
-      flags_code: <<~RUST,
+
         if *operand & 0b0000_1111 == 0b000_0000 {
           *hf = true;
         }
@@ -669,19 +666,8 @@ class CpuExecutionTemplatesGenerator
   #     *nf = false;
   #
   def generate_flag_operations!(instruction_data)
-    flags_code = instruction_data[:flags_code]
-
-    if flags_code
-      flags_code.each_line.each do |flag_statement|
-        if flag_statement.strip.empty?
-          @buffer.puts
-        else
-          @buffer.puts "      #{flag_statement}"
-        end
-      end
-    end
-
     flags_data = instruction_data.fetch(:flags_data)
+    operation_code = instruction_data[:operation_code]
 
     flags_data.each do |flag, state|
       case state
@@ -699,7 +685,7 @@ class CpuExecutionTemplatesGenerator
         else
           # Make sure the operation code takes care of it!
           #
-          raise "Missing #{opcode_family} #{flag} flag setting!" if flags_code !~ /\*#{flag.downcase}f = /
+          raise "Missing #{opcode_family} #{flag} flag setting!" if operation_code !~ /\*#{flag.downcase}f = /
         end
       when "-"
         # do nothing
