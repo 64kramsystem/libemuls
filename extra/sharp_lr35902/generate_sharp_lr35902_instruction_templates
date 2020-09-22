@@ -820,7 +820,7 @@ class TestTemplatesGenerator
   end
 
   def generate_test_body!(opcode, opcode_data, instruction_data, title, flag, flags_preset, flag_expectations)
-    @buffer.print <<-RUST
+    @buffer.puts <<-RUST
                 #{title}
     RUST
 
@@ -838,7 +838,7 @@ class TestTemplatesGenerator
 
     extra_instruction_bytes_str = extra_instruction_bytes.to_a.map { |byte| ", #{hex(byte)}" }.join
 
-    @buffer.print <<-RUST
+    @buffer.puts <<-RUST
                     let instruction_bytes = [#{hex(opcode)}#{extra_instruction_bytes_str}];
 
     RUST
@@ -850,19 +850,19 @@ class TestTemplatesGenerator
       if preset_statement.empty?
         @buffer.puts
       else
-        @buffer.print <<-RUST
+        @buffer.puts <<-RUST
                     #{preset_statement}
         RUST
       end
     end
 
     flags_preset.each do |preset_statement|
-      @buffer.print <<-RUST
+      @buffer.puts <<-RUST
                     #{preset_statement}
       RUST
     end
 
-    @buffer.print <<-RUST
+    @buffer.puts <<-RUST
 
                     assert_cpu_execute!(
                         cpu,
@@ -897,7 +897,7 @@ class TestTemplatesGenerator
       @buffer.puts "                        #{expectation}"
     end
 
-    @buffer.print <<-RUST
+    @buffer.puts <<-RUST
                         cycles: #{cycles}
                     );
                 }
