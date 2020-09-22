@@ -147,7 +147,7 @@ module InstructionsData
       ],
       operation_code: <<~RUST,
         let address = Self::compose_address(*dst_register_high, *dst_register_low);
-        internal_ram[address] = *src_register;
+        internal_ram[address] = unsafe { *src_register };
       RUST
       testing: ->(register1, register2) {
         {
@@ -498,19 +498,29 @@ class CpuDecodingTemplateGenerator
 
         src_register_high, src_register_low = operand_names[1].chars
 
+        # The mutable is required for operations that mutate the source, e.g. LDD.
         [
           dest_register_ref,
           "&self.internal_ram",
-          "&self.#{src_register_high}",
-          "&self.#{src_register_low}",
+          "&mut self.#{src_register_high}",
+          "&mut self.#{src_register_low}",
         ]
       when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+        if instruction_data.fetch(:any_shared_register)
+          variable_assignments << "let src_register = &mut self.#{operand_names[1]} as *mut u8;"
+          src_register_ref = "src_register"
+        else
+          src_register_ref = "&self.#{operand_names[1]}"
+        end
+
         dst_register_high, dst_register_low = operand_names[0].chars
+
+        # The mutable is required for operations that mutate the source, e.g. LDD.
         [
           "&mut self.internal_ram",
-          "&self.#{dst_register_high}",
-          "&self.#{dst_register_low}",
-          "&self.#{operand_names[1]}"
+          "&mut self.#{dst_register_high}",
+          "&mut self.#{dst_register_low}",
+          src_register_ref
         ]
       when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
         dst_register_high, dst_register_low = operand_names[0].chars
@@ -626,9 +636,12 @@ class CpuExecutionTemplatesGenerator
       @buffer.print ", register: &mut u8, internal_ram: &[u8], immediate_high: &u8, immediate_low: &u8"
     when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
       dst_register_type = instruction_data.fetch(:any_shared_register) ? "*mut u8" : "&mut u8"
-      @buffer.print ", dst_register: #{dst_register_type}, internal_ram: &[u8], src_register_high: &u8, src_register_low: &u8"
+      # See :generate_execution_method_call for note about the mutable sources.
+      @buffer.print ", dst_register: #{dst_register_type}, internal_ram: &[u8], src_register_high: &mut u8, src_register_low: &mut u8"
     when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
-      @buffer.print ", internal_ram: &mut [u8], dst_register_high: &u8, dst_register_low: &u8, src_register: &u8"
+      src_register_type = instruction_data.fetch(:any_shared_register) ? "*const u8" : "&u8"
+      # See :generate_execution_method_call for note about the mutable destination.
+      @buffer.print ", internal_ram: &mut [u8], dst_register_high: &mut u8, dst_register_low: &mut u8, src_register: #{src_register_type}"
     when [INDIRECT_IMMEDIATE_OPERAND, IMMEDIATE_OPERAND]
       @buffer.print ", internal_ram: &mut [u8], dst_immediate_high: &u8, dst_immediate_low: &u8, src_immediate: &u8"
     when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
