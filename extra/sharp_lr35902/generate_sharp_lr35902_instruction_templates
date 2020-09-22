@@ -40,6 +40,8 @@ module InstructionsData
   INDIRECT_IMMEDIATE_OPERAND = :indirect_immediate
   INDIRECT_IMMEDIATE_REGISTER_OPERAND = :indirect_immediate_register
 
+  REMOVED_OPERAND = :removed
+
   REGISTERS_8B = %w[A B C D E H L]
   REGISTERS_16B = %w[BC DE HL]
 
@@ -77,7 +79,7 @@ module InstructionsData
         0x3E
       ],
       operation_code: <<~RUST,
-        *operand = value;
+        *register = *immediate;
       RUST
       testing: ->(register, _) {
         {
@@ -88,16 +90,19 @@ module InstructionsData
         }
       }
     },
+    # Includes cases where r1 == r2.
+    #
     "LD r1, r2" => {
       prefixed: false,
       opcodes: [
         0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x41, 0x42, 0x43, 0x44, 0x45, 0x48,
         0x4A, 0x4B, 0x4C, 0x4D, 0x50, 0x51, 0x53, 0x54, 0x55, 0x58, 0x59, 0x5A,
         0x5C, 0x5D, 0x60, 0x61, 0x62, 0x63, 0x65, 0x68, 0x69, 0x6A, 0x6B, 0x6C,
-        0x47, 0x4F, 0x57, 0x5F, 0x67, 0x6F
+        0x47, 0x4F, 0x57, 0x5F, 0x67, 0x6F,
+        0x7F, 0x40, 0x49, 0x52, 0x5B, 0x64, 0x6D
       ],
       operation_code: <<~RUST,
-        *operand = value;
+        *dst_register = unsafe { *src_register };
       RUST
       testing: ->(register1, register2) {
         {
@@ -108,14 +113,17 @@ module InstructionsData
         }
       }
     },
+    # Includes some cases where r1 is part of r2 (HL).
+    #
     "LD r1, (r2)" => {
       prefixed: false,
       opcodes: [
-        0x46, 0x4E, 0x56, 0x5E, 0x66, 0x6E, 0x7E, 0x0A, 0x1A
+        0x46, 0x4E, 0x56, 0x5E, 0x7E, 0x0A, 0x1A, 0x66, 0x6E
       ],
-      operation_code: <<~RUST,
-        *operand = value;
-      RUST
+        operation_code: <<~RUST,
+          let address = Self::compose_address(*src_register_high, *src_register_low);
+          unsafe { *dst_register = internal_ram[address] };
+        RUST
       testing: ->(register1, register2) {
         {
           BASE => {
@@ -129,8 +137,7 @@ module InstructionsData
         }
       }
     },
-    # Supporting 0x74 and 0x75 (`LD (HL), H/L`) makes the logic a bit more complex (and, for these
-    # two cases, part redundant).
+    # Includes some cases where r2 is part of r1 (HL).
     #
     "LD (r1), r2" => {
       prefixed: false,
@@ -139,11 +146,15 @@ module InstructionsData
         0x02, 0x12, 0x77
       ],
       operation_code: <<~RUST,
-        *operand = value;
+        let address = Self::compose_address(*dst_register_high, *dst_register_low);
+        internal_ram[address] = *src_register;
       RUST
       testing: ->(register1, register2) {
         {
           BASE => {
+            # In the cases where r2 is part of r1, an r1 assignment overwrites r2, so that the memory
+            # expectation can be kept the same.
+            #
             presets: <<~RUST,
               cpu.#{register2} = 0x21;
               cpu.#{register1[0]} = 0x0C;
@@ -156,37 +167,14 @@ module InstructionsData
         }
       }
     },
-    # No-ops. They are troublesome because without special handling, the register variable is
-    # simultaneously borrowed as readonly and mutable, causing an error. There isn't a general way
-    # of solving this, without introducing conditional logic.
-    #
-    "LD r, r" => {
-      prefixed: false,
-      opcodes: [
-        0x7F, 0x40, 0x49, 0x52, 0x5B, 0x64, 0x6D
-      ],
-      transform_opcode_data: ->(data) do
-        data.fetch("operands").pop
-      end,
-      operation_code: <<~RUST,
-        *operand = *operand;
-      RUST
-      testing: ->(register) {
-        {
-          BASE => {
-            presets: "cpu.#{register} = 0x21;",
-            expectations: "#{register} => 0x21,",
-          }
-        }
-      }
-    },
     "LD (r), n" => {
       prefixed: false,
       opcodes: [
         0x36
       ],
       operation_code: <<~RUST,
-        *operand = value;
+        let address = Self::compose_address(*register_high, *register_low);
+        internal_ram[address] = *immediate;
       RUST
       testing: ->(register, _) {
         {
@@ -205,7 +193,8 @@ module InstructionsData
       prefixed: false,
       opcodes: [0xFA],
       operation_code: <<~RUST,
-        *operand = value;
+        let address = Self::compose_address(*immediate_high, *immediate_low);
+        *register = internal_ram[address];
       RUST
       testing: ->(_, _) {
         {
@@ -221,7 +210,8 @@ module InstructionsData
       prefixed: false,
       opcodes: [0xEA],
       operation_code: <<~RUST,
-        *operand = value;
+        let address = Self::compose_address(*dst_immediate_high, *dst_immediate_low);
+        internal_ram[address] = *register;
       RUST
       testing: ->(_, _) {
         {
@@ -240,7 +230,8 @@ module InstructionsData
         data.fetch("operands")[1]["name"] = "FF00 + C"
       end,
       operation_code: <<~RUST,
-        *operand = value;
+        let address = *displacement as usize + *src_register as usize;
+        *dst_register = internal_ram[address];
       RUST
       testing: ->(_, _) {
         {
@@ -261,7 +252,8 @@ module InstructionsData
         data.fetch("operands")[0]["name"] = "FF00 + C"
       end,
       operation_code: <<~RUST,
-        *operand = value;
+        let address = *displacement as usize + *dst_register as usize;
+        internal_ram[address] = *src_register;
       RUST
       testing: ->(_, _) {
         {
@@ -279,10 +271,10 @@ module InstructionsData
       prefixed: false,
       opcodes: [0x3C, 0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C],
       operation_code: <<~RUST,
-        let (new_value, carry) = operand.overflowing_add(1);
-        *operand = new_value;
+        let (new_value, carry) = register.overflowing_add(1);
+        *register = new_value;
 
-        if *operand & 0b0000_1111 == 0b000_0000 {
+        if new_value & 0b0000_1111 == 0b000_0000 {
           *hf = true;
         }
       RUST
@@ -316,10 +308,12 @@ module InstructionsData
       prefixed: false,
       opcodes: [0x34],
       operation_code: <<~RUST,
-        let (new_value, carry) = operand.overflowing_add(1);
-        *operand = new_value;
+        let address = Self::compose_address(*register_high, *register_low);
 
-        if *operand & 0b0000_1111 == 0b000_0000 {
+        let (new_value, carry) = internal_ram[address].overflowing_add(1);
+        internal_ram[address] = new_value;
+
+        if new_value & 0b0000_1111 == 0b000_0000 {
           *hf = true;
         }
       RUST
@@ -392,7 +386,6 @@ class CpuDecodingTemplateGenerator
     operand_names = opcode_data.fetch("operands").map { |data| data["name"] }
 
     generate_matcher_line!(opcode_hex, operand_types)
-    generate_variable_assignments!(opcode_data, operand_types, operand_names)
     generate_execution_method_call!(opcode_family, instruction_data, operand_types, operand_names)
     generate_closure!(opcode_data, opcode_hex)
   end
@@ -418,19 +411,19 @@ class CpuDecodingTemplateGenerator
     when [INDIRECT_REGISTER_OPERAND]
       # Nothing
     when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
-      @buffer.print ", value @ _"
+      @buffer.print ", immediate @ _"
     when [REGISTER_OPERAND, REGISTER_OPERAND]
       # Nothing
     when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
-      @buffer.print ", low_byte @ _, high_byte @ _"
+      @buffer.print ", immediate_low @ _, immediate_high @ _"
     when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
       # Nothing
     when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
       # Nothing
     when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
-      @buffer.print ", value @ _"
+      @buffer.print ", immediate @ _"
     when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
-      @buffer.print ", low_byte @ _, high_byte @ _"
+      @buffer.print ", immediate_low @ _, immediate_high @ _"
     when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
       # Nothing
     when [INDIRECT_IMMEDIATE_REGISTER_OPERAND, REGISTER_OPERAND]
@@ -444,29 +437,20 @@ class CpuDecodingTemplateGenerator
     @buffer.puts "] => {"
   end
 
-  # Optional variables assigned before invoking the execution code. Example:
+  # Execution method call. Some examples:
   #
-  #     let address = Self::compose_address(*high_byte, *low_byte);
+  #     Self::execute_LD_r_n(&mut self.PC, &mut self.L, immediate);
   #
-  def generate_variable_assignments!(opcode_data, operand_types, operand_names)
-    operand_types.each_with_index do |operand_type, i|
-      case operand_type
-      when INDIRECT_IMMEDIATE_OPERAND
-        @buffer.puts "                let address = Self::compose_address(*high_byte, *low_byte);"
-        break
-      when INDIRECT_REGISTER_OPERAND
-        high_byte_register, low_byte_register = operand_names[i].chars
-        @buffer.puts "                let address = Self::compose_address(self.#{high_byte_register}, self.#{low_byte_register});"
-        break
-      end
-    end
-  end
-
-  # Execution method call. Example:
+  #     let src_register = &self.L as *const u8;
+  #     Self::execute_LD_r1_r2(&mut self.PC, &mut self.L, src_register);
   #
-  #     Self::execute_LD_nn_n(&mut self.PC, &mut self.B, *value);
+  #     Self::execute_INC_n(&mut self.PC, &mut self.A, &mut self.zf, &mut self.nf, &mut self.hf);
   #
   def generate_execution_method_call!(opcode_family, instruction_data, operand_types, operand_names)
+    # Currently used only for raw pointers.
+    #
+    variable_assignments = []
+
     operand_params =
       case operand_types
       when []
@@ -474,53 +458,90 @@ class CpuDecodingTemplateGenerator
       when [REGISTER_OPERAND]
         "&mut self.#{operand_names[0]}"
       when [INDIRECT_REGISTER_OPERAND]
-        "&mut self.internal_ram[address]"
+        register_high, register_low = operand_names[0].chars
+        [
+          "&mut self.internal_ram",
+          "&self.#{register_high}",
+          "&self.#{register_low}",
+        ]
       when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
         [
           "&mut self.#{operand_names[0]}",
-          "*value"
+          "immediate"
         ]
       when [REGISTER_OPERAND, REGISTER_OPERAND]
+        if instruction_data.fetch(:any_shared_register)
+          variable_assignments << "let src_register = &self.#{operand_names[1]} as *const u8;"
+          source_register_ref = "src_register"
+        else
+          source_register_ref = "&self.#{operand_names[1]}"
+        end
+
         [
           "&mut self.#{operand_names[0]}",
-          "self.#{operand_names[1]}"
+          source_register_ref,
         ]
       when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
         [
           "&mut self.#{operand_names[0]}",
-          "self.internal_ram[address]"
+          "&self.internal_ram",
+          "&immediate_high",
+          "&immediate_low",
         ]
       when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
+        if instruction_data.fetch(:any_shared_register)
+          variable_assignments << "let dst_register = &mut self.#{operand_names[0]} as *mut u8;"
+          dest_register_ref = "dst_register"
+        else
+          dest_register_ref = "&mut self.#{operand_names[0]}"
+        end
+
+        src_register_high, src_register_low = operand_names[1].chars
+
         [
-          "&mut self.#{operand_names[0]}",
-          "self.internal_ram[address]"
+          dest_register_ref,
+          "&self.internal_ram",
+          "&self.#{src_register_high}",
+          "&self.#{src_register_low}",
         ]
       when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+        dst_register_high, dst_register_low = operand_names[0].chars
         [
-          "&mut self.internal_ram[address]",
-          "self.#{operand_names[1]}"
+          "&mut self.internal_ram",
+          "&self.#{dst_register_high}",
+          "&self.#{dst_register_low}",
+          "&self.#{operand_names[1]}"
         ]
       when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
+        dst_register_high, dst_register_low = operand_names[0].chars
         [
-          "&mut self.internal_ram[address]",
-          "*value"
+          "&mut self.internal_ram",
+          "&self.#{dst_register_high}",
+          "&self.#{dst_register_low}",
+          "immediate"
         ]
       when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
         [
-          "&mut self.internal_ram[address]",
-          "self.#{operand_names[1]}"
+          "&mut self.internal_ram",
+          "&immediate_high",
+          "&immediate_low",
+          "&self.#{operand_names[1]}"
         ]
       when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
-        displacement, register = operand_names[1].split(' + ')
+        src_displacement, src_register = operand_names[1].split(' + ')
         [
           "&mut self.#{operand_names[0]}",
-          "self.internal_ram[0x#{displacement} + self.#{register} as usize]",
+          "&mut self.internal_ram",
+          "&0x#{src_displacement}",
+          "&self.#{src_register}"
         ]
       when [INDIRECT_IMMEDIATE_REGISTER_OPERAND, REGISTER_OPERAND]
-        displacement, register = operand_names[0].split(' + ')
+        dst_displacement, dst_register = operand_names[0].split(' + ')
         [
-          "&mut self.internal_ram[0x#{displacement} + self.#{register} as usize]",
-          "self.#{operand_names[1]}",
+          "&mut self.internal_ram",
+          "&0x#{dst_displacement}",
+          "&self.#{dst_register}",
+          "&mut self.#{operand_names[1]}",
         ]
       else
         raise "Unrecognized operand types: #{operand_types}"
@@ -535,6 +556,10 @@ class CpuDecodingTemplateGenerator
       else
         raise "Invalid flag state: #{state}"
       end
+    end
+
+    variable_assignments.each do |variable_assignment|
+      @buffer.puts "                #{variable_assignment}"
     end
 
     all_execution_params = ["&mut self.PC", *operand_params, *flag_params].join(", ")
@@ -576,7 +601,9 @@ class CpuExecutionTemplatesGenerator
 
   # Execution method call. Example:
   #
-  #     fn execute_LD_r_n(PC: &mut u16, operand: &mut u8, value: u8) {
+  #     fn execute_LD_r_n(PC: &mut u16, register: &mut u8, immediate: &u8) {
+  #     fn execute_LD_r1_r2(PC: &mut u16, dst_register: &mut u8, src_register: *const u8) {
+  #     fn execute_INC_n(PC: &mut u16, register: &mut u8, zf: &mut bool, nf: &mut bool, hf: &mut bool) {
   #
   def generate_method_signature!(opcode_family, instruction_data)
     operand_types = instruction_data.fetch(:operand_types)
@@ -587,29 +614,31 @@ class CpuExecutionTemplatesGenerator
     when []
       # nothing to add
     when [REGISTER_OPERAND]
-      @buffer.print ", operand: &mut u8"
+      @buffer.print ", register: &mut u8"
     when [INDIRECT_REGISTER_OPERAND]
-      @buffer.print ", operand: &mut u8"
+      @buffer.print ", internal_ram: &mut [u8], register_high: &u8, register_low: &u8"
     when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
-      @buffer.print ", operand: &mut u8, value: u8"
+      @buffer.print ", register: &mut u8, immediate: &u8"
     when [REGISTER_OPERAND, REGISTER_OPERAND]
-      @buffer.print ", operand: &mut u8, value: u8"
+      src_register_type = instruction_data.fetch(:any_shared_register) ? "*const u8" : "&u8"
+      @buffer.print ", dst_register: &mut u8, src_register: #{src_register_type}"
     when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
-      @buffer.print ", operand: &mut u8, value: u8"
+      @buffer.print ", register: &mut u8, internal_ram: &[u8], immediate_high: &u8, immediate_low: &u8"
     when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
-      @buffer.print ", operand: &mut u8, value: u8"
+      dst_register_type = instruction_data.fetch(:any_shared_register) ? "*mut u8" : "&mut u8"
+      @buffer.print ", dst_register: #{dst_register_type}, internal_ram: &[u8], src_register_high: &u8, src_register_low: &u8"
     when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
-      @buffer.print ", operand: &mut u8, value: u8"
+      @buffer.print ", internal_ram: &mut [u8], dst_register_high: &u8, dst_register_low: &u8, src_register: &u8"
     when [INDIRECT_IMMEDIATE_OPERAND, IMMEDIATE_OPERAND]
-      @buffer.print ", operand: &mut u8, value: u8"
+      @buffer.print ", internal_ram: &mut [u8], dst_immediate_high: &u8, dst_immediate_low: &u8, src_immediate: &u8"
     when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
-      @buffer.print ", operand: &mut u8, value: u8"
+      @buffer.print ", internal_ram: &mut [u8], register_high: &u8, register_low: &u8, immediate: &u8"
     when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
-      @buffer.print ", operand: &mut u8, value: u8"
+      @buffer.print ", internal_ram: &mut [u8], dst_immediate_high: &u8, dst_immediate_low: &u8, register: &u8"
     when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
-      @buffer.print ", operand: &mut u8, value: u8"
+      @buffer.print ", dst_register: &mut u8, internal_ram: &[u8], displacement: &u16, src_register: &u8"
     when [INDIRECT_IMMEDIATE_REGISTER_OPERAND, REGISTER_OPERAND]
-      @buffer.print ", operand: &mut u8, value: u8"
+      @buffer.print ", internal_ram: &mut [u8], displacement: &u16, dst_register: &u8, src_register: &u8"
     else
       raise "Unrecognized operand types: #{operand_types}"
     end
