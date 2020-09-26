@@ -38,7 +38,6 @@ module InstructionsData
   REGISTER_OPERAND_16 = :register_16
   IMMEDIATE_OPERAND_8 = :immediate_8
   IMMEDIATE_OPERAND_16 = :immediate_16
-  IMMEDIATE_REGISTER_OPERAND_8 = :immediate_register
 
   REMOVED_OPERAND = :removed
 
@@ -223,14 +222,11 @@ module InstructionsData
         }
       }
     },
-    "LD A, ($FF00 + C)" => {
+    "LDH A, (C)" => {
       prefixed: false,
       opcodes: [0xF2],
-      transform_opcode_data: ->(data) do
-        data.fetch("operands")[1]["name"] = "FF00 + C"
-      end,
       operation_code: <<~RUST,
-        let address = *displacement as usize + *src_register as usize;
+        let address = 0xFF00 + *src_register as usize;
         *dst_register = internal_ram[address];
       RUST
       testing: ->(_, _) {
@@ -245,14 +241,11 @@ module InstructionsData
         }
       }
     },
-    "LD ($FF00 + C), A" => {
+    "LDH (C), A" => {
       prefixed: false,
       opcodes: [0xE2],
-      transform_opcode_data: ->(data) do
-        data.fetch("operands")[0]["name"] = "FF00 + C"
-      end,
       operation_code: <<~RUST,
-        let address = *displacement as usize + *dst_register as usize;
+        let address = 0xFF00 + *dst_register as usize;
         internal_ram[address] = *src_register;
       RUST
       testing: ->(_, _) {
@@ -573,10 +566,6 @@ class CpuDecodingTemplateGenerator
       @buffer.print ", immediate @ _"
     when [IMMEDIATE_OPERAND_16, REGISTER_OPERAND_8]
       @buffer.print ", immediate_low @ _, immediate_high @ _"
-    when [REGISTER_OPERAND_8, IMMEDIATE_REGISTER_OPERAND_8]
-      # Nothing
-    when [IMMEDIATE_REGISTER_OPERAND_8, REGISTER_OPERAND_8]
-      # Nothing
     else
       # This is for safety; it's easy to miss a tuple.
       #
@@ -679,20 +668,6 @@ class CpuDecodingTemplateGenerator
           "&immediate_high",
           "&immediate_low",
           "&self.#{operand_names[1]}"
-        ]
-      when [REGISTER_OPERAND_8, IMMEDIATE_REGISTER_OPERAND_8]
-        src_displacement, src_register = operand_names[1].split(' + ')
-        [
-          "&mut self.#{operand_names[0]}",
-          "&0x#{src_displacement}",
-          "&self.#{src_register}"
-        ]
-      when [IMMEDIATE_REGISTER_OPERAND_8, REGISTER_OPERAND_8]
-        dst_displacement, dst_register = operand_names[0].split(' + ')
-        [
-          "&0x#{dst_displacement}",
-          "&self.#{dst_register}",
-          "&mut self.#{operand_names[1]}",
         ]
       else
         raise "Unrecognized operand types: #{operand_types}"
@@ -804,10 +779,6 @@ class CpuExecutionTemplatesGenerator
       @buffer.print ", dst_immediate_high: &u8, dst_immediate_low: &u8, src_immediate: &u8"
     when [IMMEDIATE_OPERAND_16, REGISTER_OPERAND_8]
       @buffer.print ", dst_immediate_high: &u8, dst_immediate_low: &u8, register: &u8"
-    when [REGISTER_OPERAND_8, IMMEDIATE_REGISTER_OPERAND_8]
-      @buffer.print ", dst_register: &mut u8, displacement: &u16, src_register: &u8"
-    when [IMMEDIATE_REGISTER_OPERAND_8, REGISTER_OPERAND_8]
-      @buffer.print ", displacement: &u16, dst_register: &u8, src_register: &u8"
     else
       raise "Unrecognized operand types: #{operand_types}"
     end
@@ -1028,8 +999,7 @@ class TestTemplatesGenerator
 
     RUST
 
-    presets = "" if presets.nil?
-    presets = "cpu.PC = 0x21;\n#{presets}" if presets !~ /\bcpu.PC +=/
+    presets = "cpu.PC = 0x21;\n#{presets}"
 
     presets.each_line.map(&:strip).each do |preset_statement|
       if preset_statement.empty?
@@ -1253,9 +1223,6 @@ class CpuTemplatesGenerator
           OperandType.new(IMMEDIATE_OPERAND_8, indirect)
         when "a16"
           OperandType.new(IMMEDIATE_OPERAND_16, indirect)
-        when /(\w) \+ [0-9A-F]/
-          registers_8bit_used << $LAST_MATCH_INFO[1]
-          OperandType.new(IMMEDIATE_REGISTER_OPERAND_8, true)
         when *REGISTERS_8B
           registers_8bit_used << operand_name
           OperandType.new(REGISTER_OPERAND_8, indirect)
