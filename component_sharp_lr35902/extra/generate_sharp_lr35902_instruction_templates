@@ -34,11 +34,11 @@ module InstructionsData
 
   extend self
 
-  REGISTER_OPERAND = :register
-  IMMEDIATE_OPERAND = :immediate
-  INDIRECT_REGISTER_OPERAND = :indirect_register
-  INDIRECT_IMMEDIATE_OPERAND = :indirect_immediate
-  INDIRECT_IMMEDIATE_REGISTER_OPERAND = :indirect_immediate_register
+  REGISTER_OPERAND_8 = :register_8
+  REGISTER_OPERAND_16 = :register_16
+  IMMEDIATE_OPERAND_8 = :immediate_8
+  IMMEDIATE_OPERAND_16 = :immediate_16
+  IMMEDIATE_REGISTER_OPERAND_8 = :immediate_register
 
   REMOVED_OPERAND = :removed
 
@@ -65,7 +65,7 @@ module InstructionsData
   #
   # - instruction_size
   # - flags_data
-  # - operand_types:         Array of REGISTER_OPERAND, IMMEDIATE_OPERAND, INDIRECT_REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND
+  # - operand_types:         Array of `OperandType` instances
   #
   # Pan doc groups some instructions that have different operand types together, e.g. `LD r1, r2`,
   # `LD r, n`, `LD r1, (r2)` and so on; this is correct in a way, but we need more a more specific
@@ -511,6 +511,11 @@ module InstructionsData
   }
 end
 
+# type:     InstructionData::*_OPERAND
+# indirect: boolean
+#
+OperandType = Struct.new(:type, :indirect)
+
 class CpuDecodingTemplateGenerator
   include InstructionsData
   include FormattingHelpers
@@ -547,30 +552,30 @@ class CpuDecodingTemplateGenerator
   def generate_matcher_line!(opcode_hex, operand_types)
     @buffer.print "            [0x#{opcode_hex}"
 
-    case operand_types
+    case operand_types.map(&:type)
     when []
       # Nothing
-    when [REGISTER_OPERAND]
+    when [REGISTER_OPERAND_8]
       # Nothing
-    when [INDIRECT_REGISTER_OPERAND]
+    when [REGISTER_OPERAND_16]
       # Nothing
-    when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
+    when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_8]
       @buffer.print ", immediate @ _"
-    when [REGISTER_OPERAND, REGISTER_OPERAND]
+    when [REGISTER_OPERAND_8, REGISTER_OPERAND_8]
       # Nothing
-    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
+    when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_16]
       @buffer.print ", immediate_low @ _, immediate_high @ _"
-    when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
+    when [REGISTER_OPERAND_8, REGISTER_OPERAND_16]
       # Nothing
-    when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+    when [REGISTER_OPERAND_16, REGISTER_OPERAND_8]
       # Nothing
-    when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
+    when [REGISTER_OPERAND_16, IMMEDIATE_OPERAND_8]
       @buffer.print ", immediate @ _"
-    when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
+    when [IMMEDIATE_OPERAND_16, REGISTER_OPERAND_8]
       @buffer.print ", immediate_low @ _, immediate_high @ _"
-    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
+    when [REGISTER_OPERAND_8, IMMEDIATE_REGISTER_OPERAND_8]
       # Nothing
-    when [INDIRECT_IMMEDIATE_REGISTER_OPERAND, REGISTER_OPERAND]
+    when [IMMEDIATE_REGISTER_OPERAND_8, REGISTER_OPERAND_8]
       # Nothing
     else
       # This is for safety; it's easy to miss a tuple.
@@ -596,24 +601,23 @@ class CpuDecodingTemplateGenerator
     variable_assignments = []
 
     operand_params =
-      case operand_types
+      case operand_types.map(&:type)
       when []
         # Nothing
-      when [REGISTER_OPERAND]
+      when [REGISTER_OPERAND_8]
         "&mut self.#{operand_names[0]}"
-      when [INDIRECT_REGISTER_OPERAND]
+      when [REGISTER_OPERAND_16]
         register_high, register_low = operand_names[0].chars
         [
-          "&mut self.internal_ram",
           "&self.#{register_high}",
           "&self.#{register_low}",
         ]
-      when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_8]
         [
           "&mut self.#{operand_names[0]}",
           "immediate"
         ]
-      when [REGISTER_OPERAND, REGISTER_OPERAND]
+      when [REGISTER_OPERAND_8, REGISTER_OPERAND_8]
         if instruction_data.fetch(:any_shared_register)
           variable_assignments << "let src_register = &self.#{operand_names[1]} as *const u8;"
           source_register_ref = "src_register"
@@ -625,14 +629,13 @@ class CpuDecodingTemplateGenerator
           "&mut self.#{operand_names[0]}",
           source_register_ref,
         ]
-      when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
+      when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_16]
         [
           "&mut self.#{operand_names[0]}",
-          "&self.internal_ram",
           "&immediate_high",
           "&immediate_low",
         ]
-      when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
+      when [REGISTER_OPERAND_8, REGISTER_OPERAND_16]
         if instruction_data.fetch(:any_shared_register)
           variable_assignments << "let dst_register = &mut self.#{operand_names[0]} as *mut u8;"
           dest_register_ref = "dst_register"
@@ -645,11 +648,10 @@ class CpuDecodingTemplateGenerator
         # The mutable is required for operations that mutate the source, e.g. LDD.
         [
           dest_register_ref,
-          "&self.internal_ram",
           "&mut self.#{src_register_high}",
           "&mut self.#{src_register_low}",
         ]
-      when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+      when [REGISTER_OPERAND_16, REGISTER_OPERAND_8]
         if instruction_data.fetch(:any_shared_register)
           variable_assignments << "let src_register = &mut self.#{operand_names[1]} as *mut u8;"
           src_register_ref = "src_register"
@@ -661,38 +663,33 @@ class CpuDecodingTemplateGenerator
 
         # The mutable is required for operations that mutate the source, e.g. LDD.
         [
-          "&mut self.internal_ram",
           "&mut self.#{dst_register_high}",
           "&mut self.#{dst_register_low}",
           src_register_ref
         ]
-      when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
+      when [REGISTER_OPERAND_16, IMMEDIATE_OPERAND_8]
         dst_register_high, dst_register_low = operand_names[0].chars
         [
-          "&mut self.internal_ram",
           "&self.#{dst_register_high}",
           "&self.#{dst_register_low}",
           "immediate"
         ]
-      when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
+      when [IMMEDIATE_OPERAND_16, REGISTER_OPERAND_8]
         [
-          "&mut self.internal_ram",
           "&immediate_high",
           "&immediate_low",
           "&self.#{operand_names[1]}"
         ]
-      when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
+      when [REGISTER_OPERAND_8, IMMEDIATE_REGISTER_OPERAND_8]
         src_displacement, src_register = operand_names[1].split(' + ')
         [
           "&mut self.#{operand_names[0]}",
-          "&mut self.internal_ram",
           "&0x#{src_displacement}",
           "&self.#{src_register}"
         ]
-      when [INDIRECT_IMMEDIATE_REGISTER_OPERAND, REGISTER_OPERAND]
+      when [IMMEDIATE_REGISTER_OPERAND_8, REGISTER_OPERAND_8]
         dst_displacement, dst_register = operand_names[0].split(' + ')
         [
-          "&mut self.internal_ram",
           "&0x#{dst_displacement}",
           "&self.#{dst_register}",
           "&mut self.#{operand_names[1]}",
@@ -716,7 +713,16 @@ class CpuDecodingTemplateGenerator
       @buffer.puts "                #{variable_assignment}"
     end
 
-    all_execution_params = ["&mut self.PC", *operand_params, *flag_params].join(", ")
+    internal_ram_param = \
+      if operand_types.empty?
+        []
+      elsif operand_types[0].indirect
+        ["&mut self.internal_ram"]
+      elsif operand_types[1]&.indirect
+        ["&self.internal_ram"]
+      end
+
+    all_execution_params = ["&mut self.PC", *internal_ram_param, *operand_params, *flag_params].join(", ")
 
     @buffer.puts "                Self::execute_#{opcode_family}(#{all_execution_params});"
   end
@@ -764,38 +770,44 @@ class CpuExecutionTemplatesGenerator
 
     @buffer.print "    fn execute_#{opcode_family}(PC: &mut u16"
 
-    case operand_types
+    if operand_types[0]&.indirect
+      @buffer.print ", internal_ram: &mut [u8]"
+    elsif operand_types[1]&.indirect
+      @buffer.print ", internal_ram: &[u8]"
+    end
+
+    case operand_types.map(&:type)
     when []
       # nothing to add
-    when [REGISTER_OPERAND]
+    when [REGISTER_OPERAND_8]
       @buffer.print ", register: &mut u8"
-    when [INDIRECT_REGISTER_OPERAND]
-      @buffer.print ", internal_ram: &mut [u8], register_high: &u8, register_low: &u8"
-    when [REGISTER_OPERAND, IMMEDIATE_OPERAND]
+    when [REGISTER_OPERAND_16]
+      @buffer.print ", register_high: &u8, register_low: &u8"
+    when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_8]
       @buffer.print ", register: &mut u8, immediate: &u8"
-    when [REGISTER_OPERAND, REGISTER_OPERAND]
+    when [REGISTER_OPERAND_8, REGISTER_OPERAND_8]
       src_register_type = instruction_data.fetch(:any_shared_register) ? "*const u8" : "&u8"
       @buffer.print ", dst_register: &mut u8, src_register: #{src_register_type}"
-    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_OPERAND]
-      @buffer.print ", register: &mut u8, internal_ram: &[u8], immediate_high: &u8, immediate_low: &u8"
-    when [REGISTER_OPERAND, INDIRECT_REGISTER_OPERAND]
+    when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_16]
+      @buffer.print ", register: &mut u8, immediate_high: &u8, immediate_low: &u8"
+    when [REGISTER_OPERAND_8, REGISTER_OPERAND_16]
       dst_register_type = instruction_data.fetch(:any_shared_register) ? "*mut u8" : "&mut u8"
       # See :generate_execution_method_call for note about the mutable sources.
-      @buffer.print ", dst_register: #{dst_register_type}, internal_ram: &[u8], src_register_high: &mut u8, src_register_low: &mut u8"
-    when [INDIRECT_REGISTER_OPERAND, REGISTER_OPERAND]
+      @buffer.print ", dst_register: #{dst_register_type}, src_register_high: &mut u8, src_register_low: &mut u8"
+    when [REGISTER_OPERAND_16, REGISTER_OPERAND_8]
       src_register_type = instruction_data.fetch(:any_shared_register) ? "*const u8" : "&u8"
       # See :generate_execution_method_call for note about the mutable destination.
-      @buffer.print ", internal_ram: &mut [u8], dst_register_high: &mut u8, dst_register_low: &mut u8, src_register: #{src_register_type}"
-    when [INDIRECT_IMMEDIATE_OPERAND, IMMEDIATE_OPERAND]
-      @buffer.print ", internal_ram: &mut [u8], dst_immediate_high: &u8, dst_immediate_low: &u8, src_immediate: &u8"
-    when [INDIRECT_REGISTER_OPERAND, IMMEDIATE_OPERAND]
-      @buffer.print ", internal_ram: &mut [u8], register_high: &u8, register_low: &u8, immediate: &u8"
-    when [INDIRECT_IMMEDIATE_OPERAND, REGISTER_OPERAND]
-      @buffer.print ", internal_ram: &mut [u8], dst_immediate_high: &u8, dst_immediate_low: &u8, register: &u8"
-    when [REGISTER_OPERAND, INDIRECT_IMMEDIATE_REGISTER_OPERAND]
-      @buffer.print ", dst_register: &mut u8, internal_ram: &[u8], displacement: &u16, src_register: &u8"
-    when [INDIRECT_IMMEDIATE_REGISTER_OPERAND, REGISTER_OPERAND]
-      @buffer.print ", internal_ram: &mut [u8], displacement: &u16, dst_register: &u8, src_register: &u8"
+      @buffer.print ", dst_register_high: &mut u8, dst_register_low: &mut u8, src_register: #{src_register_type}"
+    when [REGISTER_OPERAND_16, IMMEDIATE_OPERAND_8]
+      @buffer.print ", register_high: &u8, register_low: &u8, immediate: &u8"
+    when [IMMEDIATE_OPERAND_16, IMMEDIATE_OPERAND_8]
+      @buffer.print ", dst_immediate_high: &u8, dst_immediate_low: &u8, src_immediate: &u8"
+    when [IMMEDIATE_OPERAND_16, REGISTER_OPERAND_8]
+      @buffer.print ", dst_immediate_high: &u8, dst_immediate_low: &u8, register: &u8"
+    when [REGISTER_OPERAND_8, IMMEDIATE_REGISTER_OPERAND_8]
+      @buffer.print ", dst_register: &mut u8, displacement: &u16, src_register: &u8"
+    when [IMMEDIATE_REGISTER_OPERAND_8, REGISTER_OPERAND_8]
+      @buffer.print ", displacement: &u16, dst_register: &u8, src_register: &u8"
     else
       raise "Unrecognized operand types: #{operand_types}"
     end
@@ -946,7 +958,7 @@ class TestTemplatesGenerator
     operands_description = operand_names
       .map { |data| data.fetch("name") }
       .zip(operand_types)
-      .map { |name, type| type == INDIRECT_REGISTER_OPERAND || type == INDIRECT_IMMEDIATE_OPERAND ? "(#{name})" : name }
+      .map { |name, type| type.indirect ? "(#{name})" : name }
       .join(", ")
 
     @buffer.print <<-RUST
@@ -1236,18 +1248,18 @@ class CpuTemplatesGenerator
 
         case operand_name
         when "d8"
-          IMMEDIATE_OPERAND
+          OperandType.new(IMMEDIATE_OPERAND_8, false)
         when "a16"
-          INDIRECT_IMMEDIATE_OPERAND
+          OperandType.new(IMMEDIATE_OPERAND_16, true)
         when /(\w) \+ [0-9A-F]/
           registers_8bit_used << $LAST_MATCH_INFO[1]
-          INDIRECT_IMMEDIATE_REGISTER_OPERAND
+          OperandType.new(IMMEDIATE_REGISTER_OPERAND_8, true)
         when *REGISTERS_8B
           registers_8bit_used << operand_name
-          REGISTER_OPERAND
+          OperandType.new(REGISTER_OPERAND_8, false)
         when *REGISTERS_16B
           registers_16bit_used << operand_name
-          INDIRECT_REGISTER_OPERAND
+          OperandType.new(REGISTER_OPERAND_16, true)
         else
           debugger
           raise("Unsupported operand type for opcode %02X: #{operand_data}" % opcode)
