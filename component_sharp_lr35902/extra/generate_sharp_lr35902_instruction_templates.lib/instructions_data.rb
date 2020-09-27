@@ -373,6 +373,44 @@ module InstructionsData
         }
       }
     },
+    "LDH (n), A" => {
+      prefixed: false,
+      opcodes: [0xE0],
+      operation_code: <<~RUST,
+        let address = 0xFF00 + *immediate as usize;
+        internal_ram[address] = *register;
+      RUST
+      testing: ->(_, _) {
+        {
+          BASE => {
+            extra_instruction_bytes: [0x13],
+            presets: <<~RUST,
+              cpu.A = 0x21;
+            RUST
+            expectations: "mem[0xFF13] => 0x21,",
+          }
+        }
+      }
+    },
+    "LDH A, (n)" => {
+      prefixed: false,
+      opcodes: [0xF0],
+      operation_code: <<~RUST,
+        let address = 0xFF00 + *immediate as usize;
+        *register = internal_ram[address];
+      RUST
+      testing: ->(_, _) {
+        {
+          BASE => {
+            extra_instruction_bytes: [0x13],
+            presets: <<~RUST,
+              cpu.internal_ram[0xFF13] = 0x21;
+            RUST
+            expectations: "A => 0x21,",
+          }
+        }
+      }
+    },
     "INC r" => {
       prefixed: false,
       opcodes: [0x3C, 0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C],

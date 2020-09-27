@@ -65,6 +65,8 @@ class CpuExecutionTemplatesGenerator
       @buffer.print ", dst_immediate_high: &u8, dst_immediate_low: &u8, src_immediate: &u8"
     when [IMMEDIATE_OPERAND_16, REGISTER_OPERAND_8]
       @buffer.print ", dst_immediate_high: &u8, dst_immediate_low: &u8, register: &u8"
+    when [IMMEDIATE_OPERAND_8, REGISTER_OPERAND_8]
+      @buffer.print ", immediate: &u8, register: &u8"
     else
       raise "Unrecognized operand types: #{operand_types}"
     end

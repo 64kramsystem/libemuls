@@ -58,6 +58,8 @@ class CpuDecodingTemplateGenerator
       @buffer.print ", immediate @ _"
     when [IMMEDIATE_OPERAND_16, REGISTER_OPERAND_8]
       @buffer.print ", immediate_low @ _, immediate_high @ _"
+    when [IMMEDIATE_OPERAND_8, REGISTER_OPERAND_8]
+      @buffer.print ", immediate @ _"
     else
       # This is for safety; it's easy to miss a tuple.
       #
@@ -159,6 +161,11 @@ class CpuDecodingTemplateGenerator
         [
           "&immediate_high",
           "&immediate_low",
+          "&self.#{operand_names[1]}"
+        ]
+      when [IMMEDIATE_OPERAND_8, REGISTER_OPERAND_8]
+        [
+          "&immediate",
           "&self.#{operand_names[1]}"
         ]
       else

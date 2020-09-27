@@ -160,6 +160,8 @@ class CpuTemplatesGenerator
         case operand_name
         when "d8"
           OperandType.new(IMMEDIATE_OPERAND_8, indirect)
+        when "a8"
+          OperandType.new(IMMEDIATE_OPERAND_8, indirect)
         when "a16"
           OperandType.new(IMMEDIATE_OPERAND_16, indirect)
         when *REGISTERS_8B
