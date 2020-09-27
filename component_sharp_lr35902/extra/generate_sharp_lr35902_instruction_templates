@@ -1240,26 +1240,28 @@ class CpuTemplatesGenerator
 
       registers_8bit_used, registers_16bit_used = [], []
 
-      # WATCH OUT!! The JSON gets the "immediate" metadata wrong; the correct semantic is is the
-      # opposite (see https://git.io/JU8JY).
-      #
       operand_types = operands_data.map do |operand_data|
         operand_name = operand_data.fetch("name")
 
+        # WATCH OUT!! The JSON gets the "immediate" metadata wrong; the correct semantic is is the
+        # opposite (see https://git.io/JU8JY), and it really refers to the indirection.
+        #
+        indirect = !operand_data.fetch("immediate")
+
         case operand_name
         when "d8"
-          OperandType.new(IMMEDIATE_OPERAND_8, false)
+          OperandType.new(IMMEDIATE_OPERAND_8, indirect)
         when "a16"
-          OperandType.new(IMMEDIATE_OPERAND_16, true)
+          OperandType.new(IMMEDIATE_OPERAND_16, indirect)
         when /(\w) \+ [0-9A-F]/
           registers_8bit_used << $LAST_MATCH_INFO[1]
           OperandType.new(IMMEDIATE_REGISTER_OPERAND_8, true)
         when *REGISTERS_8B
           registers_8bit_used << operand_name
-          OperandType.new(REGISTER_OPERAND_8, false)
+          OperandType.new(REGISTER_OPERAND_8, indirect)
         when *REGISTERS_16B
           registers_16bit_used << operand_name
-          OperandType.new(REGISTER_OPERAND_16, true)
+          OperandType.new(REGISTER_OPERAND_16, indirect)
         else
           debugger
           raise("Unsupported operand type for opcode %02X: #{operand_data}" % opcode)
