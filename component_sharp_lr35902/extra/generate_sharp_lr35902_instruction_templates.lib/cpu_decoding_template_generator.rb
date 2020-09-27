@@ -85,6 +85,8 @@ class CpuDecodingTemplateGenerator
       when REGISTER_OPERAND_16
         register_high, register_low = operand_name.chars
         operand_params.push("&mut self.#{register_high}", "&mut self.#{register_low}")
+      when REGISTER_SP
+        operand_params << "&mut self.#{operand_name}"
       when IMMEDIATE_OPERAND_8
         operand_params << "immediate"
       when IMMEDIATE_OPERAND_16

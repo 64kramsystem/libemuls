@@ -160,6 +160,8 @@ class CpuTemplatesGenerator
         case operand_name
         when "d8"
           OperandType.new(IMMEDIATE_OPERAND_8, indirect)
+        when "d16"
+          OperandType.new(IMMEDIATE_OPERAND_16, indirect)
         when "a8"
           OperandType.new(IMMEDIATE_OPERAND_8, indirect)
         when "a16"
@@ -170,6 +172,8 @@ class CpuTemplatesGenerator
         when *REGISTERS_16B
           registers_16bit_used << operand_name
           OperandType.new(REGISTER_OPERAND_16, indirect)
+        when "SP"
+          OperandType.new(REGISTER_SP, indirect)
         else
           debugger
           raise("Unsupported operand type for opcode %02X: #{operand_data}" % opcode)

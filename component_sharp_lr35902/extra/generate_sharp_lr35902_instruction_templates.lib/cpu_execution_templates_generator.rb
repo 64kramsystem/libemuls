@@ -44,6 +44,8 @@ class CpuExecutionTemplatesGenerator
         @buffer.print ", #{position}_register: #{register_type}"
       when REGISTER_OPERAND_16
         @buffer.print ", #{position}_register_high: &mut u8, #{position}_register_low: &mut u8"
+      when REGISTER_SP
+        @buffer.print ", #{position}_register: &mut u16"
       when IMMEDIATE_OPERAND_8
         @buffer.print ", immediate: &u8"
       when IMMEDIATE_OPERAND_16
