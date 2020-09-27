@@ -37,33 +37,15 @@ class CpuDecodingTemplateGenerator
   def generate_matcher_line!(opcode_hex, operand_types)
     @buffer.print "            [0x#{opcode_hex}"
 
-    case operand_types.map(&:type)
-    when []
-      # Nothing
-    when [REGISTER_OPERAND_8]
-      # Nothing
-    when [REGISTER_OPERAND_16]
-      # Nothing
-    when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_8]
+    # Registers don't use matcher bindings, and there can't be immediates on both sides, so we can
+    # use simple testing logic.
+    # Note that this makes it more complex to append a prefix to the variable name indicating the
+    # source/destination nature.
+
+    if operand_types.map(&:type).include?(IMMEDIATE_OPERAND_8)
       @buffer.print ", immediate @ _"
-    when [REGISTER_OPERAND_8, REGISTER_OPERAND_8]
-      # Nothing
-    when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_16]
+    elsif operand_types.map(&:type).include?(IMMEDIATE_OPERAND_16)
       @buffer.print ", immediate_low @ _, immediate_high @ _"
-    when [REGISTER_OPERAND_8, REGISTER_OPERAND_16]
-      # Nothing
-    when [REGISTER_OPERAND_16, REGISTER_OPERAND_8]
-      # Nothing
-    when [REGISTER_OPERAND_16, IMMEDIATE_OPERAND_8]
-      @buffer.print ", immediate @ _"
-    when [IMMEDIATE_OPERAND_16, REGISTER_OPERAND_8]
-      @buffer.print ", immediate_low @ _, immediate_high @ _"
-    when [IMMEDIATE_OPERAND_8, REGISTER_OPERAND_8]
-      @buffer.print ", immediate @ _"
-    else
-      # This is for safety; it's easy to miss a tuple.
-      #
-      raise "Unrecognized operand types: #{operand_types}"
     end
 
     @buffer.puts "] => {"
