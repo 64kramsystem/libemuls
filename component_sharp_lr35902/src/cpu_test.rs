@@ -93,6 +93,9 @@ macro_rules! assert_cpu_execute {
         $( E => $expected_E:literal , )?
         $( H => $expected_H:literal , )?
         $( L => $expected_L:literal , )?
+        $( BC => $expected_BC:literal , )?
+        $( DE => $expected_DE:literal , )?
+        $( HL => $expected_HL:literal , )?
         $( SP => $expected_SP:literal , )?
         $( PC => $expected_PC:literal , )?
         $( zf => $expected_zf:literal , )?
@@ -121,12 +124,36 @@ macro_rules! assert_cpu_execute {
         // default(), however, it's not a radical improvement.
         //
         let A = current_A $( - current_A + $expected_A )?;
-        let B = current_B $( - current_B + $expected_B )?;
-        let C = current_C $( - current_C + $expected_C )?;
-        let D = current_D $( - current_D + $expected_D )?;
-        let E = current_E $( - current_E + $expected_E )?;
-        let H = current_H $( - current_H + $expected_H )?;
-        let L = current_L $( - current_L + $expected_L )?;
+
+        #[allow(unused_mut, unused_assignments)]
+        let mut B = current_B $( - current_B + $expected_B )?;
+        #[allow(unused_mut, unused_assignments)]
+        let mut C = current_C $( - current_C + $expected_C )?;
+        $(
+        B = ($expected_BC >> 8) as u8;
+        C = ($expected_BC & 0b1111_1111) as u8;
+        )?
+
+        #[allow(unused_mut, unused_assignments)]
+        let mut D = current_D $( - current_D + $expected_D )?;
+        #[allow(unused_mut, unused_assignments)]
+        let mut E = current_E $( - current_E + $expected_E )?;
+
+        $(
+        D = ($expected_DE >> 8) as u8;
+        E = ($expected_DE & 0b1111_1111) as u8;
+        )?
+
+        #[allow(unused_mut, unused_assignments)]
+        let mut H = current_H $( - current_H + $expected_H )?;
+        #[allow(unused_mut, unused_assignments)]
+        let mut L = current_L $( - current_L + $expected_L )?;
+
+        $(
+        H = ($expected_HL >> 8) as u8;
+        L = ($expected_HL & 0b1111_1111) as u8;
+        )?
+
         let SP = current_SP $( - current_SP + $expected_SP )?;
         let PC = current_PC $( - current_PC + $expected_PC )?;
         let zf = current_zf $( ^ current_zf | (if $expected_zf == 0 { false } else { true }) )?;

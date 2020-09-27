@@ -258,8 +258,7 @@ module InstructionsData
             RUST
             expectations: <<~RUST
               A => 0x21,
-              H => 0xFF,
-              L => 0xFF,
+              HL => 0xFFFF,
             RUST
           }
         }
@@ -293,8 +292,7 @@ module InstructionsData
               cpu.L = 0x00;
             RUST
             expectations: <<~RUST
-              H => 0xFF,
-              L => 0xFF,
+              HL => 0xFFFF,
               mem[0x0000] => 0x21,
             RUST
           }
@@ -330,8 +328,7 @@ module InstructionsData
             RUST
             expectations: <<~RUST
               A => 0x21,
-              H => 0x00,
-              L => 0x00,
+              HL => 0x0000,
             RUST
           }
         }
@@ -365,8 +362,7 @@ module InstructionsData
               cpu.L = 0xFF;
             RUST
             expectations: <<~RUST
-              H => 0x00,
-              L => 0x00,
+              HL => 0x0000,
               mem[0xFFFF] => 0x21,
             RUST
           }
