@@ -452,6 +452,26 @@ module InstructionsData
         }
       }
     },
+    "LD SP, HL" => {
+      prefixed: false,
+      opcodes: [0xF9],
+      operation_code: <<~RUST,
+        *dst_register = ((*src_register_high as u16) << 8) + *src_register_low as u16;
+      RUST
+      testing: ->(register, _) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu.H = 0xCA;
+              cpu.L = 0xFE;
+            RUST
+            expectations: <<~RUST
+              SP => 0xCAFE,
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       prefixed: false,
       opcodes: [0x3C, 0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C],
