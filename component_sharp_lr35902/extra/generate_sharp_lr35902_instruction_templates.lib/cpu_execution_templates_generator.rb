@@ -37,38 +37,22 @@ class CpuExecutionTemplatesGenerator
       @buffer.print ", internal_ram: &[u8]"
     end
 
-    case operand_types.map(&:type)
-    when []
-      # nothing to add
-    when [REGISTER_OPERAND_8]
-      @buffer.print ", register: &mut u8"
-    when [REGISTER_OPERAND_16]
-      @buffer.print ", register_high: &u8, register_low: &u8"
-    when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_8]
-      @buffer.print ", register: &mut u8, immediate: &u8"
-    when [REGISTER_OPERAND_8, REGISTER_OPERAND_8]
-      src_register_type = instruction_data.fetch(:any_shared_register) ? "*const u8" : "&u8"
-      @buffer.print ", dst_register: &mut u8, src_register: #{src_register_type}"
-    when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_16]
-      @buffer.print ", register: &mut u8, immediate_high: &u8, immediate_low: &u8"
-    when [REGISTER_OPERAND_8, REGISTER_OPERAND_16]
-      dst_register_type = instruction_data.fetch(:any_shared_register) ? "*mut u8" : "&mut u8"
-      # See :generate_execution_method_call for note about the mutable sources.
-      @buffer.print ", dst_register: #{dst_register_type}, src_register_high: &mut u8, src_register_low: &mut u8"
-    when [REGISTER_OPERAND_16, REGISTER_OPERAND_8]
-      src_register_type = instruction_data.fetch(:any_shared_register) ? "*const u8" : "&u8"
-      # See :generate_execution_method_call for note about the mutable destination.
-      @buffer.print ", dst_register_high: &mut u8, dst_register_low: &mut u8, src_register: #{src_register_type}"
-    when [REGISTER_OPERAND_16, IMMEDIATE_OPERAND_8]
-      @buffer.print ", register_high: &u8, register_low: &u8, immediate: &u8"
-    when [IMMEDIATE_OPERAND_16, IMMEDIATE_OPERAND_8]
-      @buffer.print ", dst_immediate_high: &u8, dst_immediate_low: &u8, src_immediate: &u8"
-    when [IMMEDIATE_OPERAND_16, REGISTER_OPERAND_8]
-      @buffer.print ", dst_immediate_high: &u8, dst_immediate_low: &u8, register: &u8"
-    when [IMMEDIATE_OPERAND_8, REGISTER_OPERAND_8]
-      @buffer.print ", immediate: &u8, register: &u8"
-    else
-      raise "Unrecognized operand types: #{operand_types}"
+    operand_types.zip(["dst", "src"]) do |operand_type, position|
+      case operand_type.type
+      when REGISTER_OPERAND_8
+        register_type = instruction_data.fetch(:any_shared_register) ? "*mut u8" : "&mut u8"
+        @buffer.print ", #{position}_register: #{register_type}"
+      when REGISTER_OPERAND_16
+        @buffer.print ", #{position}_register_high: &mut u8, #{position}_register_low: &mut u8"
+      when IMMEDIATE_OPERAND_8
+        @buffer.print ", immediate: &u8"
+      when IMMEDIATE_OPERAND_16
+        @buffer.print ", immediate_high: &u8, immediate_low: &u8"
+      when nil
+        # Do nothing
+      else
+        raise "Unexpected operand 0 type: #{operand_types[0].type}"
+      end
     end
 
     flags_data = instruction_data.fetch(:flags_data)

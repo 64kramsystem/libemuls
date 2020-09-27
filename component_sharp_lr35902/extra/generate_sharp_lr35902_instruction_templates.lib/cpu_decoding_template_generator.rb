@@ -42,9 +42,11 @@ class CpuDecodingTemplateGenerator
     # Note that this makes it more complex to append a prefix to the variable name indicating the
     # source/destination nature.
 
-    if operand_types.map(&:type).include?(IMMEDIATE_OPERAND_8)
+    operand_type_types = operand_types.map(&:type)
+
+    if operand_type_types.include?(IMMEDIATE_OPERAND_8)
       @buffer.print ", immediate @ _"
-    elsif operand_types.map(&:type).include?(IMMEDIATE_OPERAND_16)
+    elsif operand_type_types.include?(IMMEDIATE_OPERAND_16)
       @buffer.print ", immediate_low @ _, immediate_high @ _"
     end
 
@@ -65,94 +67,34 @@ class CpuDecodingTemplateGenerator
     #
     variable_assignments = []
 
-    operand_params =
-      case operand_types.map(&:type)
-      when []
-        # Nothing
-      when [REGISTER_OPERAND_8]
-        "&mut self.#{operand_names[0]}"
-      when [REGISTER_OPERAND_16]
-        register_high, register_low = operand_names[0].chars
-        [
-          "&self.#{register_high}",
-          "&self.#{register_low}",
-        ]
-      when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_8]
-        [
-          "&mut self.#{operand_names[0]}",
-          "immediate"
-        ]
-      when [REGISTER_OPERAND_8, REGISTER_OPERAND_8]
+    operand_params = []
+
+    # When there is overlapping of register, for simplicity, we pass two raw pointers, even when not
+    # necessary.
+    # For the same reason, we always pass variables as mutable.
+    #
+    operand_names.zip(operand_types, ["dst", "src"]).each do |operand_name, operand_type, position|
+      case operand_type.type
+      when REGISTER_OPERAND_8
         if instruction_data.fetch(:any_shared_register)
-          variable_assignments << "let src_register = &self.#{operand_names[1]} as *const u8;"
-          source_register_ref = "src_register"
+          variable_assignments << "let #{position}_register = &mut self.#{operand_name} as *mut u8;"
+          operand_params << "#{position}_register"
         else
-          source_register_ref = "&self.#{operand_names[1]}"
+          operand_params << "&mut self.#{operand_name}"
         end
-
-        [
-          "&mut self.#{operand_names[0]}",
-          source_register_ref,
-        ]
-      when [REGISTER_OPERAND_8, IMMEDIATE_OPERAND_16]
-        [
-          "&mut self.#{operand_names[0]}",
-          "&immediate_high",
-          "&immediate_low",
-        ]
-      when [REGISTER_OPERAND_8, REGISTER_OPERAND_16]
-        if instruction_data.fetch(:any_shared_register)
-          variable_assignments << "let dst_register = &mut self.#{operand_names[0]} as *mut u8;"
-          dest_register_ref = "dst_register"
-        else
-          dest_register_ref = "&mut self.#{operand_names[0]}"
-        end
-
-        src_register_high, src_register_low = operand_names[1].chars
-
-        # The mutable is required for operations that mutate the source, e.g. LDD.
-        [
-          dest_register_ref,
-          "&mut self.#{src_register_high}",
-          "&mut self.#{src_register_low}",
-        ]
-      when [REGISTER_OPERAND_16, REGISTER_OPERAND_8]
-        if instruction_data.fetch(:any_shared_register)
-          variable_assignments << "let src_register = &mut self.#{operand_names[1]} as *mut u8;"
-          src_register_ref = "src_register"
-        else
-          src_register_ref = "&self.#{operand_names[1]}"
-        end
-
-        dst_register_high, dst_register_low = operand_names[0].chars
-
-        # The mutable is required for operations that mutate the source, e.g. LDD.
-        [
-          "&mut self.#{dst_register_high}",
-          "&mut self.#{dst_register_low}",
-          src_register_ref
-        ]
-      when [REGISTER_OPERAND_16, IMMEDIATE_OPERAND_8]
-        dst_register_high, dst_register_low = operand_names[0].chars
-        [
-          "&self.#{dst_register_high}",
-          "&self.#{dst_register_low}",
-          "immediate"
-        ]
-      when [IMMEDIATE_OPERAND_16, REGISTER_OPERAND_8]
-        [
-          "&immediate_high",
-          "&immediate_low",
-          "&self.#{operand_names[1]}"
-        ]
-      when [IMMEDIATE_OPERAND_8, REGISTER_OPERAND_8]
-        [
-          "&immediate",
-          "&self.#{operand_names[1]}"
-        ]
+      when REGISTER_OPERAND_16
+        register_high, register_low = operand_name.chars
+        operand_params.push("&mut self.#{register_high}", "&mut self.#{register_low}")
+      when IMMEDIATE_OPERAND_8
+        operand_params << "immediate"
+      when IMMEDIATE_OPERAND_16
+        operand_params.push("immediate_high", "immediate_low")
+      when nil
+        # Do nothing
       else
-        raise "Unrecognized operand types: #{operand_types}"
+        raise "Unexpected operand type: #{operand_type.type}"
       end
+    end
 
     flag_params = instruction_data.fetch(:flags_data).each_with_object([]) do |(flag, state), flag_params|
       case state
