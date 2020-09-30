@@ -32,7 +32,6 @@ module InstructionsData
   # ## Predefined data
   #
   # - operation_code:        (optional) if `zf` is set, then a boolean variable called `carry` must be set
-  # - transform_opcode_data: (optional) Executed after fetching the opcode data from the JSON; destructive.
   # - testing:               Proc taking (*operands), returns a hash {"flag_type" => {:extra_instruction_bytes, :presets, :expectations}}
   #
   # ## Computed data
@@ -40,10 +39,6 @@ module InstructionsData
   # - instruction_size
   # - flags_data
   # - operand_types:         Array of `OperandType` instances
-  #
-  # Pan doc groups some instructions that have different operand types together, e.g. `LD r1, r2`,
-  # `LD r, n`, `LD r1, (r2)` and so on; this is correct in a way, but we need more a more specific
-  # taxonomy, so the families as represented here are more granular.
   #
   INSTRUCTIONS_DATA = {
     "LD r, n" => {
@@ -232,10 +227,6 @@ module InstructionsData
     "LDD A, (HL)" => {
       prefixed: false,
       opcodes: [0x3A],
-      transform_opcode_data: ->(data) do
-        # The source data uses "LD", but includes a "decrement" attribute in the operand.
-        data["mnemonic"] = "LDD"
-      end,
       operation_code: <<~RUST,
         let address = Self::compose_address(self[src_register_high], self[src_register_low]);
         self[dst_register] = self.internal_ram[address];
@@ -267,10 +258,6 @@ module InstructionsData
     "LDD (HL), A" => {
       prefixed: false,
       opcodes: [0x32],
-      transform_opcode_data: ->(data) do
-        # Same considerations as `LDD A, (HL)`
-        data["mnemonic"] = "LDD"
-      end,
       operation_code: <<~RUST,
         let address = Self::compose_address(self[dst_register_high], self[dst_register_low]);
         self.internal_ram[address] = self[src_register];
@@ -302,10 +289,6 @@ module InstructionsData
     "LDI A, (HL)" => {
       prefixed: false,
       opcodes: [0x2A],
-      transform_opcode_data: ->(data) do
-        # Similar considerations as `LDD A, (HL)`
-        data["mnemonic"] = "LDI"
-      end,
       operation_code: <<~RUST,
         let address = Self::compose_address(self[src_register_high], self[src_register_low]);
         self[dst_register] = self.internal_ram[address];
@@ -337,10 +320,6 @@ module InstructionsData
     "LDI (HL), A" => {
       prefixed: false,
       opcodes: [0x22],
-      transform_opcode_data: ->(data) do
-        # Same considerations as `LDD A, (HL)`
-        data["mnemonic"] = "LDI"
-      end,
       operation_code: <<~RUST,
         let address = Self::compose_address(self[dst_register_high], self[dst_register_low]);
         self.internal_ram[address] = self[src_register];

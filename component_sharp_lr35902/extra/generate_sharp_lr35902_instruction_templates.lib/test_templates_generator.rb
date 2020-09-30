@@ -1,4 +1,4 @@
-require_relative "formatting_helpers"
+require_relative "../shared.lib/formatting_helpers"
 require_relative "instructions_data"
 
 class TestTemplatesGenerator

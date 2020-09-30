@@ -1,0 +1,218 @@
+#!/usr/bin/env ruby
+
+require "byebug"
+require "English"
+require "json"
+
+require_relative "shared.lib/formatting_helpers"
+require_relative "shared.lib/operand_types"
+require_relative "#{File.basename(__FILE__)}.lib/instructions_data"
+
+class InstructionsDataGenerator
+  include FormattingHelpers
+  include OperandTypes
+
+  REGISTERS_8B = %w[A B C D E H L]
+  REGISTERS_16B = %w[AF BC DE HL SP]
+  FLAG_CONDITIONALS = %W[NZ Z NC C]
+  VECTORS = /^[0-3][08]H$/
+
+  def execute(opcodes_data)
+    check_and_extract_instruction_data_from_opcodes_data(opcodes_data, InstructionsData::INSTRUCTIONS_DATA)
+  end
+
+  private
+
+  # Returns {flags_data, instruction_size, operands_data}.
+  #
+  def check_and_extract_instruction_data_from_opcodes_data(opcodes_data, base_instructions_data)
+    transformed_data = deep_dup_without_proc_entries(base_instructions_data)
+
+    transformed_data.each do |instruction, instruction_data|
+      # WATCH OUT! We rip the opcodes array from the instructions data here, and replace it with a
+      # hash.
+      #
+      opcodes = instruction_data[:opcodes]
+      instruction_data[:opcodes] = {}
+
+      transform_data = base_instructions_data.fetch(instruction)[:transform_data]
+
+      prefixed_json_entry = instruction_data.fetch(:prefixed) ? "cbprefixed" : "unprefixed"
+
+      duplicated_instruction_data = opcodes.map do |opcode|
+        opcode_hex = hex(opcode)
+        opcode_data = opcodes_data.fetch(prefixed_json_entry).fetch(opcode_hex)
+
+        transform_data.(opcode_data) if transform_data
+
+        operand_names, operand_types = extract_operands_data(opcode_hex, opcode_data, instruction)
+
+        bare_opcode = opcode_hex[2..]
+        instruction_data[:opcodes][bare_opcode] = {operands: operand_names}
+
+        extra_instruction_data = extract_extra_instruction_data(opcode_data, prefixed_json_entry)
+        extra_instruction_data[:operand_types] = operand_types
+
+        extra_instruction_data
+      end
+
+      unique_instruction_data = duplicated_instruction_data.uniq
+
+      if unique_instruction_data.size != 1
+        puts "Opcodes set: #{opcodes.map(&method(:hex))}"
+        puts "Data:"
+        pp unique_instruction_data
+        debugger
+        raise "Instruction data not unique for opcodes set"
+      end
+
+      transformed_data.fetch(instruction).merge!(unique_instruction_data[0])
+    end
+
+    transformed_data
+  end
+
+  def deep_dup_without_proc_entries(source)
+    case source
+    when Hash
+      source.each_with_object({}) do |(key, value), destination|
+        destination[key] = deep_dup_without_proc_entries(value) unless value.is_a?(Proc)
+      end
+    when Array
+      source.map do |entry|
+        deep_dup_without_proc_entries(entry)
+      end
+    else
+      source.dup
+    end
+  end
+
+  # Returns [operand_names, operand_types]
+  #
+  def extract_operands_data(opcode_hex, opcode_data, instruction)
+    all_operands_data = generate_operands_data(opcode_data)
+
+    filtered_operands = filter_operands(instruction, all_operands_data, opcode_hex, opcode_data)
+
+    if filtered_operands.empty?
+      [[], []]
+    else
+      filtered_operands.transpose
+    end
+  end
+
+  def generate_operands_data(opcode_data)
+    source_operands_data = opcode_data.fetch("operands")
+    mnemonic = opcode_data.fetch("mnemonic")
+
+    source_operands_data.map do |operand_data|
+      operand_name = operand_data.fetch("name")
+
+      case operand_name
+      when "C"
+        # Ambiguous; there's no explicit way to figure out from the data.
+        [
+          operand_name,
+          mnemonic =~ /^(J|CALL|RET)/ ? FLAG_OPERAND : REGISTER_OPERAND_8
+        ]
+      when "d8"
+        [IMMEDIATE_OPERAND_8, IMMEDIATE_OPERAND_8]
+      when "0"
+        # Bit position
+        [IMMEDIATE_OPERAND_8, IMMEDIATE_OPERAND_8]
+      when "a8"
+        # Indirect immediate
+        [IMMEDIATE_OPERAND_8, IMMEDIATE_OPERAND_8]
+      when "r8"
+        # Signed
+        [IMMEDIATE_OPERAND_8, IMMEDIATE_OPERAND_8]
+      when VECTORS
+        [IMMEDIATE_OPERAND_8, IMMEDIATE_OPERAND_8]
+      when "d16", "a16"
+        [IMMEDIATE_OPERAND_16, IMMEDIATE_OPERAND_16]
+      when *REGISTERS_8B
+        [operand_name, REGISTER_OPERAND_8]
+      when *REGISTERS_16B
+        [operand_name, REGISTER_OPERAND_16]
+      when *FLAG_CONDITIONALS
+        [operand_name, FLAG_OPERAND]
+      else
+        puts "Instruction: #{instruction}"
+        puts "Opcode: %02X (#{prefixed_json_entry})" % opcode
+        puts "Data: #{operand_data}"
+        debugger
+        raise "Unsupported operand type"
+      end
+    end
+  end
+
+  def filter_operands(instruction, all_operands_data, opcode_hex, opcode_data)
+    all_operand_matches = instruction.match(/^\w+( \(?\w+\)?)?(, \(?\w+\)?)?$/)
+    operand_generic_definitions = all_operand_matches[1..].to_a.compact.map { |match| match.gsub(/[ ,()]/, "") }
+
+    if operand_generic_definitions.size != all_operands_data.size
+      puts "Instruction: #{instruction} OP: #{opcode_hex} OGD: #{operand_generic_definitions} DAT: #{all_operands_data} "
+      debugger
+      raise
+    end
+
+    all_operands_data.zip(operand_generic_definitions).each_with_object([]) do |((name, type), generic_definition), result|
+      # This is essentially all debug. They're all supposed to be included, except the case where the
+      # register is implied.
+      #
+      include_operand = \
+        case generic_definition
+        when *REGISTERS_8B, *REGISTERS_16B
+          name == generic_definition ? false : byebug
+        when /^r[12]?$/
+          type == REGISTER_OPERAND_8 || byebug
+        when /^rr[12]?$/
+          type == REGISTER_OPERAND_16 || byebug
+        when 'n'
+          type == IMMEDIATE_OPERAND_8 || byebug
+        when 'nn'
+          type == IMMEDIATE_OPERAND_16 || byebug
+        when 'cc'
+          type == FLAG_OPERAND || byebug
+        else
+          puts "Instruction: #{instruction} OP: #{opcode_hex} OGD: #{operand_generic_definitions} NAM: #{all_operand_names} "
+          debugger
+          raise
+        end
+
+      result << [name, type] if include_operand
+    end
+  end
+
+  # Returns {:instruction_size, :cycles, :flags_data}
+  #
+  def extract_extra_instruction_data(opcode_data, prefixed_json_entry)
+    instruction_size = opcode_data.fetch("bytes")
+    cycles = opcode_data.fetch("cycles")[0] || raise
+
+    flags_data = opcode_data.fetch("flags")
+
+    flags_data.transform_values! do |value|
+      value.tr "ZHNC", "*"
+    end
+
+    {
+      instruction_size: instruction_size,
+      cycles: cycles,
+      flags_data: flags_data,
+    }
+  end
+end
+
+if __FILE__ == $PROGRAM_NAME
+  opcodes_file = File.expand_path("data/opcodes.json", __dir__)
+  instructions_file = File.expand_path("data/instructions.json", __dir__)
+
+  opcodes_data = JSON.parse(IO.read(opcodes_file))
+
+  instructions_data = InstructionsDataGenerator.new.execute(opcodes_data)
+
+  prettified_instructions_data = JSON.pretty_generate(instructions_data)
+
+  IO.write(instructions_file, prettified_instructions_data)
+end
