@@ -53,7 +53,7 @@ module InstructionsData
         0x3E
       ],
       operation_code: <<~RUST,
-        *dst_register = *immediate;
+        self[dst_register] = *immediate;
       RUST
       testing: ->(register, _) {
         {
@@ -64,8 +64,6 @@ module InstructionsData
         }
       }
     },
-    # Includes cases where r1 == r2.
-    #
     "LD r1, r2" => {
       prefixed: false,
       opcodes: [
@@ -76,7 +74,7 @@ module InstructionsData
         0x7F, 0x40, 0x49, 0x52, 0x5B, 0x64, 0x6D
       ],
       operation_code: <<~RUST,
-        unsafe { *dst_register = *src_register };
+        self[dst_register] = self[src_register];
       RUST
       testing: ->(register1, register2) {
         {
@@ -87,16 +85,14 @@ module InstructionsData
         }
       }
     },
-    # Includes some cases where r1 is part of r2 (HL).
-    #
     "LD r1, (r2)" => {
       prefixed: false,
       opcodes: [
         0x46, 0x4E, 0x56, 0x5E, 0x7E, 0x0A, 0x1A, 0x66, 0x6E
       ],
         operation_code: <<~RUST,
-          let address = Self::compose_address(*src_register_high, *src_register_low);
-          unsafe { *dst_register = internal_ram[address] };
+          let address = Self::compose_address(self[src_register_high], self[src_register_low]);
+          self[dst_register] = self.internal_ram[address];
         RUST
       testing: ->(register1, register2) {
         {
@@ -111,8 +107,6 @@ module InstructionsData
         }
       }
     },
-    # Includes some cases where r2 is part of r1 (HL).
-    #
     "LD (r1), r2" => {
       prefixed: false,
       opcodes: [
@@ -120,8 +114,8 @@ module InstructionsData
         0x02, 0x12, 0x77
       ],
       operation_code: <<~RUST,
-        let address = Self::compose_address(*dst_register_high, *dst_register_low);
-        internal_ram[address] = unsafe { *src_register };
+        let address = Self::compose_address(self[dst_register_high], self[dst_register_low]);
+        self.internal_ram[address] = self[src_register];
       RUST
       testing: ->(register1, register2) {
         {
@@ -147,8 +141,8 @@ module InstructionsData
         0x36
       ],
       operation_code: <<~RUST,
-        let address = Self::compose_address(*dst_register_high, *dst_register_low);
-        internal_ram[address] = *immediate;
+        let address = Self::compose_address(self[dst_register_high], self[dst_register_low]);
+        self.internal_ram[address] = *immediate;
       RUST
       testing: ->(register, _) {
         {
@@ -168,7 +162,7 @@ module InstructionsData
       opcodes: [0xFA],
       operation_code: <<~RUST,
         let address = Self::compose_address(*immediate_high, *immediate_low);
-        *dst_register = internal_ram[address];
+        self[dst_register] = self.internal_ram[address];
       RUST
       testing: ->(_, _) {
         {
@@ -185,7 +179,7 @@ module InstructionsData
       opcodes: [0xEA],
       operation_code: <<~RUST,
         let address = Self::compose_address(*immediate_high, *immediate_low);
-        internal_ram[address] = *src_register;
+        self.internal_ram[address] = self[src_register];
       RUST
       testing: ->(_, _) {
         {
@@ -201,8 +195,8 @@ module InstructionsData
       prefixed: false,
       opcodes: [0xF2],
       operation_code: <<~RUST,
-        let address = 0xFF00 + *src_register as usize;
-        *dst_register = internal_ram[address];
+        let address = 0xFF00 + self[src_register] as usize;
+        self[dst_register] = self.internal_ram[address];
       RUST
       testing: ->(_, _) {
         {
@@ -220,8 +214,8 @@ module InstructionsData
       prefixed: false,
       opcodes: [0xE2],
       operation_code: <<~RUST,
-        let address = 0xFF00 + *dst_register as usize;
-        internal_ram[address] = *src_register;
+        let address = 0xFF00 + self[dst_register] as usize;
+        self.internal_ram[address] = self[src_register];
       RUST
       testing: ->(_, _) {
         {
@@ -243,15 +237,15 @@ module InstructionsData
         data["mnemonic"] = "LDD"
       end,
       operation_code: <<~RUST,
-        let address = Self::compose_address(*src_register_high, *src_register_low);
-        *dst_register = internal_ram[address];
+        let address = Self::compose_address(self[src_register_high], self[src_register_low]);
+        self[dst_register] = self.internal_ram[address];
 
-        let (new_value_low, carry) = src_register_low.overflowing_sub(1);
-        *src_register_low = new_value_low;
+        let (new_value_low, carry) = self[src_register_low].overflowing_sub(1);
+        self[src_register_low] = new_value_low;
 
         if carry {
-            let (new_value_high, _) = src_register_high.overflowing_sub(1);
-            *src_register_high = new_value_high;
+            let (new_value_high, _) = self[src_register_high].overflowing_sub(1);
+            self[src_register_high] = new_value_high;
         }
       RUST
       testing: ->(_, _) {
@@ -278,15 +272,15 @@ module InstructionsData
         data["mnemonic"] = "LDD"
       end,
       operation_code: <<~RUST,
-        let address = Self::compose_address(*dst_register_high, *dst_register_low);
-        internal_ram[address] = *src_register;
+        let address = Self::compose_address(self[dst_register_high], self[dst_register_low]);
+        self.internal_ram[address] = self[src_register];
 
-        let (new_value_low, carry) = dst_register_low.overflowing_sub(1);
-        *dst_register_low = new_value_low;
+        let (new_value_low, carry) = self[dst_register_low].overflowing_sub(1);
+        self[dst_register_low] = new_value_low;
 
         if carry {
-            let (new_value_high, _) = dst_register_high.overflowing_sub(1);
-            *dst_register_high = new_value_high;
+            let (new_value_high, _) = self[dst_register_high].overflowing_sub(1);
+            self[dst_register_high] = new_value_high;
         }
       RUST
       testing: ->(_, _) {
@@ -313,15 +307,15 @@ module InstructionsData
         data["mnemonic"] = "LDI"
       end,
       operation_code: <<~RUST,
-        let address = Self::compose_address(*src_register_high, *src_register_low);
-        *dst_register = internal_ram[address];
+        let address = Self::compose_address(self[src_register_high], self[src_register_low]);
+        self[dst_register] = self.internal_ram[address];
 
-        let (new_value_low, carry) = src_register_low.overflowing_add(1);
-        *src_register_low = new_value_low;
+        let (new_value_low, carry) = self[src_register_low].overflowing_add(1);
+        self[src_register_low] = new_value_low;
 
         if carry {
-            let (new_value_high, _) = src_register_high.overflowing_add(1);
-            *src_register_high = new_value_high;
+            let (new_value_high, _) = self[src_register_high].overflowing_add(1);
+            self[src_register_high] = new_value_high;
         }
       RUST
       testing: ->(_, _) {
@@ -348,15 +342,15 @@ module InstructionsData
         data["mnemonic"] = "LDI"
       end,
       operation_code: <<~RUST,
-        let address = Self::compose_address(*dst_register_high, *dst_register_low);
-        internal_ram[address] = *src_register;
+        let address = Self::compose_address(self[dst_register_high], self[dst_register_low]);
+        self.internal_ram[address] = self[src_register];
 
-        let (new_value_low, carry) = dst_register_low.overflowing_add(1);
-        *dst_register_low = new_value_low;
+        let (new_value_low, carry) = self[dst_register_low].overflowing_add(1);
+        self[dst_register_low] = new_value_low;
 
         if carry {
-            let (new_value_high, _) = dst_register_high.overflowing_add(1);
-            *dst_register_high = new_value_high;
+            let (new_value_high, _) = self[dst_register_high].overflowing_add(1);
+            self[dst_register_high] = new_value_high;
         }
       RUST
       testing: ->(_, _) {
@@ -380,7 +374,7 @@ module InstructionsData
       opcodes: [0xE0],
       operation_code: <<~RUST,
         let address = 0xFF00 + *immediate as usize;
-        internal_ram[address] = *src_register;
+        self.internal_ram[address] = self[src_register];
       RUST
       testing: ->(_, _) {
         {
@@ -399,7 +393,7 @@ module InstructionsData
       opcodes: [0xF0],
       operation_code: <<~RUST,
         let address = 0xFF00 + *immediate as usize;
-        *dst_register = internal_ram[address];
+        self[dst_register] = self.internal_ram[address];
       RUST
       testing: ->(_, _) {
         {
@@ -419,8 +413,8 @@ module InstructionsData
         0x01, 0x11, 0x21
       ],
       operation_code: <<~RUST,
-        *dst_register_high = *immediate_high;
-        *dst_register_low = *immediate_low;
+        self[dst_register_high] = *immediate_high;
+        self[dst_register_low] = *immediate_low;
       RUST
       testing: ->(register, _) {
         {
@@ -439,7 +433,7 @@ module InstructionsData
       prefixed: false,
       opcodes: [0x31],
       operation_code: <<~RUST,
-        *dst_register = ((*immediate_high as u16) << 8) + *immediate_low as u16;
+        self[dst_register] = ((*immediate_high as u16) << 8) + *immediate_low as u16;
       RUST
       testing: ->(register, _) {
         {
@@ -456,7 +450,7 @@ module InstructionsData
       prefixed: false,
       opcodes: [0xF9],
       operation_code: <<~RUST,
-        *dst_register = ((*src_register_high as u16) << 8) + *src_register_low as u16;
+        self[dst_register] = ((self[src_register_high] as u16) << 8) + self[src_register_low] as u16;
       RUST
       testing: ->(register, _) {
         {
@@ -476,11 +470,11 @@ module InstructionsData
       prefixed: false,
       opcodes: [0x3C, 0x04, 0x0C, 0x14, 0x1C, 0x24, 0x2C],
       operation_code: <<~RUST,
-        let (new_value, carry) = dst_register.overflowing_add(1);
-        *dst_register = new_value;
+        let (new_value, carry) = self[dst_register].overflowing_add(1);
+        self[dst_register] = new_value;
 
         if new_value & 0b0000_1111 == 0b000_0000 {
-          *hf = true;
+          self[hf] = true;
         }
       RUST
       testing: ->(register) {
@@ -513,13 +507,13 @@ module InstructionsData
       prefixed: false,
       opcodes: [0x34],
       operation_code: <<~RUST,
-        let address = Self::compose_address(*dst_register_high, *dst_register_low);
+        let address = Self::compose_address(self[dst_register_high], self[dst_register_low]);
 
-        let (new_value, carry) = internal_ram[address].overflowing_add(1);
-        internal_ram[address] = new_value;
+        let (new_value, carry) = self.internal_ram[address].overflowing_add(1);
+        self.internal_ram[address] = new_value;
 
         if new_value & 0b0000_1111 == 0b000_0000 {
-          *hf = true;
+          self[hf] = true;
         }
       RUST
       testing: ->(_) {

@@ -1,6 +1,6 @@
 #![allow(unused_macros)]
 
-use crate::cpu::Cpu;
+use crate::cpu::{Cpu, Flag, Register16, Register8};
 use demonstrate::demonstrate;
 
 fn assert_cpu_execute(
@@ -24,43 +24,97 @@ fn assert_cpu_execute(
 ) {
     let actual_cycles_spent = cpu.execute(&instruction_bytes);
 
-    assert_eq!(cpu.A, A, "Unexpected `A`: actual={}, expected={}", cpu.A, A);
-    assert_eq!(cpu.B, B, "Unexpected `B`: actual={}, expected={}", cpu.B, B);
-    assert_eq!(cpu.C, C, "Unexpected `C`: actual={}, expected={}", cpu.C, C);
-    assert_eq!(cpu.D, D, "Unexpected `D`: actual={}, expected={}", cpu.D, D);
-    assert_eq!(cpu.E, E, "Unexpected `E`: actual={}, expected={}", cpu.E, E);
-    assert_eq!(cpu.H, H, "Unexpected `H`: actual={}, expected={}", cpu.H, H);
-    assert_eq!(cpu.L, L, "Unexpected `L`: actual={}, expected={}", cpu.L, L);
     assert_eq!(
-        cpu.SP, SP,
-        "Unexpected `SP`: actual={}, expected={}",
-        cpu.SP, SP
+        cpu[Register8::A],
+        A,
+        "Unexpected `A`: actual={}, expected={}",
+        cpu[Register8::A],
+        A
     );
     assert_eq!(
-        cpu.PC, PC,
+        cpu[Register8::B],
+        B,
+        "Unexpected `B`: actual={}, expected={}",
+        cpu[Register8::B],
+        B
+    );
+    assert_eq!(
+        cpu[Register8::C],
+        C,
+        "Unexpected `C`: actual={}, expected={}",
+        cpu[Register8::C],
+        C
+    );
+    assert_eq!(
+        cpu[Register8::D],
+        D,
+        "Unexpected `D`: actual={}, expected={}",
+        cpu[Register8::D],
+        D
+    );
+    assert_eq!(
+        cpu[Register8::E],
+        E,
+        "Unexpected `E`: actual={}, expected={}",
+        cpu[Register8::E],
+        E
+    );
+    assert_eq!(
+        cpu[Register8::H],
+        H,
+        "Unexpected `H`: actual={}, expected={}",
+        cpu[Register8::H],
+        H
+    );
+    assert_eq!(
+        cpu[Register8::L],
+        L,
+        "Unexpected `L`: actual={}, expected={}",
+        cpu[Register8::L],
+        L
+    );
+    assert_eq!(
+        cpu[Register16::SP],
+        SP,
+        "Unexpected `SP`: actual={}, expected={}",
+        cpu[Register16::SP],
+        SP
+    );
+    assert_eq!(
+        cpu[Register16::PC],
+        PC,
         "Unexpected `PC`: actual={}, expected={}",
-        cpu.PC, PC
+        cpu[Register16::PC],
+        PC
     );
 
     assert_eq!(
-        cpu.zf, zf,
+        cpu[Flag::z],
+        zf,
         "Unexpected `zf`: actual={}, expected={}",
-        cpu.zf as u8, zf as u8
+        cpu[Flag::z] as u8,
+        zf as u8
     );
     assert_eq!(
-        cpu.nf, nf,
+        cpu[Flag::n],
+        nf,
         "Unexpected nf: actual={}, expected={}",
-        cpu.nf as u8, nf as u8
+        cpu[Flag::n] as u8,
+        nf as u8
     );
     assert_eq!(
-        cpu.hf, hf,
+        cpu[Flag::h],
+        hf,
         "Unexpected `hf`: actual={}, expected={}",
-        cpu.hf as u8, hf as u8
+        cpu[Flag::h] as u8,
+        hf as u8
     );
     assert_eq!(
-        cpu.cf, cf,
+        cpu[Flag::c],
+        cf,
         "Unexpected `cf`: actual={}, expected={}",
-        cpu.cf as u8, cf as u8
+        cpu[Flag::c] as u8,
+        cf as u8
     );
 
     if let Some((mem_address, mem_value)) = mem {
@@ -105,19 +159,19 @@ macro_rules! assert_cpu_execute {
         $( mem[$mem_address:literal] => $mem_value:expr, )?
         cycles: $cycles:literal
 ) => {
-        let current_A = $cpu.A;
-        let current_B = $cpu.B;
-        let current_C = $cpu.C;
-        let current_D = $cpu.D;
-        let current_E = $cpu.E;
-        let current_H = $cpu.H;
-        let current_L = $cpu.L;
-        let current_SP = $cpu.SP;
-        let current_PC = $cpu.PC;
-        let current_zf = $cpu.zf;
-        let current_nf = $cpu.nf;
-        let current_hf = $cpu.hf;
-        let current_cf = $cpu.cf;
+        let current_A = $cpu[Reg8::A];
+        let current_B = $cpu[Reg8::B];
+        let current_C = $cpu[Reg8::C];
+        let current_D = $cpu[Reg8::D];
+        let current_E = $cpu[Reg8::E];
+        let current_H = $cpu[Reg8::H];
+        let current_L = $cpu[Reg8::L];
+        let current_SP = $cpu[Reg16::SP];
+        let current_PC = $cpu[Reg16::PC];
+        let current_zf = $cpu[Flag::z];
+        let current_nf = $cpu[Flag::n];
+        let current_hf = $cpu[Flag::h];
+        let current_cf = $cpu[Flag::c];
 
         // Alternatives to this have been evaluated here: https://users.rust-lang.org/t/any-way-to-cleanly-set-a-default-value-for-a-pseudo-named-parameter-in-a-macro/48682/6
         // A simple, interesting, alternative is to pass the variables to an adhoc struct with
@@ -198,20 +252,20 @@ demonstrate! {
 
             assert_ne!(internal_ram_sum, 0);
 
-            assert_eq!(cpu.A, 0);
-            assert_eq!(cpu.B, 0);
-            assert_eq!(cpu.C, 0);
-            assert_eq!(cpu.D, 0);
-            assert_eq!(cpu.E, 0);
-            assert_eq!(cpu.H, 0);
-            assert_eq!(cpu.L, 0);
-            assert_eq!(cpu.SP, 0);
-            assert_eq!(cpu.PC, 0);
+            assert_eq!(cpu[Register8::A], 0);
+            assert_eq!(cpu[Register8::B], 0);
+            assert_eq!(cpu[Register8::C], 0);
+            assert_eq!(cpu[Register8::D], 0);
+            assert_eq!(cpu[Register8::E], 0);
+            assert_eq!(cpu[Register8::H], 0);
+            assert_eq!(cpu[Register8::L], 0);
+            assert_eq!(cpu[Register16::SP], 0);
+            assert_eq!(cpu[Register16::PC], 0);
 
-            assert_eq!(cpu.zf, false);
-            assert_eq!(cpu.nf, false);
-            assert_eq!(cpu.hf, false);
-            assert_eq!(cpu.cf, false);
+            assert_eq!(cpu[Flag::z], false);
+            assert_eq!(cpu[Flag::n], false);
+            assert_eq!(cpu[Flag::h], false);
+            assert_eq!(cpu[Flag::c], false);
         }
 
         context "executes" {

@@ -1,5 +1,32 @@
 use crate::utils;
 use rand::RngCore;
+use std::ops::{Index, IndexMut};
+
+#[derive(Copy, Clone)]
+pub(crate) enum Register8 {
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
+}
+
+#[derive(Copy, Clone)]
+pub(crate) enum Register16 {
+    SP,
+    PC,
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Copy, Clone)]
+pub(crate) enum Flag {
+    z,
+    n,
+    h,
+    c,
+}
 
 // Preliminary, supersimplified implementation.
 // Based on a cursory look at the manuals, there is one operation that mass-sets the flags, so it
@@ -7,32 +34,108 @@ use rand::RngCore;
 // The execution is temporary, designed with in mind the testability only.
 //
 pub struct Cpu {
+    // WATCH OUT! For consistency, registers/flags must be accessed via Index[Mut] trait.
+
     // Registers
     //
-    pub A: u8,
+    A: u8,
 
-    pub B: u8,
-    pub C: u8,
+    B: u8,
+    C: u8,
 
-    pub D: u8,
-    pub E: u8,
+    D: u8,
+    E: u8,
 
-    pub H: u8,
-    pub L: u8,
+    H: u8,
+    L: u8,
 
-    pub SP: u16,
-    pub PC: u16,
+    SP: u16,
+    PC: u16,
 
     // Flags
     //
-    pub zf: bool,
-    pub nf: bool,
-    pub hf: bool,
-    pub cf: bool,
+    zf: bool,
+    nf: bool,
+    hf: bool,
+    cf: bool,
 
     // Internal RAM. Until there is properly memory management, this is kept trivial.
     //
     pub internal_ram: [u8; 0x10_000],
+}
+
+impl Index<Register8> for Cpu {
+    type Output = u8;
+
+    fn index(&self, register: Register8) -> &Self::Output {
+        match register {
+            Register8::A => &self.A,
+            Register8::B => &self.B,
+            Register8::C => &self.C,
+            Register8::D => &self.D,
+            Register8::E => &self.E,
+            Register8::H => &self.H,
+            Register8::L => &self.L,
+        }
+    }
+}
+
+impl IndexMut<Register8> for Cpu {
+    fn index_mut(&mut self, register: Register8) -> &mut Self::Output {
+        match register {
+            Register8::A => &mut self.A,
+            Register8::B => &mut self.B,
+            Register8::C => &mut self.C,
+            Register8::D => &mut self.D,
+            Register8::E => &mut self.E,
+            Register8::H => &mut self.H,
+            Register8::L => &mut self.L,
+        }
+    }
+}
+
+impl Index<Register16> for Cpu {
+    type Output = u16;
+
+    fn index(&self, register: Register16) -> &Self::Output {
+        match register {
+            Register16::SP => &self.SP,
+            Register16::PC => &self.PC,
+        }
+    }
+}
+
+impl IndexMut<Register16> for Cpu {
+    fn index_mut(&mut self, register: Register16) -> &mut Self::Output {
+        match register {
+            Register16::SP => &mut self.SP,
+            Register16::PC => &mut self.PC,
+        }
+    }
+}
+
+impl Index<Flag> for Cpu {
+    type Output = bool;
+
+    fn index(&self, register: Flag) -> &Self::Output {
+        match register {
+            Flag::z => &self.zf,
+            Flag::n => &self.nf,
+            Flag::h => &self.hf,
+            Flag::c => &self.cf,
+        }
+    }
+}
+
+impl IndexMut<Flag> for Cpu {
+    fn index_mut(&mut self, register: Flag) -> &mut Self::Output {
+        match register {
+            Flag::z => &mut self.zf,
+            Flag::n => &mut self.nf,
+            Flag::h => &mut self.hf,
+            Flag::c => &mut self.cf,
+        }
+    }
 }
 
 impl Cpu {

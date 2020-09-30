@@ -135,19 +135,15 @@ class CpuTemplatesGenerator
   # DATA MANIPULATION
   ##################################################################################################
 
-  # Returns {flags_data, instruction_size, operand_types, any_shared_register}.
+  # Returns {flags_data, instruction_size, operand_types}.
   #
   def check_and_extract_instruction_data_from_opcodes_data(opcodes, json_data, prefixed_json_entry, instruction_data)
-    any_shared_register = false
-
     all_instruction_data = opcodes.map do |opcode|
       opcode_data = json_data.fetch(prefixed_json_entry).fetch(hex(opcode))
 
       flags_data = opcode_data.fetch("flags")
       instruction_size = opcode_data.fetch("bytes")
       operands_data = opcode_data.fetch("operands")
-
-      registers_8bit_used, registers_16bit_used = [], []
 
       operand_types = operands_data.map do |operand_data|
         operand_name = operand_data.fetch("name")
@@ -167,10 +163,8 @@ class CpuTemplatesGenerator
         when "a16"
           OperandType.new(IMMEDIATE_OPERAND_16, indirect)
         when *REGISTERS_8B
-          registers_8bit_used << operand_name
           OperandType.new(REGISTER_OPERAND_8, indirect)
         when *REGISTERS_16B
-          registers_16bit_used << operand_name
           OperandType.new(REGISTER_OPERAND_16, indirect)
         when "SP"
           OperandType.new(REGISTER_SP, indirect)
@@ -179,12 +173,6 @@ class CpuTemplatesGenerator
           raise("Unsupported operand type for opcode %02X: #{operand_data}" % opcode)
         end
       end
-
-      # St00pid simple logic.
-      #
-      any_shared_register ||= \
-        registers_8bit_used.uniq.size != registers_8bit_used.size ||
-        registers_8bit_used.any? { |register_8_bit| registers_16bit_used.any? { |register_16_bit| register_16_bit.include?(register_8_bit) } }
 
       {
         flags_data: flags_data,
@@ -196,7 +184,7 @@ class CpuTemplatesGenerator
     unique_instruction_data = all_instruction_data.uniq
 
     if unique_instruction_data.size == 1
-      unique_instruction_data[0].merge(any_shared_register: any_shared_register)
+      unique_instruction_data[0]
     else
       debugger
       raise "Instruction data not unique for opcodes set: #{opcodes.map(&method(:hex))}"

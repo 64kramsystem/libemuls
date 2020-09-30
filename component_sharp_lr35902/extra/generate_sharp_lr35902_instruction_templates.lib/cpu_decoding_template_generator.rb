@@ -32,7 +32,7 @@ class CpuDecodingTemplateGenerator
 
   # Matcher line. Example:
   #
-  #     [0x36, value @ _] => {
+  #     [0x36, immediate @ _] => {
   #
   def generate_matcher_line!(opcode_hex, operand_types)
     @buffer.print "            [0x#{opcode_hex}"
@@ -53,40 +53,18 @@ class CpuDecodingTemplateGenerator
     @buffer.puts "] => {"
   end
 
-  # Execution method call. Some examples:
-  #
-  #     Self::execute_LD_r_n(&mut self.PC, &mut self.L, immediate);
-  #
-  #     let src_register = &self.L as *const u8;
-  #     Self::execute_LD_r1_r2(&mut self.PC, &mut self.L, src_register);
-  #
-  #     Self::execute_INC_n(&mut self.PC, &mut self.A, &mut self.zf, &mut self.nf, &mut self.hf);
-  #
   def generate_execution_method_call!(opcode_family, instruction_data, operand_types, operand_names)
-    # Currently used only for raw pointers.
-    #
-    variable_assignments = []
-
     operand_params = []
 
-    # When there is overlapping of register, for simplicity, we pass two raw pointers, even when not
-    # necessary.
-    # For the same reason, we always pass variables as mutable.
-    #
-    operand_names.zip(operand_types, ["dst", "src"]).each do |operand_name, operand_type, position|
+    operand_names.zip(operand_types).each do |operand_name, operand_type|
       case operand_type.type
       when REGISTER_OPERAND_8
-        if instruction_data.fetch(:any_shared_register)
-          variable_assignments << "let #{position}_register = &mut self.#{operand_name} as *mut u8;"
-          operand_params << "#{position}_register"
-        else
-          operand_params << "&mut self.#{operand_name}"
-        end
+        operand_params << "Register8::#{operand_name}"
       when REGISTER_OPERAND_16
         register_high, register_low = operand_name.chars
-        operand_params.push("&mut self.#{register_high}", "&mut self.#{register_low}")
+        operand_params.push("Register8::#{register_high}", "Register8::#{register_low}")
       when REGISTER_SP
-        operand_params << "&mut self.#{operand_name}"
+        operand_params << "Register16::#{operand_name}"
       when IMMEDIATE_OPERAND_8
         operand_params << "immediate"
       when IMMEDIATE_OPERAND_16
@@ -101,7 +79,7 @@ class CpuDecodingTemplateGenerator
     flag_params = instruction_data.fetch(:flags_data).each_with_object([]) do |(flag, state), flag_params|
       case state
       when "0", "1", flag
-        flag_params << "&mut self.#{flag.downcase}f"
+        flag_params << "Flag::#{flag.downcase}"
       when "-"
         # ignore
       else
@@ -109,22 +87,9 @@ class CpuDecodingTemplateGenerator
       end
     end
 
-    variable_assignments.each do |variable_assignment|
-      @buffer.puts "                #{variable_assignment}"
-    end
+    all_execution_params = [*operand_params, *flag_params].join(", ")
 
-    internal_ram_param = \
-      if operand_types.empty?
-        []
-      elsif operand_types[0].indirect
-        ["&mut self.internal_ram"]
-      elsif operand_types[1]&.indirect
-        ["&self.internal_ram"]
-      end
-
-    all_execution_params = ["&mut self.PC", *internal_ram_param, *operand_params, *flag_params].join(", ")
-
-    @buffer.puts "                Self::execute_#{opcode_family}(#{all_execution_params});"
+    @buffer.puts "                self.execute_#{opcode_family}(#{all_execution_params});"
   end
 
   # Closure (cycles and closing brace)
