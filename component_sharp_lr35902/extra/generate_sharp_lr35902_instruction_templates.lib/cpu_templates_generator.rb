@@ -26,12 +26,12 @@ class CpuTemplatesGenerator
     @tests_file = tests_file
   end
 
-  def execute(only_opcode: nil)
+  def execute(only_opcodes: [])
     check_instructions_data
     download_json_page_content if !File.exists?(@opcodes_file)
     json_page_content = find_and_read_json_page_content
     json_data = JSON.parse(json_page_content)
-    cpu_decoding_code, cpu_execution_code, tests_code = generate_templates(json_data, only_opcode: only_opcode)
+    cpu_decoding_code, cpu_execution_code, tests_code = generate_templates(json_data, only_opcodes: only_opcodes)
     insert_content_in_source_files(cpu_decoding_code, cpu_execution_code, tests_code)
   end
 
@@ -61,7 +61,7 @@ class CpuTemplatesGenerator
 
   # For samples, see the corresponding `.md` document.
   #
-  def generate_templates(json_data, only_opcode:)
+  def generate_templates(json_data, only_opcodes:)
     decoding_generator = CpuDecodingTemplateGenerator.new
     execution_generator = CpuExecutionTemplatesGenerator.new
     tests_generator = TestTemplatesGenerator.new
@@ -73,7 +73,7 @@ class CpuTemplatesGenerator
     INSTRUCTIONS_DATA.each do |opcode_family, instruction_data|
       opcodes = instruction_data.fetch(:opcodes)
 
-      next if only_opcode && !opcodes.include?(only_opcode)
+      next if only_opcodes.size > 0 && (opcodes & only_opcodes).empty?
 
       opcode_family_encoded = opcode_family
         .gsub(/\((\w+)\)/, 'I\1')               # indirect:        `(HL)` -> `IHL`
@@ -85,7 +85,7 @@ class CpuTemplatesGenerator
       transform_opcode_data = instruction_data[:transform_opcode_data]
 
       opcodes.each do |opcode|
-        next if only_opcode && opcode != only_opcode
+        next if only_opcodes.size > 0 && !only_opcodes.include?(opcode)
 
         opcode_data = json_data.fetch(prefixed_json_entry).fetch(hex(opcode))
 
@@ -98,7 +98,7 @@ class CpuTemplatesGenerator
       instruction_data.merge!(extra_instruction_data)
 
       opcodes.each do |opcode|
-        next if only_opcode && opcode != only_opcode
+        next if only_opcodes.size > 0 && !only_opcodes.include?(opcode)
 
         opcode_data = json_data.fetch(prefixed_json_entry).fetch(hex(opcode))
 

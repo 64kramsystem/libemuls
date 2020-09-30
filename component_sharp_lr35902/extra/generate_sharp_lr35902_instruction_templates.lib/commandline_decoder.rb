@@ -3,13 +3,13 @@ module CommandlineDecoder
 
   def execute
     if (ARGV & %w[-h --help]).size > 0
-      puts "Usage: #{File.basename($PROGRAM_NAME)} [0x<opcode_hex>]"
+      puts "Usage: #{File.basename($PROGRAM_NAME)} [0x<opcode_hex>{,0x<opcode_hex...>}]"
       exit 0
     elsif ARGV.size > 1
-      puts "Usage: #{File.basename($PROGRAM_NAME)} [0x<opcode_hex>]"
+      puts "Usage: #{File.basename($PROGRAM_NAME)} [0x<opcode_hex>{,0x<opcode_hex...>}]"
       exit 1
     else
-      opcode = ARGV[0]&.hex
+      ARGV[0].to_s.split(",").map(&:hex)
     end
   end
 end

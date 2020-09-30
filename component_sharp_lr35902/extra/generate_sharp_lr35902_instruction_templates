@@ -14,7 +14,7 @@ if __FILE__ == $PROGRAM_NAME
 
   GitHelpers.restore_files(cpu_file, tests_file)
 
-  only_opcode = CommandlineDecoder.execute
+  only_opcodes = CommandlineDecoder.execute
 
-  CpuTemplatesGenerator.new(opcodes_file, cpu_file, tests_file).execute(only_opcode: only_opcode)
+  CpuTemplatesGenerator.new(opcodes_file, cpu_file, tests_file).execute(only_opcodes: only_opcodes)
 end
