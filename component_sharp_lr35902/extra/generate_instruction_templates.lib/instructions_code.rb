@@ -315,6 +315,78 @@ module InstructionsCode
         }
       }
     },
+    "LDHL SP, n" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg16::SP];
+        // Ugly, but required, conversions.
+        let operand2 = *immediate as i8 as i16 as u16;
+
+        let (result, _) = operand1.overflowing_add(operand2);
+        self[Reg16::HL] = result;
+      RUST
+      testing: ->(_) {
+        {
+          "#{BASE}: positive immediate" => {
+            extra_instruction_bytes: [0x01],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0x2100;
+            RUST
+            expectations: <<~RUST
+              HL => 0x2101,
+            RUST
+          },
+          "#{BASE}: negative immediate" => {
+            extra_instruction_bytes: [0xFF],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0x2100;
+            RUST
+            expectations: <<~RUST
+              HL => 0x20FF,
+            RUST
+          },
+          "H" => {
+            extra_instruction_bytes: [0x01],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCAEF;
+            RUST
+            expectations: <<~RUST
+              HL => 0xCAF0,
+              hf => true,
+            RUST
+          },
+          "H: negative immediate" => {
+            extra_instruction_bytes: [0xE1],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCA0F;
+            RUST
+            expectations: <<~RUST
+              HL => 0xC9F0,
+              hf => true,
+            RUST
+          },
+          "C" => {
+            extra_instruction_bytes: [0x10],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCAFF;
+            RUST
+            expectations: <<~RUST
+              HL => 0xCB0F,
+              cf => true,
+            RUST
+          },
+          "C: negative immediate" => {
+            extra_instruction_bytes: [0xE0],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCA2F;
+            RUST
+            expectations: <<~RUST
+              HL => 0xCA0F,
+              cf => true,
+            RUST
+          },
+        }
+      }
+    },
     "LD (nn), SP" => {
       operation_code: <<~RUST,
         self.internal_ram[*immediate as usize] = self[Reg16::SP] as u8;
