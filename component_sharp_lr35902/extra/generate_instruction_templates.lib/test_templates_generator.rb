@@ -29,7 +29,7 @@ class TestTemplatesGenerator
   # The exact naming of the flag concepts is a bit too verbose, so we oversimplify, and use
   # "un/conditional".
   #
-  def add_code!(opcode, instruction, opcode_family, opcode_data, instruction_data, instruction_code)
+  def add_code!(opcode, instruction, instruction_encoded, opcode_data, instruction_data, instruction_code)
     generate_header!(opcode, opcode_data, instruction, instruction_data)
 
     generate_unconditional_test!(opcode, opcode_data, instruction_data, instruction_code)
@@ -99,7 +99,7 @@ class TestTemplatesGenerator
       flags_preset = []
       flag_expectations = []
 
-      # generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, flag, flags_preset, flag_expectations)
+      generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, flag, flags_preset, flag_expectations)
     end
   end
 
@@ -128,7 +128,8 @@ class TestTemplatesGenerator
 
     RUST
 
-    presets = "cpu[Reg16::PC] = 0x21;\n#{presets}"
+    presets = "" if presets.nil?
+    presets = "cpu[Reg16::PC] = 0x21;\n#{presets}" if presets !~ /\bcpu\[Reg16::PC\] +=/
 
     presets.each_line.map(&:strip).each do |preset_statement|
       if preset_statement.empty?

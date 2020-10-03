@@ -1,9 +1,9 @@
 require_relative "../shared.lib/formatting_helpers"
-require_relative "instructions_data"
+require_relative "../shared.lib/operand_types"
 
 class CpuDecodingTemplateGenerator
   include FormattingHelpers
-  include InstructionsData
+  include OperandTypes
 
   def initialize
     @buffer = StringIO.new
@@ -14,14 +14,10 @@ class CpuDecodingTemplateGenerator
   # (the 4th argument shares the same bitmask (base + 11), but point to different registers in the
   # two cases).
 
-  def add_code!(opcode, opcode_family, opcode_data, instruction_data)
-    opcode_hex = "%02X" % opcode
-    operand_types = instruction_data.fetch(:operand_types)
-    operand_names = opcode_data.fetch("operands").map { |data| data["name"] }
-
-    generate_matcher_line!(opcode_hex, operand_types)
-    generate_execution_method_call!(opcode_family, instruction_data, operand_types, operand_names)
-    generate_closure!(opcode_data, opcode_hex)
+  def add_code!(opcode_hex, opcode_family, opcode_data, instruction_data)
+    generate_matcher_line!(opcode_hex, instruction_data)
+    generate_execution_method_call!(opcode_hex, opcode_family, instruction_data)
+    generate_closure!(instruction_data)
   end
 
   def code
@@ -34,7 +30,9 @@ class CpuDecodingTemplateGenerator
   #
   #     [0x36, immediate @ _] => {
   #
-  def generate_matcher_line!(opcode_hex, operand_types)
+  def generate_matcher_line!(opcode_hex, instruction_data)
+    operand_types = instruction_data.fetch("operand_types")
+
     @buffer.print "            [0x#{opcode_hex}"
 
     # Registers don't use matcher bindings, and there can't be immediates on both sides, so we can
@@ -42,60 +40,46 @@ class CpuDecodingTemplateGenerator
     # Note that this makes it more complex to append a prefix to the variable name indicating the
     # source/destination nature.
 
-    operand_type_types = operand_types.map(&:type)
-
-    if operand_type_types.include?(IMMEDIATE_OPERAND_8)
+    if operand_types.include?(IMMEDIATE_OPERAND_8)
       @buffer.print ", immediate @ _"
-    elsif operand_type_types.include?(IMMEDIATE_OPERAND_16)
+    elsif operand_types.include?(IMMEDIATE_OPERAND_16)
       @buffer.print ", immediate_low @ _, immediate_high @ _"
     end
 
     @buffer.puts "] => {"
   end
 
-  def generate_execution_method_call!(opcode_family, instruction_data, operand_types, operand_names)
-    operand_params = []
+  def generate_execution_method_call!(opcode_hex, opcode_family, instruction_data)
+    operand_types = instruction_data.fetch("operand_types")
+    opcode_data = instruction_data.fetch("opcodes").fetch(opcode_hex)
+    operand_names = opcode_data.fetch("operands")
 
-    operand_names.zip(operand_types).each do |operand_name, operand_type|
-      case operand_type.type
+    operand_params = operand_names.zip(operand_types).each_with_object([]) do |(operand_name, operand_type), operand_params|
+      case operand_type
       when REGISTER_OPERAND_8
-        operand_params << "Register8::#{operand_name}"
+        operand_params << "Reg8::#{operand_name}"
       when REGISTER_OPERAND_16
-        register_high, register_low = operand_name.chars
-        operand_params.push("Register8::#{register_high}", "Register8::#{register_low}")
-      when REGISTER_SP
-        operand_params << "Register16::#{operand_name}"
+        operand_params.push("Reg16::#{operand_name}")
       when IMMEDIATE_OPERAND_8
         operand_params << "immediate"
       when IMMEDIATE_OPERAND_16
         operand_params.push("immediate_high", "immediate_low")
-      when nil
-        # Do nothing
+      when FLAG_OPERAND
+        operand_params.push("Flag::#{operand_name[-1].downcase}")
       else
         raise "Unexpected operand type: #{operand_type.type}"
       end
     end
 
-    flag_params = instruction_data.fetch(:flags_data).each_with_object([]) do |(flag, state), flag_params|
-      case state
-      when "0", "1", flag
-        flag_params << "Flag::#{flag.downcase}"
-      when "-"
-        # ignore
-      else
-        raise "Invalid flag state: #{state}"
-      end
-    end
-
-    all_execution_params = [*operand_params, *flag_params].join(", ")
+    all_execution_params = operand_params.join(", ")
 
     @buffer.puts "                self.execute_#{opcode_family}(#{all_execution_params});"
   end
 
   # Closure (cycles and closing brace)
   #
-  def generate_closure!(opcode_data, opcode_hex)
-    cycles = opcode_data.fetch("cycles")[0] || raise("Missing #{opcode_hex} cycles!")
+  def generate_closure!(instruction_data)
+    cycles = instruction_data.fetch("cycles")
 
     @buffer.puts <<-RUST
                 #{cycles}

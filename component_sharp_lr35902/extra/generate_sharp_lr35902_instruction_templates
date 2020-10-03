@@ -8,7 +8,7 @@ require_relative "#{File.basename(__FILE__)}.lib/git_helpers"
 require_relative "#{File.basename(__FILE__)}.lib/cpu_templates_generator"
 
 if __FILE__ == $PROGRAM_NAME
-  opcodes_file = File.expand_path("opcodes.json", __dir__)
+  instructions_file = File.expand_path("data/instructions.json", __dir__)
   cpu_file = File.expand_path("../src/cpu.rs", __dir__)
   tests_file = File.expand_path("../src/cpu_test.rs", __dir__)
 
@@ -16,5 +16,5 @@ if __FILE__ == $PROGRAM_NAME
 
   only_opcodes = CommandlineDecoder.execute
 
-  CpuTemplatesGenerator.new(opcodes_file, cpu_file, tests_file).execute(only_opcodes: only_opcodes)
+  CpuTemplatesGenerator.new(instructions_file, cpu_file, tests_file).execute(only_opcodes: only_opcodes)
 end

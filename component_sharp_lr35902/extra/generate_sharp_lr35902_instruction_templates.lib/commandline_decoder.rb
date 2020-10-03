@@ -15,7 +15,7 @@ module CommandlineDecoder
       puts HELP
       exit 1
     else
-      ARGV[0].to_s.split(",").map(&:hex)
+      ARGV[0].to_s.split(",")
     end
   end
 end

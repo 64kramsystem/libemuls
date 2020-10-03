@@ -1,16 +1,17 @@
-require_relative "instructions_data"
+require_relative "../shared.lib/operand_types"
 
 class CpuExecutionTemplatesGenerator
-  include InstructionsData
+  include OperandTypes
 
   def initialize
     @buffer = StringIO.new
   end
 
-  def add_code!(opcode_family, instruction_data)
+  def add_code!(opcode_family, instruction_data, instruction_code)
     generate_method_signature!(opcode_family, instruction_data)
-    generate_register_operations!(instruction_data)
-    generate_flag_operations!(instruction_data)
+    generate_register_operations!(instruction_data, instruction_code)
+    generate_flag_operations!(opcode_family, instruction_data, instruction_code)
+
     generate_closure!
   end
 
@@ -21,91 +22,76 @@ class CpuExecutionTemplatesGenerator
   private
 
   def generate_method_signature!(opcode_family, instruction_data)
-    operand_types = instruction_data.fetch(:operand_types)
+    operand_types = instruction_data.fetch("operand_types")
 
     @buffer.print "    fn execute_#{opcode_family}(&mut self"
 
-    operand_types.zip(["dst", "src"]) do |operand_type, position|
-      case operand_type.type
+    operand_types.zip(["dst", "src"]).each do |operand_type, register_position|
+      case operand_type
       when REGISTER_OPERAND_8
-        @buffer.print ", #{position}_register: Register8"
+        @buffer.print ", #{register_position}_register: Reg8"
       when REGISTER_OPERAND_16
-        @buffer.print ", #{position}_register_high: Register8, #{position}_register_low: Register8"
-      when REGISTER_SP
-        @buffer.print ", #{position}_register: Register16"
+        @buffer.print ", #{register_position}_register: Reg16"
       when IMMEDIATE_OPERAND_8
         @buffer.print ", immediate: &u8"
       when IMMEDIATE_OPERAND_16
         @buffer.print ", immediate_high: &u8, immediate_low: &u8"
-      when nil
-        # Do nothing
+      when FLAG_OPERAND
+        @buffer.print ", condition_flag: Flag"
       else
-        raise "Unexpected operand 0 type: #{operand_types[0].type}"
-      end
-    end
-
-    flags_data = instruction_data.fetch(:flags_data)
-
-    flags_data.each do |flag, state|
-      case state
-      when "0", "1", flag
-        @buffer.print ", #{flag.downcase}f: Flag"
-      when "-"
-        # ignore
-      else
-        raise "Invalid flag state: #{state}"
+        raise "Unexpected operand type: #{operand_type.type}"
       end
     end
 
     @buffer.puts ") {"
   end
 
-  def generate_register_operations!(instruction_data)
-    instruction_size = instruction_data.fetch(:instruction_size)
+  def generate_register_operations!(instruction_data, instruction_code)
+    instruction_size = instruction_data.fetch("instruction_size")
 
     @buffer.puts <<-RUST
-      self[Register16::PC] += #{instruction_size};
+        self[Reg16::PC] += #{instruction_size};
 
     RUST
 
-    operation_code = instruction_data[:operation_code]
+    operation_code = instruction_code.fetch(:operation_code)
 
     if operation_code
       operation_code.each_line do |operation_statement|
         if operation_statement.strip.empty?
           @buffer.puts
         else
-          @buffer.puts "      #{operation_statement}"
+          @buffer.puts "        #{operation_statement}"
         end
       end
       @buffer.puts
     end
   end
 
-  def generate_flag_operations!(instruction_data)
-    flags_data = instruction_data.fetch(:flags_data)
-    operation_code = instruction_data[:operation_code]
+  def generate_flag_operations!(opcode_family, instruction_data, instruction_code)
+    flags_data = instruction_data.fetch("flags_data")
+    operation_code = instruction_code.fetch(:operation_code)
 
     flags_data.each do |flag, state|
       case state
       when "0"
-        @buffer.puts "      self[#{flag.downcase}f] = false;"
+        @buffer.puts "      self[Flag::#{flag.downcase}] = false;"
       when "1"
-        @buffer.puts "      self[#{flag.downcase}f] = true;"
-      when flag
+        @buffer.puts "      self[Flag::#{flag.downcase}] = true;"
+      when "*"
         if flag == "Z"
           @buffer.puts <<-RUST
       if carry {
-        self[zf] = true;
+          self[Flag::z] = true;
       }
           RUST
         else
           # Make sure the operation code takes care of it!
           #
-          raise "Missing #{opcode_family} #{flag} flag setting!" if operation_code !~ /self\[#{flag.downcase}f\] = /
+          raise "Missing #{opcode_family} #{flag} flag setting!" if operation_code !~ /self\[Flag::#{flag.downcase}\] = /
         end
       when "-"
-        # do nothing
+        # unaffected; do nothing
       else
         raise "Invalid flag state: #{state}"
       end
