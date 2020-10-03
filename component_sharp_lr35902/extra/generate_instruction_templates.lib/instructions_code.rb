@@ -317,6 +317,26 @@ module InstructionsCode
         }
       }
     },
+    "LD (nn), SP" => {
+      operation_code: <<~RUST,
+        let address = ((*immediate_high as usize) << 8) + *immediate_low as usize;
+        self.internal_ram[address] = self[Reg16::SP] as u8;
+        self.internal_ram[address + 1] = (self[Reg16::SP] >> 8) as u8;
+      RUST
+      testing: ->(_) {
+        {
+          BASE => {
+            extra_instruction_bytes: [0xFE, 0xCA],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xBEEF;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0xEF, 0xBE],
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let (new_value, carry) = self[dst_register].overflowing_add(1);
