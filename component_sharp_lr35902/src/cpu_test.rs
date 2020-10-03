@@ -1,6 +1,6 @@
 #![allow(unused_macros)]
 
-use crate::cpu::{Cpu, Flag, Register16, Register8};
+use crate::cpu::{Cpu, Flag, Reg16, Reg8};
 use demonstrate::demonstrate;
 
 fn assert_cpu_execute(
@@ -25,66 +25,66 @@ fn assert_cpu_execute(
     let actual_cycles_spent = cpu.execute(&instruction_bytes);
 
     assert_eq!(
-        cpu[Register8::A],
+        cpu[Reg8::A],
         A,
         "Unexpected `A`: actual={}, expected={}",
-        cpu[Register8::A],
+        cpu[Reg8::A],
         A
     );
     assert_eq!(
-        cpu[Register8::B],
+        cpu[Reg8::B],
         B,
         "Unexpected `B`: actual={}, expected={}",
-        cpu[Register8::B],
+        cpu[Reg8::B],
         B
     );
     assert_eq!(
-        cpu[Register8::C],
+        cpu[Reg8::C],
         C,
         "Unexpected `C`: actual={}, expected={}",
-        cpu[Register8::C],
+        cpu[Reg8::C],
         C
     );
     assert_eq!(
-        cpu[Register8::D],
+        cpu[Reg8::D],
         D,
         "Unexpected `D`: actual={}, expected={}",
-        cpu[Register8::D],
+        cpu[Reg8::D],
         D
     );
     assert_eq!(
-        cpu[Register8::E],
+        cpu[Reg8::E],
         E,
         "Unexpected `E`: actual={}, expected={}",
-        cpu[Register8::E],
+        cpu[Reg8::E],
         E
     );
     assert_eq!(
-        cpu[Register8::H],
+        cpu[Reg8::H],
         H,
         "Unexpected `H`: actual={}, expected={}",
-        cpu[Register8::H],
+        cpu[Reg8::H],
         H
     );
     assert_eq!(
-        cpu[Register8::L],
+        cpu[Reg8::L],
         L,
         "Unexpected `L`: actual={}, expected={}",
-        cpu[Register8::L],
+        cpu[Reg8::L],
         L
     );
     assert_eq!(
-        cpu[Register16::SP],
+        cpu[Reg16::SP],
         SP,
         "Unexpected `SP`: actual={}, expected={}",
-        cpu[Register16::SP],
+        cpu[Reg16::SP],
         SP
     );
     assert_eq!(
-        cpu[Register16::PC],
+        cpu[Reg16::PC],
         PC,
         "Unexpected `PC`: actual={}, expected={}",
-        cpu[Register16::PC],
+        cpu[Reg16::PC],
         PC
     );
 
@@ -252,15 +252,12 @@ demonstrate! {
 
             assert_ne!(internal_ram_sum, 0);
 
-            assert_eq!(cpu[Register8::A], 0);
-            assert_eq!(cpu[Register8::B], 0);
-            assert_eq!(cpu[Register8::C], 0);
-            assert_eq!(cpu[Register8::D], 0);
-            assert_eq!(cpu[Register8::E], 0);
-            assert_eq!(cpu[Register8::H], 0);
-            assert_eq!(cpu[Register8::L], 0);
-            assert_eq!(cpu[Register16::SP], 0);
-            assert_eq!(cpu[Register16::PC], 0);
+            assert_eq!(cpu[Reg8::A], 0);
+            assert_eq!(cpu[Reg16::BC], 0);
+            assert_eq!(cpu[Reg16::DE], 0);
+            assert_eq!(cpu[Reg16::HL], 0);
+            assert_eq!(cpu[Reg16::SP], 0);
+            assert_eq!(cpu[Reg16::PC], 0);
 
             assert_eq!(cpu[Flag::z], false);
             assert_eq!(cpu[Flag::n], false);

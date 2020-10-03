@@ -1,9 +1,29 @@
+#![allow(non_camel_case_types)]
+
 use crate::utils;
 use rand::RngCore;
 use std::ops::{Index, IndexMut};
 
 #[derive(Copy, Clone)]
-pub(crate) enum Register8 {
+pub struct Registers8Pair {
+    pub l: u8,
+    pub h: u8,
+}
+
+#[repr(C)]
+pub union Register16 {
+    pub r16: u16,
+    pub r8: Registers8Pair,
+}
+
+// Naming of the register enums is tricky. Using `Register<width>` is accurate, however it clashes
+// with the struct. Since such enums are extensively used, using an abbreviation works the problem
+// around while arguably maintaining sufficient expressivity.
+// The Flag enum doesn't have the clashing problem, and it's short enough not to require any
+// attention.
+//
+#[derive(Copy, Clone)]
+pub(crate) enum Reg8 {
     A,
     B,
     C,
@@ -13,13 +33,20 @@ pub(crate) enum Register8 {
     L,
 }
 
+// AF is not included, as keeping the flags stored as register is not convenient; the only cases where
+// they're treated as such is `PUSH/POP AF`.
+//
 #[derive(Copy, Clone)]
-pub(crate) enum Register16 {
+pub(crate) enum Reg16 {
+    BC,
+    DE,
+    HL,
     SP,
     PC,
 }
 
-#[allow(non_camel_case_types)]
+// The `f` suffix is not required in this context, since there is no ambiguity like in the Cpu struct.
+//
 #[derive(Copy, Clone)]
 pub(crate) enum Flag {
     z,
@@ -39,16 +66,9 @@ pub struct Cpu {
     // Registers
     //
     A: u8,
-
-    B: u8,
-    C: u8,
-
-    D: u8,
-    E: u8,
-
-    H: u8,
-    L: u8,
-
+    BC: Register16,
+    DE: Register16,
+    HL: Register16,
     SP: u16,
     PC: u16,
 
@@ -64,52 +84,58 @@ pub struct Cpu {
     pub internal_ram: [u8; 0x10_000],
 }
 
-impl Index<Register8> for Cpu {
+impl Index<Reg8> for Cpu {
     type Output = u8;
 
-    fn index(&self, register: Register8) -> &Self::Output {
+    fn index(&self, register: Reg8) -> &Self::Output {
         match register {
-            Register8::A => &self.A,
-            Register8::B => &self.B,
-            Register8::C => &self.C,
-            Register8::D => &self.D,
-            Register8::E => &self.E,
-            Register8::H => &self.H,
-            Register8::L => &self.L,
+            Reg8::A => &self.A,
+            Reg8::B => unsafe { &self.BC.r8.h },
+            Reg8::C => unsafe { &self.BC.r8.l },
+            Reg8::D => unsafe { &self.DE.r8.h },
+            Reg8::E => unsafe { &self.DE.r8.l },
+            Reg8::H => unsafe { &self.HL.r8.h },
+            Reg8::L => unsafe { &self.HL.r8.l },
         }
     }
 }
 
-impl IndexMut<Register8> for Cpu {
-    fn index_mut(&mut self, register: Register8) -> &mut Self::Output {
+impl IndexMut<Reg8> for Cpu {
+    fn index_mut(&mut self, register: Reg8) -> &mut Self::Output {
         match register {
-            Register8::A => &mut self.A,
-            Register8::B => &mut self.B,
-            Register8::C => &mut self.C,
-            Register8::D => &mut self.D,
-            Register8::E => &mut self.E,
-            Register8::H => &mut self.H,
-            Register8::L => &mut self.L,
+            Reg8::A => &mut self.A,
+            Reg8::B => unsafe { &mut self.BC.r8.h },
+            Reg8::C => unsafe { &mut self.BC.r8.l },
+            Reg8::D => unsafe { &mut self.DE.r8.h },
+            Reg8::E => unsafe { &mut self.DE.r8.l },
+            Reg8::H => unsafe { &mut self.HL.r8.h },
+            Reg8::L => unsafe { &mut self.HL.r8.l },
         }
     }
 }
 
-impl Index<Register16> for Cpu {
+impl Index<Reg16> for Cpu {
     type Output = u16;
 
-    fn index(&self, register: Register16) -> &Self::Output {
+    fn index(&self, register: Reg16) -> &Self::Output {
         match register {
-            Register16::SP => &self.SP,
-            Register16::PC => &self.PC,
+            Reg16::BC => unsafe { &self.BC.r16 },
+            Reg16::DE => unsafe { &self.DE.r16 },
+            Reg16::HL => unsafe { &self.HL.r16 },
+            Reg16::SP => &self.SP,
+            Reg16::PC => &self.PC,
         }
     }
 }
 
-impl IndexMut<Register16> for Cpu {
-    fn index_mut(&mut self, register: Register16) -> &mut Self::Output {
+impl IndexMut<Reg16> for Cpu {
+    fn index_mut(&mut self, register: Reg16) -> &mut Self::Output {
         match register {
-            Register16::SP => &mut self.SP,
-            Register16::PC => &mut self.PC,
+            Reg16::BC => unsafe { &mut self.BC.r16 },
+            Reg16::DE => unsafe { &mut self.DE.r16 },
+            Reg16::HL => unsafe { &mut self.HL.r16 },
+            Reg16::SP => &mut self.SP,
+            Reg16::PC => &mut self.PC,
         }
     }
 }
@@ -145,12 +171,9 @@ impl Cpu {
 
         Cpu {
             A: 0,
-            B: 0,
-            C: 0,
-            D: 0,
-            E: 0,
-            H: 0,
-            L: 0,
+            BC: Register16 { r16: 0 },
+            DE: Register16 { r16: 0 },
+            HL: Register16 { r16: 0 },
             SP: 0,
             PC: 0,
             zf: false,
