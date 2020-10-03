@@ -78,7 +78,7 @@ module InstructionsCode
 
               let expected_value = cpu[Reg8::#{register2}];
             RUST
-            expectations: "mem[0x0CAF] => expected_value,",
+            expectations: "mem[0x0CAF] => [expected_value],",
           }
         }
       }
@@ -94,7 +94,7 @@ module InstructionsCode
             presets: <<~RUST,
               cpu[Reg16::HL] = 0x0CAF;
             RUST
-            expectations: "mem[0x0CAF] => 0x21,",
+            expectations: "mem[0x0CAF] => [0x21],",
           }
         }
       }
@@ -124,7 +124,7 @@ module InstructionsCode
           BASE => {
             extra_instruction_bytes: [0xAF, 0x0C],
             presets: "cpu[Reg8::A] = 0x21;",
-            expectations: "mem[0x0CAF] => 0x21,",
+            expectations: "mem[0x0CAF] => [0x21],",
           }
         }
       }
@@ -158,7 +158,7 @@ module InstructionsCode
               cpu[Reg8::A] = 0x21;
               cpu[Reg8::C] = 0x13;
             RUST
-            expectations: "mem[0xFF13] => 0x21,",
+            expectations: "mem[0xFF13] => [0x21],",
           }
         }
       }
@@ -201,7 +201,7 @@ module InstructionsCode
             RUST
             expectations: <<~RUST
               HL => 0xFFFF,
-              mem[0x0000] => 0x21,
+              mem[0x0000] => [0x21],
             RUST
           }
         }
@@ -245,7 +245,7 @@ module InstructionsCode
             RUST
             expectations: <<~RUST
               HL => 0x0000,
-              mem[0xFFFF] => 0x21,
+              mem[0xFFFF] => [0x21],
             RUST
           }
         }
@@ -263,7 +263,7 @@ module InstructionsCode
             presets: <<~RUST,
               cpu[Reg8::A] = 0x21;
             RUST
-            expectations: "mem[0xFF13] => 0x21,",
+            expectations: "mem[0xFF13] => [0x21],",
           }
         }
       }
@@ -369,7 +369,7 @@ module InstructionsCode
               cpu[Reg16::HL] = 0x0CAF;
             RUST
             expectations: <<~RUST
-              mem[0x0CAF] => 0x22,
+              mem[0x0CAF] => [0x22],
             RUST
           },
           'Z' => {
@@ -378,7 +378,7 @@ module InstructionsCode
               cpu[Reg16::HL] = 0x0CAF;
             RUST
             expectations: <<~RUST
-              mem[0x0CAF] => 0x0,
+              mem[0x0CAF] => [0x0],
               zf => 1,
               hf => 1,
             RUST
@@ -389,7 +389,7 @@ module InstructionsCode
               cpu[Reg16::HL] = 0x0CAF;
             RUST
             expectations: <<~RUST
-              mem[0x0CAF] => 0x20,
+              mem[0x0CAF] => [0x20],
               hf => 1,
             RUST
           }

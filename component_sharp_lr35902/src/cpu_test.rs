@@ -19,7 +19,7 @@ fn assert_cpu_execute(
     nf: bool,
     hf: bool,
     cf: bool,
-    mem: Option<(u16, u8)>,
+    mem: Option<(u16, &[u8])>,
     cycles_spent: u8,
 ) {
     let actual_cycles_spent = cpu.execute(&instruction_bytes);
@@ -117,13 +117,18 @@ fn assert_cpu_execute(
         cf as u8
     );
 
-    if let Some((mem_address, mem_value)) = mem {
-        let actual_value = cpu.internal_ram[mem_address as usize];
-        assert_eq!(
-            actual_value, mem_value,
-            "Unexpected mem[{}]: actual={}, expected={}",
-            mem_address, actual_value, mem_value,
-        );
+    if let Some((start_address, expected_values)) = mem {
+        for i in 0..(expected_values.len()) {
+            let address = start_address as usize + i;
+            let actual_value = cpu.internal_ram[address];
+            let expected_value = expected_values[i];
+
+            assert_eq!(
+                actual_value, expected_value,
+                "Unexpected mem[{}]: actual={}, expected={}",
+                address, actual_value, expected_value,
+            );
+        }
     }
 
     assert_eq!(actual_cycles_spent, cycles_spent);
@@ -156,9 +161,9 @@ macro_rules! assert_cpu_execute {
         $( nf => $expected_nf:literal , )?
         $( hf => $expected_hf:literal , )?
         $( cf => $expected_cf:literal , )?
-        $( mem[$mem_address:literal] => $mem_value:expr, )?
+        $( mem[$mem_address:literal] => [$( $mem_value:expr ),+] , )?
         cycles: $cycles:literal
-) => {
+    ) => {
         let current_A = $cpu[Reg8::A];
         let current_B = $cpu[Reg8::B];
         let current_C = $cpu[Reg8::C];
@@ -218,8 +223,11 @@ macro_rules! assert_cpu_execute {
         // The numerical workaround doesn't work here, unless we use some array silliness.
         //
         #[allow(unused_variables)]
-        let mem = None::<(u16, u8)>;
-        $( let mem = Some(($mem_address, $mem_value)); )?
+        let mem = None::<(u16, &[u8])>;
+        $(
+        let expected_mem_values = &[$( $mem_value ),*][..];
+        let mem = Some(($mem_address, expected_mem_values));
+        )?
 
         assert_cpu_execute(
             &mut $cpu,
