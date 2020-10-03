@@ -6,7 +6,7 @@ require "json"
 
 require_relative "shared.lib/formatting_helpers"
 require_relative "shared.lib/operand_types"
-require_relative "#{File.basename(__FILE__)}.lib/instructions_data"
+require_relative "#{File.basename(__FILE__)}.lib/instructions_integration_data"
 
 class InstructionsDataGenerator
   include FormattingHelpers
@@ -18,15 +18,15 @@ class InstructionsDataGenerator
   VECTORS = /^[0-3][08]H$/
 
   def execute(opcodes_data)
-    check_and_extract_instruction_data_from_opcodes_data(opcodes_data, InstructionsData::INSTRUCTIONS_DATA)
+    check_and_extract_instruction_data_from_opcodes_data(opcodes_data, InstructionsIntegrationData::INTEGRATION_DATA)
   end
 
   private
 
   # Returns {flags_data, instruction_size, operands_data}.
   #
-  def check_and_extract_instruction_data_from_opcodes_data(opcodes_data, base_instructions_data)
-    transformed_data = deep_dup_without_proc_entries(base_instructions_data)
+  def check_and_extract_instruction_data_from_opcodes_data(opcodes_data, instructions_integration_data)
+    transformed_data = deep_dup_without_proc_entries(instructions_integration_data)
 
     transformed_data.each do |instruction, instruction_data|
       # WATCH OUT! We rip the opcodes array from the instructions data here, and replace it with a
@@ -35,7 +35,7 @@ class InstructionsDataGenerator
       opcodes = instruction_data[:opcodes]
       instruction_data[:opcodes] = {}
 
-      transform_data = base_instructions_data.fetch(instruction)[:transform_data]
+      transform_data = instructions_integration_data.fetch(instruction)[:transform_data]
 
       prefixed_json_entry = instruction_data.fetch(:prefixed) ? "cbprefixed" : "unprefixed"
 

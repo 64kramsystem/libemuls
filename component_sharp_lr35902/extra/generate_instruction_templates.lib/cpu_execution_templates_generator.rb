@@ -7,10 +7,10 @@ class CpuExecutionTemplatesGenerator
     @buffer = StringIO.new
   end
 
-  def add_code!(opcode_family, instruction_data, instruction_code)
-    generate_method_signature!(opcode_family, instruction_data)
+  def add_code!(instruction_encoded, instruction_data, instruction_code)
+    generate_method_signature!(instruction_encoded, instruction_data)
     generate_register_operations!(instruction_data, instruction_code)
-    generate_flag_operations!(opcode_family, instruction_data, instruction_code)
+    generate_flag_operations!(instruction_encoded, instruction_data, instruction_code)
 
     generate_closure!
   end
@@ -21,10 +21,10 @@ class CpuExecutionTemplatesGenerator
 
   private
 
-  def generate_method_signature!(opcode_family, instruction_data)
+  def generate_method_signature!(instruction_encoded, instruction_data)
     operand_types = instruction_data.fetch("operand_types")
 
-    @buffer.print "    fn execute_#{opcode_family}(&mut self"
+    @buffer.print "    fn execute_#{instruction_encoded}(&mut self"
 
     operand_types.zip(["dst", "src"]).each do |operand_type, register_position|
       case operand_type
@@ -68,7 +68,7 @@ class CpuExecutionTemplatesGenerator
     end
   end
 
-  def generate_flag_operations!(opcode_family, instruction_data, instruction_code)
+  def generate_flag_operations!(instruction_encoded, instruction_data, instruction_code)
     flags_data = instruction_data.fetch("flags_data")
     operation_code = instruction_code.fetch(:operation_code)
 
@@ -88,7 +88,7 @@ class CpuExecutionTemplatesGenerator
         else
           # Make sure the operation code takes care of it!
           #
-          raise "Missing #{opcode_family} #{flag} flag setting!" if operation_code !~ /self\[Flag::#{flag.downcase}\] = /
+          raise "Missing #{instruction_encoded} #{flag} flag setting!" if operation_code !~ /self\[Flag::#{flag.downcase}\] = /
         end
       when "-"
         # unaffected; do nothing

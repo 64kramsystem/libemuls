@@ -128,8 +128,7 @@ class TestTemplatesGenerator
 
     RUST
 
-    presets = "" if presets.nil?
-    presets = "cpu[Reg16::PC] = 0x21;\n#{presets}" if presets !~ /\bcpu\[Reg16::PC\] +=/
+    presets = "cpu[Reg16::PC] = 0x21;\n#{presets}"
 
     presets.each_line.map(&:strip).each do |preset_statement|
       if preset_statement.empty?

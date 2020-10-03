@@ -5,7 +5,7 @@ require 'English'
 
 require_relative "#{File.basename(__FILE__)}.lib/commandline_decoder"
 require_relative "#{File.basename(__FILE__)}.lib/git_helpers"
-require_relative "#{File.basename(__FILE__)}.lib/cpu_templates_generator"
+require_relative "#{File.basename(__FILE__)}.lib/templates_generator"
 
 if __FILE__ == $PROGRAM_NAME
   instructions_file = File.expand_path("data/instructions.json", __dir__)

@@ -3,7 +3,7 @@ require 'open-uri'
 
 require_relative "cpu_decoding_template_generator"
 require_relative "cpu_execution_templates_generator"
-require_relative "cpu_templates_generator"
+require_relative "templates_generator"
 require_relative "instructions_code"
 require_relative "test_templates_generator"
 

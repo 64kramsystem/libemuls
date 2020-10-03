@@ -14,9 +14,9 @@ class CpuDecodingTemplateGenerator
   # (the 4th argument shares the same bitmask (base + 11), but point to different registers in the
   # two cases).
 
-  def add_code!(opcode_hex, opcode_family, opcode_data, instruction_data)
+  def add_code!(opcode_hex, instruction_encoded, opcode_data, instruction_data)
     generate_matcher_line!(opcode_hex, instruction_data)
-    generate_execution_method_call!(opcode_hex, opcode_family, instruction_data)
+    generate_execution_method_call!(opcode_hex, instruction_encoded, instruction_data)
     generate_closure!(instruction_data)
   end
 
@@ -49,7 +49,7 @@ class CpuDecodingTemplateGenerator
     @buffer.puts "] => {"
   end
 
-  def generate_execution_method_call!(opcode_hex, opcode_family, instruction_data)
+  def generate_execution_method_call!(opcode_hex, instruction_encoded, instruction_data)
     operand_types = instruction_data.fetch("operand_types")
     opcode_data = instruction_data.fetch("opcodes").fetch(opcode_hex)
     operand_names = opcode_data.fetch("operands")
@@ -73,7 +73,7 @@ class CpuDecodingTemplateGenerator
 
     all_execution_params = operand_params.join(", ")
 
-    @buffer.puts "                self.execute_#{opcode_family}(#{all_execution_params});"
+    @buffer.puts "                self.execute_#{instruction_encoded}(#{all_execution_params});"
   end
 
   # Closure (cycles and closing brace)

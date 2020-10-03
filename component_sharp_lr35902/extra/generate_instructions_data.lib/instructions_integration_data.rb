@@ -1,5 +1,5 @@
-module InstructionsData
-  INSTRUCTIONS_DATA = {
+module InstructionsIntegrationData
+  INTEGRATION_DATA = {
     "LD r, n" => {
       prefixed: false,
       opcodes: [
