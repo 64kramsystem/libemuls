@@ -66,7 +66,7 @@ class TestTemplatesGenerator
   end
 
   def generate_unconditional_test!(opcode, opcode_data, instruction_data, instruction_code)
-    title = %Q[it "without conditional flag modifications" {]
+    title = "without conditional flag modifications"
 
     flag_data = instruction_data.fetch("flags_data")
 
@@ -95,7 +95,7 @@ class TestTemplatesGenerator
 
       # In this case, the presets/expectations are in the metadata.
       #
-      title = %Q[it "with flag #{flag} modified" {]
+      title = "with flag #{flag} modified"
       flags_preset = []
       flag_expectations = []
 
@@ -103,89 +103,94 @@ class TestTemplatesGenerator
     end
   end
 
-  def generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, flag, flags_preset, flag_expectations)
-    @buffer.puts <<-RUST
-                #{title}
-    RUST
-
+  def generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, flag_test_prefix, flags_preset, flag_expectations)
+    testing_block = instruction_code.fetch(:testing)
     opcode_operands = opcode_data.fetch("operands")
 
-    testing_block = instruction_code.fetch(:testing)
+    flag_tests_data =
+      testing_block
+      .(*opcode_operands)
+      .select { |key, _| key.to_s.start_with?(/#{flag_test_prefix}\b/) }
 
-    extra_instruction_bytes, presets, expectations = begin
-        testing_block
-          .(*opcode_operands)
-          .fetch(flag)
-          .values_at(:extra_instruction_bytes, :presets, :expectations)
-        rescue KeyError
-          raise "Flag #{flag} testing metadata not found for opcode 0x#{opcode}"
-        end
+    if flag_tests_data.empty?
+      raise "No testing metadata found for opcode 0x#{opcode}, with flag prefix #{flag_test_prefix.inspect}"
+    end
 
-    extra_instruction_bytes_str = extra_instruction_bytes.to_a.map { |byte| ", #{hex(byte)}" }.join
+    flag_tests_data.each do |flag_test_key, extra_instruction_bytes: nil, presets: nil, expectations:|
+      if flag_test_key != flag_test_prefix
+        suffix_specification = flag_test_key.sub(flag_test_prefix, '')
+      end
 
-    @buffer.puts <<-RUST
+      @buffer.puts <<-RUST
+                it "#{title}#{suffix_specification}" {
+      RUST
+
+      extra_instruction_bytes_str = extra_instruction_bytes.to_a.map { |byte| ", #{hex(byte)}" }.join
+
+      @buffer.puts <<-RUST
                     let instruction_bytes = [0x#{opcode}#{extra_instruction_bytes_str}];
 
-    RUST
+      RUST
 
-    presets = "cpu[Reg16::PC] = 0x21;\n#{presets}"
+      presets = "cpu[Reg16::PC] = 0x21;\n#{presets}"
 
-    presets.each_line.map(&:strip).each do |preset_statement|
-      if preset_statement.empty?
-        @buffer.puts
-      else
+      presets.each_line.map(&:strip).each do |preset_statement|
+        if preset_statement.empty?
+          @buffer.puts
+        else
+          @buffer.puts <<-RUST
+                    #{preset_statement}
+          RUST
+        end
+      end
+
+      flags_preset.each do |preset_statement|
         @buffer.puts <<-RUST
                     #{preset_statement}
         RUST
       end
-    end
 
-    flags_preset.each do |preset_statement|
       @buffer.puts <<-RUST
-                    #{preset_statement}
-      RUST
-    end
-
-    @buffer.puts <<-RUST
 
                     assert_cpu_execute!(
                         cpu,
                         instruction_bytes,
-    RUST
+      RUST
 
-    instruction_size = instruction_data.fetch("instruction_size")
-    start_pc = 0x21
-    end_pc = start_pc + instruction_size
-    cycles = instruction_data.fetch("cycles")
+      instruction_size = instruction_data.fetch("instruction_size")
+      start_pc = 0x21
+      end_pc = start_pc + instruction_size
+      cycles = instruction_data.fetch("cycles")
 
-    pc_expectation = "PC => #{hex(end_pc)},"
+      pc_expectation = "PC => #{hex(end_pc)},"
 
-    all_expectations = expectations.to_s.lines.push(pc_expectation).concat(flag_expectations)
+      all_expectations = expectations.to_s.lines.push(pc_expectation).concat(flag_expectations)
 
-    # Sorting is mandated by the macro.
-    #
-    all_expectations = all_expectations.sort_by do |expectation|
-      case expectation
-      when /^[A-Z]/
-        -1
-      when /^.f/
-        0
-      when /^mem/
-        1
-      else
-        raise "Unexpected expectation: #{expectation}"
+      # Sorting is mandated by the macro.
+      #
+      all_expectations = all_expectations.sort_by do |expectation|
+        case expectation
+        when /^[A-Z]/
+          -1
+        when /^.f/
+          0
+        when /^mem/
+          1
+        else
+          raise "Unexpected expectation: #{expectation}"
+        end
       end
-    end
 
-    all_expectations.each do |expectation|
-      @buffer.puts "                        #{expectation}"
-    end
+      all_expectations.each do |expectation|
+        @buffer.puts "                        #{expectation}"
+      end
 
-    @buffer.puts <<-RUST
+      @buffer.puts <<-RUST
                         cycles: #{cycles}
                     );
                 }
-    RUST
+      RUST
+    end
   end
 
   # Closing brace, with trailing space.
