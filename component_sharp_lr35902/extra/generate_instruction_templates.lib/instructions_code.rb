@@ -101,7 +101,7 @@ module InstructionsCode
     },
     "LD A, (nn)" => {
       operation_code: <<~RUST,
-        let address = Self::compose_address(*immediate_high, *immediate_low);
+        let address = u16::from_le_bytes([*immediate_low, *immediate_high]) as usize;
         self[Reg8::A] = self.internal_ram[address];
       RUST
       testing: ->(_) {
@@ -116,7 +116,7 @@ module InstructionsCode
     },
     "LD (nn), A" => {
       operation_code: <<~RUST,
-        let address = Self::compose_address(*immediate_high, *immediate_low);
+        let address = u16::from_le_bytes([*immediate_low, *immediate_high]) as usize;
         self.internal_ram[address] = self[Reg8::A];
       RUST
       testing: ->(_) {

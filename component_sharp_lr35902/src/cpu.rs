@@ -202,12 +202,4 @@ impl Cpu {
 
     // __OPCODES_EXECUTION_REPLACEMENT_START__
     // __OPCODES_EXECUTION_REPLACEMENT_END__
-
-    // HELPERS /////////////////////////////////////////////////////////////////////////////////////
-
-    // Composes an address from a high and a low byte.
-    //
-    pub fn compose_address(high_byte: u8, low_byte: u8) -> usize {
-        ((high_byte as usize) << 8) + (low_byte as usize)
-    }
 }
