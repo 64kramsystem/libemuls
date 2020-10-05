@@ -203,4 +203,21 @@ impl Cpu {
 
     // __OPCODES_EXECUTION_REPLACEMENT_START__
     // __OPCODES_EXECUTION_REPLACEMENT_END__
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // HELPERS
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// carry_position
+    ///
+    /// WATCH OUT #1!: 0-based;
+    /// WATCH OUT #2!: if the result is larger (e.g. 16 bits) than the operands (e.g. 8 bits), don't
+    ///   forget to size it accordingly. An example of mistake is to use an `overflowing_add()` and
+    ///   discard the carry; in such case, it's best to use the resulting carry, rather than this API.
+    ///
+    /// The formula is based on XOR-based addition; see https://stackoverflow.com/q/62006764/210029.
+    ///
+    fn compute_carry_flag(operand1: u16, operand2: u16, result: u16, carry_position: u8) -> bool {
+        (operand1 ^ operand2 ^ result) & (1 << carry_position) > 0
+    }
 }

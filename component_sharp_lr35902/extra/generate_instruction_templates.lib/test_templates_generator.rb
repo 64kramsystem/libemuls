@@ -68,14 +68,14 @@ class TestTemplatesGenerator
   def generate_unconditional_test!(opcode, opcode_data, instruction_data, instruction_code)
     title = "without conditional flag modifications"
 
-    flag_data = instruction_data.fetch("flags_data")
+    flags_set = instruction_data.fetch("flags_set")
 
-    unconditional_flags = flag_data.select { |_, state| state == "0" || state == "1" }
-    boolean = {"0" => "false", "1" => "true"}
-    reverse = {"0" => "1", "1" => "0"}
+    # Funny boolean class test: `state == !!state`.
+    #
+    unconditional_flags = flags_set.select { |_, state| state == true || state == false }
 
     flags_preset = unconditional_flags.map do |flag, state|
-      "cpu.set_flag(Flag::#{flag.downcase}, #{boolean[reverse[state]]});"
+      "cpu.set_flag(Flag::#{flag.downcase}, #{!state});"
     end
 
     flag_expectations = unconditional_flags.map do |flag, state|
@@ -86,9 +86,9 @@ class TestTemplatesGenerator
   end
 
   def generate_conditional_test!(opcode, opcode_data, instruction_data, instruction_code)
-    flag_data = instruction_data.fetch("flags_data")
+    flags_set = instruction_data.fetch("flags_set")
 
-    conditional_flags = flag_data.select { |_, state| state == "*" }
+    conditional_flags = flags_set.select { |_, state| state != true && state != false }
 
     conditional_flags.each do |flag, _|
       @buffer.puts

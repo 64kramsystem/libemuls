@@ -339,12 +339,11 @@ module InstructionsCode
     },
     "INC r" => {
       operation_code: <<~RUST,
-        let (new_value, carry) = self[dst_register].overflowing_add(1);
-        self[dst_register] = new_value;
+        let operand1 = self[dst_register];
+        let operand2 = 1;
 
-        if new_value & 0b0000_1111 == 0b000_0000 {
-            self.set_flag(Flag::h, true);
-        }
+        let (result, _) = operand1.overflowing_add(operand2);
+        self[dst_register] = result;
       RUST
       testing: ->(register) {
         {
@@ -358,15 +357,15 @@ module InstructionsCode
             presets: "cpu[Reg8::#{register}] = 0xFF;",
             expectations: <<~RUST
               #{register} => 0x00,
-              zf => 1,
-              hf => 1,
+              zf => true,
+              hf => true,
             RUST
           },
           'H' => {
             presets: "cpu[Reg8::#{register}] = 0x1F;",
             expectations: <<~RUST
               #{register} => 0x20,
-              hf => 1,
+              hf => true,
             RUST
           }
         }
@@ -374,12 +373,10 @@ module InstructionsCode
     },
     "INC (HL)" => {
       operation_code: <<~RUST,
-        let (new_value, carry) = self.internal_ram[self[Reg16::HL] as usize].overflowing_add(1);
-        self.internal_ram[self[Reg16::HL] as usize] = new_value;
-
-        if new_value & 0b0000_1111 == 0b000_0000 {
-            self.set_flag(Flag::h, true);
-        }
+        let operand1 = self.internal_ram[self[Reg16::HL] as usize];
+        let operand2 = 1;
+        let (result, _) = operand1.overflowing_add(operand2);
+        self.internal_ram[self[Reg16::HL] as usize] = result;
       RUST
       testing: ->() {
         {
@@ -399,8 +396,8 @@ module InstructionsCode
             RUST
             expectations: <<~RUST
               mem[0x0CAF] => [0x0],
-              zf => 1,
-              hf => 1,
+              zf => true,
+              hf => true,
             RUST
           },
           'H' => {
@@ -410,7 +407,7 @@ module InstructionsCode
             RUST
             expectations: <<~RUST
               mem[0x0CAF] => [0x20],
-              hf => 1,
+              hf => true,
             RUST
           }
         }

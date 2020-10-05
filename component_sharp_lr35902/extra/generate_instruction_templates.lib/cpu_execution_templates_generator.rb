@@ -69,32 +69,65 @@ class CpuExecutionTemplatesGenerator
   end
 
   def generate_flag_operations!(instruction_encoded, instruction_data, instruction_code)
-    flags_data = instruction_data.fetch("flags_data")
+    flags_set_data = instruction_data.fetch("flags_set")
     operation_code = instruction_code.fetch(:operation_code)
 
-    flags_data.each do |flag, state|
-      case state
-      when "0"
-        @buffer.puts "      self.set_flag(Flag::#{flag.downcase}, false);"
-      when "1"
-        @buffer.puts "      self.set_flag(Flag::#{flag.downcase}, true);"
-      when "*"
-        if flag == "Z"
-          @buffer.puts <<-RUST
-      if carry {
-          self.set_flag(Flag::z, true);
-      }
-          RUST
+    flags_set_data.each do |flag, state|
+      next if operation_code =~ /self.set_flag\(Flag::#{flag.downcase},/
+
+      flag_operation = \
+        case flag
+        when 'H', 'C'
+          generate_h_c_flag_operation!(flag, state)
+        when 'Z'
+          generate_z_flag_operation!(state)
         else
-          # Make sure the operation code takes care of it!
-          #
-          raise "Missing #{instruction_encoded} #{flag} flag setting!" if operation_code !~ /self.set_flag\(Flag::#{flag.downcase},/
+          generate_n_flag_operation!(state)
         end
-      when "-"
-        # unaffected; do nothing
-      else
-        raise "Invalid flag state: #{state}"
+
+      if flag_operation
+        @buffer.print flag_operation
+      elsif operation_code !~ /self.set_flag\(Flag::/
+        # In addition to catching incomplete code, this also catches potentials meta/data errors.
+        #
+        raise "Missing #{flag.upcase} flag implementation (code) for instruction #{instruction_encoded} (state: #{state})!"
       end
+    end
+  end
+
+  def generate_h_c_flag_operation!(flag, state)
+    case state
+    when false, true
+      <<-RUST
+        self.set_flag(Flag::#{flag.downcase}, #{state});
+      RUST
+    when 4, 8, 12, 16
+      <<-RUST
+        let flag_#{flag.downcase}_value = Cpu::compute_carry_flag(operand1 as u16, operand2 as u16, result as u16, #{state});
+        self.set_flag(Flag::#{flag.downcase}, flag_#{flag.downcase}_value);
+      RUST
+    end
+  end
+
+  def generate_z_flag_operation!(state)
+    case state
+    when false, true
+      <<-RUST
+        self.set_flag(Flag::z, #{state});
+      RUST
+    when "*"
+      <<-RUST
+        self.set_flag(Flag::z, result == 0);
+      RUST
+    end
+  end
+
+  def generate_n_flag_operation!(state)
+    case state
+    when false, true
+      <<-RUST
+        self.set_flag(Flag::n, #{state});
+      RUST
     end
   end
 

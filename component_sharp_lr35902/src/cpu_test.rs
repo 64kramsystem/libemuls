@@ -215,10 +215,10 @@ macro_rules! assert_cpu_execute {
 
         let SP = current_SP $( - current_SP + $expected_SP )?;
         let PC = current_PC $( - current_PC + $expected_PC )?;
-        let zf = current_zf $( ^ current_zf | (if $expected_zf == 0 { false } else { true }) )?;
-        let nf = current_nf $( ^ current_nf | (if $expected_nf == 0 { false } else { true }) )?;
-        let hf = current_hf $( ^ current_hf | (if $expected_hf == 0 { false } else { true }) )?;
-        let cf = current_cf $( ^ current_cf | (if $expected_cf == 0 { false } else { true }) )?;
+        let zf = current_zf $( ^ current_zf | $expected_zf )?;
+        let nf = current_nf $( ^ current_nf | $expected_nf )?;
+        let hf = current_hf $( ^ current_hf | $expected_hf )?;
+        let cf = current_cf $( ^ current_cf | $expected_cf )?;
 
         // The numerical workaround doesn't work here, unless we use some array silliness.
         //
