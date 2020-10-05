@@ -184,22 +184,27 @@ class InstructionsDataGenerator
     end
   end
 
-  # Returns {:instruction_size, :cycles, :flags_data}
+  # Returns {:instruction_size, :cycles, :flags_set}
   #
   def extract_extra_instruction_data(opcode_data, prefixed_json_entry)
     instruction_size = opcode_data.fetch("bytes")
     cycles = opcode_data.fetch("cycles")[0] || raise
 
-    flags_data = opcode_data.fetch("flags")
+    source_flags_data = opcode_data.fetch("flags")
+    flag_states_mapping = {
+      "0" => false, "1" => true,
+      "-" => nil,
+      "Z" => "*", "N" => "*", "H" => "*", "C" => "*",
+    }
 
-    flags_data.transform_values! do |value|
-      value.tr "ZHNC", "*"
-    end
+    flags_set = source_flags_data
+      .transform_values { |state| flag_states_mapping.fetch(state) rescue byebug }
+      .select { |_, value| !value.nil? }
 
     {
       instruction_size: instruction_size,
       cycles: cycles,
-      flags_data: flags_data,
+      flags_set: flags_set,
     }
   end
 end

@@ -47,12 +47,7 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "r",
       "n"
@@ -358,12 +353,7 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "r",
       "r"
@@ -429,12 +419,7 @@
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "r",
       "rr"
@@ -500,12 +485,7 @@
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "rr",
       "r"
@@ -522,12 +502,7 @@
     },
     "instruction_size": 2,
     "cycles": 12,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "n"
     ]
@@ -543,12 +518,7 @@
     },
     "instruction_size": 3,
     "cycles": 16,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "nn"
     ]
@@ -564,12 +534,7 @@
     },
     "instruction_size": 3,
     "cycles": 16,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "nn"
     ]
@@ -578,127 +543,73 @@
     "prefixed": false,
     "opcodes": {
       "F2": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "LD (C), A": {
     "prefixed": false,
     "opcodes": {
       "E2": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "LDD A, (HL)": {
     "prefixed": false,
     "opcodes": {
       "3A": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "LDD (HL), A": {
     "prefixed": false,
     "opcodes": {
       "32": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "LDI A, (HL)": {
     "prefixed": false,
     "opcodes": {
       "2A": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "LDI (HL), A": {
     "prefixed": false,
     "opcodes": {
       "22": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "LDH (n), A": {
     "prefixed": false,
@@ -711,12 +622,7 @@
     },
     "instruction_size": 2,
     "cycles": 12,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "n"
     ]
@@ -732,12 +638,7 @@
     },
     "instruction_size": 2,
     "cycles": 12,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "n"
     ]
@@ -772,12 +673,7 @@
     },
     "instruction_size": 3,
     "cycles": 12,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "rr",
       "nn"
@@ -787,22 +683,13 @@
     "prefixed": false,
     "opcodes": {
       "F9": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "LDHL SP, n": {
     "prefixed": false,
@@ -815,9 +702,9 @@
     },
     "instruction_size": 2,
     "cycles": 12,
-    "flags_data": {
-      "Z": "0",
-      "N": "0",
+    "flags_set": {
+      "Z": false,
+      "N": false,
       "H": "*",
       "C": "*"
     },
@@ -836,12 +723,7 @@
     },
     "instruction_size": 3,
     "cycles": 20,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "nn"
     ]
@@ -872,12 +754,7 @@
     },
     "instruction_size": 1,
     "cycles": 16,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "rr"
     ]
@@ -903,12 +780,7 @@
     },
     "instruction_size": 1,
     "cycles": 12,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "rr"
     ]
@@ -917,22 +789,18 @@
     "prefixed": false,
     "opcodes": {
       "F1": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 12,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
       "N": "*",
       "H": "*",
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "ADD A, r": {
     "prefixed": false,
@@ -975,9 +843,9 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
+      "N": false,
       "H": "*",
       "C": "*"
     },
@@ -989,22 +857,18 @@
     "prefixed": false,
     "opcodes": {
       "86": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
+      "N": false,
       "H": "*",
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "ADD A, n": {
     "prefixed": false,
@@ -1017,9 +881,9 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
+      "N": false,
       "H": "*",
       "C": "*"
     },
@@ -1068,9 +932,9 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
+      "N": false,
       "H": "*",
       "C": "*"
     },
@@ -1082,22 +946,18 @@
     "prefixed": false,
     "opcodes": {
       "8E": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
+      "N": false,
       "H": "*",
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "ADC A, n": {
     "prefixed": false,
@@ -1110,9 +970,9 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
+      "N": false,
       "H": "*",
       "C": "*"
     },
@@ -1161,9 +1021,9 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "1",
+      "N": true,
       "H": "*",
       "C": "*"
     },
@@ -1175,22 +1035,18 @@
     "prefixed": false,
     "opcodes": {
       "96": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "1",
+      "N": true,
       "H": "*",
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "SUB A, n": {
     "prefixed": false,
@@ -1203,9 +1059,9 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "1",
+      "N": true,
       "H": "*",
       "C": "*"
     },
@@ -1254,9 +1110,9 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "1",
+      "N": true,
       "H": "*",
       "C": "*"
     },
@@ -1268,22 +1124,18 @@
     "prefixed": false,
     "opcodes": {
       "9E": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "1",
+      "N": true,
       "H": "*",
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "AND A, r": {
     "prefixed": false,
@@ -1326,11 +1178,11 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "1",
-      "C": "0"
+      "N": false,
+      "H": true,
+      "C": false
     },
     "operand_types": [
       "r"
@@ -1340,22 +1192,18 @@
     "prefixed": false,
     "opcodes": {
       "A6": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "1",
-      "C": "0"
+      "N": false,
+      "H": true,
+      "C": false
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "AND A, n": {
     "prefixed": false,
@@ -1368,11 +1216,11 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "1",
-      "C": "0"
+      "N": false,
+      "H": true,
+      "C": false
     },
     "operand_types": [
       "n"
@@ -1419,11 +1267,11 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
-      "C": "0"
+      "N": false,
+      "H": false,
+      "C": false
     },
     "operand_types": [
       "r"
@@ -1433,22 +1281,18 @@
     "prefixed": false,
     "opcodes": {
       "B6": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
-      "C": "0"
+      "N": false,
+      "H": false,
+      "C": false
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "OR A, n": {
     "prefixed": false,
@@ -1461,11 +1305,11 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
-      "C": "0"
+      "N": false,
+      "H": false,
+      "C": false
     },
     "operand_types": [
       "n"
@@ -1512,11 +1356,11 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
-      "C": "0"
+      "N": false,
+      "H": false,
+      "C": false
     },
     "operand_types": [
       "r"
@@ -1526,22 +1370,18 @@
     "prefixed": false,
     "opcodes": {
       "AE": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
-      "C": "0"
+      "N": false,
+      "H": false,
+      "C": false
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "XOR A, n": {
     "prefixed": false,
@@ -1554,11 +1394,11 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
-      "C": "0"
+      "N": false,
+      "H": false,
+      "C": false
     },
     "operand_types": [
       "n"
@@ -1605,9 +1445,9 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "1",
+      "N": true,
       "H": "*",
       "C": "*"
     },
@@ -1619,22 +1459,18 @@
     "prefixed": false,
     "opcodes": {
       "BE": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "1",
+      "N": true,
       "H": "*",
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "CP A, n": {
     "prefixed": false,
@@ -1647,9 +1483,9 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "1",
+      "N": true,
       "H": "*",
       "C": "*"
     },
@@ -1698,11 +1534,10 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "*",
-      "C": "-"
+      "N": false,
+      "H": "*"
     },
     "operand_types": [
       "r"
@@ -1712,22 +1547,17 @@
     "prefixed": false,
     "opcodes": {
       "34": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 12,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "*",
-      "C": "-"
+      "N": false,
+      "H": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "DEC r": {
     "prefixed": false,
@@ -1770,11 +1600,10 @@
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "1",
-      "H": "*",
-      "C": "-"
+      "N": true,
+      "H": "*"
     },
     "operand_types": [
       "r"
@@ -1784,22 +1613,17 @@
     "prefixed": false,
     "opcodes": {
       "35": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 12,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "1",
-      "H": "*",
-      "C": "-"
+      "N": true,
+      "H": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "ADD HL, rr": {
     "prefixed": false,
@@ -1827,9 +1651,8 @@
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "0",
+    "flags_set": {
+      "N": false,
       "H": "*",
       "C": "*"
     },
@@ -1848,9 +1671,9 @@
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
-      "Z": "0",
-      "N": "0",
+    "flags_set": {
+      "Z": false,
+      "N": false,
       "H": "*",
       "C": "*"
     },
@@ -1884,12 +1707,7 @@
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "rr"
     ]
@@ -1920,12 +1738,7 @@
     },
     "instruction_size": 1,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "rr"
     ]
@@ -1971,11 +1784,11 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
-      "C": "0"
+      "N": false,
+      "H": false,
+      "C": false
     },
     "operand_types": [
       "r"
@@ -1985,295 +1798,209 @@
     "prefixed": true,
     "opcodes": {
       "36": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
-      "C": "0"
+      "N": false,
+      "H": false,
+      "C": false
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "DAA": {
     "prefixed": false,
     "opcodes": {
       "27": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "-",
-      "H": "0",
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "CPL": {
     "prefixed": false,
     "opcodes": {
       "2F": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "-",
-      "N": "1",
-      "H": "1",
-      "C": "-"
+    "flags_set": {
+      "N": true,
+      "H": true
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "CCF": {
     "prefixed": false,
     "opcodes": {
       "3F": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "-",
-      "N": "0",
-      "H": "0",
+    "flags_set": {
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "SCF": {
     "prefixed": false,
     "opcodes": {
       "37": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "-",
-      "N": "0",
-      "H": "0",
-      "C": "1"
+    "flags_set": {
+      "N": false,
+      "H": false,
+      "C": true
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "NOP": {
     "prefixed": false,
     "opcodes": {
       "00": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "HALT": {
     "prefixed": false,
     "opcodes": {
       "76": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "STOP": {
     "prefixed": false,
     "opcodes": {
       "10": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "DI": {
     "prefixed": false,
     "opcodes": {
       "F3": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "EI": {
     "prefixed": false,
     "opcodes": {
       "FB": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "RLCA": {
     "prefixed": false,
     "opcodes": {
       "07": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "0",
-      "N": "0",
-      "H": "0",
+    "flags_set": {
+      "Z": false,
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "RLA": {
     "prefixed": false,
     "opcodes": {
       "17": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "0",
-      "N": "0",
-      "H": "0",
+    "flags_set": {
+      "Z": false,
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "RRCA": {
     "prefixed": false,
     "opcodes": {
       "0F": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "0",
-      "N": "0",
-      "H": "0",
+    "flags_set": {
+      "Z": false,
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "RRA": {
     "prefixed": false,
     "opcodes": {
       "1F": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "0",
-      "N": "0",
-      "H": "0",
+    "flags_set": {
+      "Z": false,
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "RLC r": {
     "prefixed": true,
@@ -2316,10 +2043,10 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
     "operand_types": [
@@ -2330,22 +2057,18 @@
     "prefixed": true,
     "opcodes": {
       "06": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "RL r": {
     "prefixed": true,
@@ -2388,10 +2111,10 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
     "operand_types": [
@@ -2402,22 +2125,18 @@
     "prefixed": true,
     "opcodes": {
       "16": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "RRC r": {
     "prefixed": true,
@@ -2460,10 +2179,10 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
     "operand_types": [
@@ -2474,22 +2193,18 @@
     "prefixed": true,
     "opcodes": {
       "0E": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "RR r": {
     "prefixed": true,
@@ -2532,10 +2247,10 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
     "operand_types": [
@@ -2546,22 +2261,18 @@
     "prefixed": true,
     "opcodes": {
       "1E": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "SLA r": {
     "prefixed": true,
@@ -2604,10 +2315,10 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
     "operand_types": [
@@ -2618,22 +2329,18 @@
     "prefixed": true,
     "opcodes": {
       "26": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "SRA r": {
     "prefixed": true,
@@ -2676,10 +2383,10 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
     "operand_types": [
@@ -2690,22 +2397,18 @@
     "prefixed": true,
     "opcodes": {
       "2E": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "SRL r": {
     "prefixed": true,
@@ -2748,10 +2451,10 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
     "operand_types": [
@@ -2762,22 +2465,18 @@
     "prefixed": true,
     "opcodes": {
       "3E": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "0",
+      "N": false,
+      "H": false,
       "C": "*"
     },
-    "operand_types": [
-
-    ]
+    "operand_types": []
   },
   "BIT n, r": {
     "prefixed": true,
@@ -2827,11 +2526,10 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "1",
-      "C": "-"
+      "N": false,
+      "H": true
     },
     "operand_types": [
       "n",
@@ -2849,11 +2547,10 @@
     },
     "instruction_size": 2,
     "cycles": 12,
-    "flags_data": {
+    "flags_set": {
       "Z": "*",
-      "N": "0",
-      "H": "1",
-      "C": "-"
+      "N": false,
+      "H": true
     },
     "operand_types": [
       "n"
@@ -2907,12 +2604,7 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "n",
       "r"
@@ -2929,12 +2621,7 @@
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "n"
     ]
@@ -2987,12 +2674,7 @@
     },
     "instruction_size": 2,
     "cycles": 8,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "n",
       "r"
@@ -3009,12 +2691,7 @@
     },
     "instruction_size": 2,
     "cycles": 16,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "n"
     ]
@@ -3030,12 +2707,7 @@
     },
     "instruction_size": 3,
     "cycles": 16,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "nn"
     ]
@@ -3070,12 +2742,7 @@
     },
     "instruction_size": 3,
     "cycles": 16,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "cc",
       "nn"
@@ -3085,22 +2752,13 @@
     "prefixed": false,
     "opcodes": {
       "E9": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 4,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "JR n": {
     "prefixed": false,
@@ -3113,12 +2771,7 @@
     },
     "instruction_size": 2,
     "cycles": 12,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "n"
     ]
@@ -3153,12 +2806,7 @@
     },
     "instruction_size": 2,
     "cycles": 12,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "cc",
       "n"
@@ -3175,12 +2823,7 @@
     },
     "instruction_size": 3,
     "cycles": 24,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "nn"
     ]
@@ -3215,12 +2858,7 @@
     },
     "instruction_size": 3,
     "cycles": 24,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "cc",
       "nn"
@@ -3272,12 +2910,7 @@
     },
     "instruction_size": 1,
     "cycles": 16,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "n"
     ]
@@ -3286,22 +2919,13 @@
     "prefixed": false,
     "opcodes": {
       "C9": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 16,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   },
   "RET cc": {
     "prefixed": false,
@@ -3329,12 +2953,7 @@
     },
     "instruction_size": 1,
     "cycles": 20,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
+    "flags_set": {},
     "operand_types": [
       "cc"
     ]
@@ -3343,21 +2962,12 @@
     "prefixed": false,
     "opcodes": {
       "D9": {
-        "operands": [
-
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 16,
-    "flags_data": {
-      "Z": "-",
-      "N": "-",
-      "H": "-",
-      "C": "-"
-    },
-    "operand_types": [
-
-    ]
+    "flags_set": {},
+    "operand_types": []
   }
 }
