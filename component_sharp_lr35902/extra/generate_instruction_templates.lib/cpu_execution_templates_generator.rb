@@ -75,20 +75,20 @@ class CpuExecutionTemplatesGenerator
     flags_data.each do |flag, state|
       case state
       when "0"
-        @buffer.puts "      self[Flag::#{flag.downcase}] = false;"
+        @buffer.puts "      self.set_flag(Flag::#{flag.downcase}, false);"
       when "1"
-        @buffer.puts "      self[Flag::#{flag.downcase}] = true;"
+        @buffer.puts "      self.set_flag(Flag::#{flag.downcase}, true);"
       when "*"
         if flag == "Z"
           @buffer.puts <<-RUST
       if carry {
-          self[Flag::z] = true;
+          self.set_flag(Flag::z, true);
       }
           RUST
         else
           # Make sure the operation code takes care of it!
           #
-          raise "Missing #{instruction_encoded} #{flag} flag setting!" if operation_code !~ /self\[Flag::#{flag.downcase}\] = /
+          raise "Missing #{instruction_encoded} #{flag} flag setting!" if operation_code !~ /self.set_flag\(Flag::#{flag.downcase},/
         end
       when "-"
         # unaffected; do nothing

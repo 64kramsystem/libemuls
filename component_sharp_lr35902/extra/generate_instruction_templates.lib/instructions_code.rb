@@ -343,7 +343,7 @@ module InstructionsCode
         self[dst_register] = new_value;
 
         if new_value & 0b0000_1111 == 0b000_0000 {
-            self[Flag::h] = true;
+            self.set_flag(Flag::h, true);
         }
       RUST
       testing: ->(register) {
@@ -378,7 +378,7 @@ module InstructionsCode
         self.internal_ram[self[Reg16::HL] as usize] = new_value;
 
         if new_value & 0b0000_1111 == 0b000_0000 {
-            self[Flag::h] = true;
+            self.set_flag(Flag::h, true);
         }
       RUST
       testing: ->() {

@@ -89,31 +89,31 @@ fn assert_cpu_execute(
     );
 
     assert_eq!(
-        cpu[Flag::z],
+        cpu.get_flag(Flag::z),
         zf,
         "Unexpected `zf`: actual={}, expected={}",
-        cpu[Flag::z] as u8,
+        cpu.get_flag(Flag::z) as u8,
         zf as u8
     );
     assert_eq!(
-        cpu[Flag::n],
+        cpu.get_flag(Flag::n),
         nf,
         "Unexpected nf: actual={}, expected={}",
-        cpu[Flag::n] as u8,
+        cpu.get_flag(Flag::n) as u8,
         nf as u8
     );
     assert_eq!(
-        cpu[Flag::h],
+        cpu.get_flag(Flag::h),
         hf,
         "Unexpected `hf`: actual={}, expected={}",
-        cpu[Flag::h] as u8,
+        cpu.get_flag(Flag::h) as u8,
         hf as u8
     );
     assert_eq!(
-        cpu[Flag::c],
+        cpu.get_flag(Flag::c),
         cf,
         "Unexpected `cf`: actual={}, expected={}",
-        cpu[Flag::c] as u8,
+        cpu.get_flag(Flag::c) as u8,
         cf as u8
     );
 
@@ -173,10 +173,10 @@ macro_rules! assert_cpu_execute {
         let current_L = $cpu[Reg8::L];
         let current_SP = $cpu[Reg16::SP];
         let current_PC = $cpu[Reg16::PC];
-        let current_zf = $cpu[Flag::z];
-        let current_nf = $cpu[Flag::n];
-        let current_hf = $cpu[Flag::h];
-        let current_cf = $cpu[Flag::c];
+        let current_zf = $cpu.get_flag(Flag::z);
+        let current_nf = $cpu.get_flag(Flag::n);
+        let current_hf = $cpu.get_flag(Flag::h);
+        let current_cf = $cpu.get_flag(Flag::c);
 
         // Alternatives to this have been evaluated here: https://users.rust-lang.org/t/any-way-to-cleanly-set-a-default-value-for-a-pseudo-named-parameter-in-a-macro/48682/6
         // A simple, interesting, alternative is to pass the variables to an adhoc struct with
@@ -267,10 +267,10 @@ demonstrate! {
             assert_eq!(cpu[Reg16::SP], 0);
             assert_eq!(cpu[Reg16::PC], 0);
 
-            assert_eq!(cpu[Flag::z], false);
-            assert_eq!(cpu[Flag::n], false);
-            assert_eq!(cpu[Flag::h], false);
-            assert_eq!(cpu[Flag::c], false);
+            assert_eq!(cpu.get_flag(Flag::z), false);
+            assert_eq!(cpu.get_flag(Flag::n), false);
+            assert_eq!(cpu.get_flag(Flag::h), false);
+            assert_eq!(cpu.get_flag(Flag::c), false);
         }
 
         context "executes" {

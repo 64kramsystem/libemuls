@@ -75,7 +75,7 @@ class TestTemplatesGenerator
     reverse = {"0" => "1", "1" => "0"}
 
     flags_preset = unconditional_flags.map do |flag, state|
-      "cpu[Flag::#{flag.downcase}] = #{boolean[reverse[state]]};"
+      "cpu.set_flag(Flag::#{flag.downcase}, #{boolean[reverse[state]]});"
     end
 
     flag_expectations = unconditional_flags.map do |flag, state|
