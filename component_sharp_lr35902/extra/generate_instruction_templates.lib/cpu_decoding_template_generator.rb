@@ -98,13 +98,13 @@ class CpuDecodingTemplateGenerator
       when REGISTER_OPERAND_8
         operand_params << "Reg8::#{operand_name}"
       when REGISTER_OPERAND_16
-        operand_params.push("Reg16::#{operand_name}")
+        operand_params << "Reg16::#{operand_name}"
       when IMMEDIATE_OPERAND_8
         operand_params << "immediate"
       when IMMEDIATE_OPERAND_16
         operand_params << "immediate"
       when FLAG_OPERAND
-        operand_params.push("Flag::#{operand_name[-1].downcase}")
+        operand_params << "Flag::#{operand_name[-1].downcase}"
       else
         raise "Unexpected operand type: #{operand_type.type}"
       end
@@ -112,7 +112,9 @@ class CpuDecodingTemplateGenerator
 
     all_execution_params = operand_params.join(", ")
 
-    @buffer.puts "                self.execute_#{instruction_encoded}(#{all_execution_params});"
+    @buffer.puts <<-RUST
+                self.execute_#{instruction_encoded}(#{all_execution_params});
+    RUST
   end
 
   # Closure (cycles and closing brace)
