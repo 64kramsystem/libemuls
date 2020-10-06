@@ -12,7 +12,9 @@ if __FILE__ == $PROGRAM_NAME
   cpu_file = File.expand_path("../src/cpu.rs", __dir__)
   tests_file = File.expand_path("../src/cpu_test.rs", __dir__)
 
-  GitHelpers.restore_files(cpu_file, tests_file)
+  # Currently, it causes more troubles than it's worth.
+  #
+  # GitHelpers.restore_files(cpu_file, tests_file)
 
   only_opcodes = CommandlineDecoder.execute
 
