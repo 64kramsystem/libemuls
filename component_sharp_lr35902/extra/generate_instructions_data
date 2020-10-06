@@ -29,13 +29,19 @@ class InstructionsDataGenerator
     transformed_data = deep_dup_without_proc_entries(instructions_integration_data)
 
     transformed_data.each do |instruction, instruction_data|
+      instruction_integration_data = instructions_integration_data.fetch(instruction)
+
       # WATCH OUT! We rip the opcodes array from the instructions data here, and replace it with a
       # hash.
       #
       opcodes = instruction_data[:opcodes]
       instruction_data[:opcodes] = {}
 
-      transform_data = instructions_integration_data.fetch(instruction)[:transform_data]
+      # We also rip this.
+      #
+      carry_flag_positions = instruction_data.delete(:carry_flag_positions) || {}
+
+      transform_data = instruction_integration_data[:transform_data]
 
       prefixed_json_entry = instruction_data.fetch(:prefixed) ? "cbprefixed" : "unprefixed"
 
@@ -50,7 +56,7 @@ class InstructionsDataGenerator
         bare_opcode = opcode_hex[2..]
         instruction_data[:opcodes][bare_opcode] = {operands: operand_names}
 
-        extra_instruction_data = extract_extra_instruction_data(opcode_data, prefixed_json_entry)
+        extra_instruction_data = extract_extra_instruction_data(opcode_data, prefixed_json_entry, carry_flag_positions)
         extra_instruction_data[:operand_types] = operand_types
 
         extra_instruction_data
@@ -186,7 +192,7 @@ class InstructionsDataGenerator
 
   # Returns {:instruction_size, :cycles, :flags_set}
   #
-  def extract_extra_instruction_data(opcode_data, prefixed_json_entry)
+  def extract_extra_instruction_data(opcode_data, prefixed_json_entry, carry_flag_positions)
     instruction_size = opcode_data.fetch("bytes")
     cycles = opcode_data.fetch("cycles")[0] || raise
 
@@ -197,9 +203,12 @@ class InstructionsDataGenerator
       "Z" => "*", "N" => "*", "H" => "*", "C" => "*",
     }
 
-    flags_set = source_flags_data
-      .transform_values { |state| flag_states_mapping.fetch(state) rescue byebug }
-      .select { |_, value| !value.nil? }
+    flags_set = source_flags_data.each_with_object({}) do |(flag, state), flags_set|
+      new_state = carry_flag_positions[flag] || flag_states_mapping.fetch(state)
+      flags_set[flag] = new_state if !new_state.nil?
+    rescue KeyError
+      debugger
+    end
 
     {
       instruction_size: instruction_size,

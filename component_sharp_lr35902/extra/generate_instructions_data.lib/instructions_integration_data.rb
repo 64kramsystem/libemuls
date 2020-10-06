@@ -183,7 +183,11 @@ module InstructionsIntegrationData
       transform_data: ->(data) do
         data['operands'].shift
         data['operands'].push({"name" => "d8"})
-      end
+      end,
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "LD (nn), SP" => {
       prefixed: false,
@@ -228,18 +232,30 @@ module InstructionsIntegrationData
         0x84,
         0x85,
       ],
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "ADD A, (HL)" => {
       prefixed: false,
       opcodes: [
         0x86,
       ],
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "ADD A, n" => {
       prefixed: false,
       opcodes: [
         0xC6,
       ],
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "ADC A, r" => {
       prefixed: false,
@@ -252,18 +268,30 @@ module InstructionsIntegrationData
         0x8C,
         0x8D,
       ],
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "ADC A, (HL)" => {
       prefixed: false,
       opcodes: [
         0x8E,
       ],
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "ADC A, n" => {
       prefixed: false,
       opcodes: [
         0xCE,
       ],
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "SUB A, r" => {
       prefixed: false,
@@ -284,7 +312,11 @@ module InstructionsIntegrationData
         # The same has been applied to `XOR A, r` and `CP A, r`.
         #
         data['flags']['Z'] = 'Z'
-      end
+      end,
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "SUB A, (HL)" => {
       prefixed: false,
@@ -293,7 +325,11 @@ module InstructionsIntegrationData
       ],
       transform_data: ->(data) do
         data['operands'].unshift({"name" => "A"})
-      end
+      end,
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "SUB A, n" => {
       prefixed: false,
@@ -302,7 +338,11 @@ module InstructionsIntegrationData
       ],
       transform_data: ->(data) do
         data['operands'].unshift({"name" => "A"})
-      end
+      end,
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "SBC A, r" => {
       prefixed: false,
@@ -315,12 +355,20 @@ module InstructionsIntegrationData
         0x9C,
         0x9D,
       ],
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "SBC A, (HL)" => {
       prefixed: false,
       opcodes: [
         0x9E,
       ],
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     # "SBC A, n" => {
     #    prefixed: false,
@@ -441,7 +489,11 @@ module InstructionsIntegrationData
       transform_data: ->(data) do
         data['operands'].unshift({"name" => "A"})
         data['flags']['Z'] = 'Z'
-      end
+      end,
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "CP A, (HL)" => {
       prefixed: false,
@@ -450,7 +502,11 @@ module InstructionsIntegrationData
       ],
       transform_data: ->(data) do
         data['operands'].unshift({"name" => "A"})
-      end
+      end,
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "CP A, n" => {
       prefixed: false,
@@ -459,7 +515,11 @@ module InstructionsIntegrationData
       ],
       transform_data: ->(data) do
         data['operands'].unshift({"name" => "A"})
-      end
+      end,
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "INC r" => {
       prefixed: false,
@@ -472,12 +532,18 @@ module InstructionsIntegrationData
         0x24,
         0x2C,
       ],
+      carry_flag_positions: {
+        "H" => 4
+      }
     },
     "INC (HL)" => {
       prefixed: false,
       opcodes: [
         0x34,
       ],
+      carry_flag_positions: {
+        "H" => 4
+      }
     },
     "DEC r" => {
       prefixed: false,
@@ -490,12 +556,18 @@ module InstructionsIntegrationData
         0x25,
         0x2D,
       ],
+      carry_flag_positions: {
+        "H" => 4,
+      }
     },
     "DEC (HL)" => {
       prefixed: false,
       opcodes: [
         0x35,
       ],
+      carry_flag_positions: {
+        "H" => 4
+      }
     },
     "ADD HL, rr" => {
       prefixed: false,
@@ -505,12 +577,20 @@ module InstructionsIntegrationData
         0x29,
         0x39,
       ],
+      carry_flag_positions: {
+        "H" => 12,
+        "C" => 16
+      }
     },
     "ADD SP, n" => {
       prefixed: false,
       opcodes: [
         0xE8,
       ],
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
     },
     "INC rr" => {
       prefixed: false,
@@ -606,7 +686,7 @@ module InstructionsIntegrationData
       prefixed: false,
       opcodes: [
         0x07,
-      ],
+      ]
     },
     "RLA" => {
       prefixed: false,

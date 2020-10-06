@@ -705,8 +705,8 @@
     "flags_set": {
       "Z": false,
       "N": false,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "n"
@@ -846,8 +846,8 @@
     "flags_set": {
       "Z": "*",
       "N": false,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "r"
@@ -865,8 +865,8 @@
     "flags_set": {
       "Z": "*",
       "N": false,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": []
   },
@@ -884,8 +884,8 @@
     "flags_set": {
       "Z": "*",
       "N": false,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "n"
@@ -935,8 +935,8 @@
     "flags_set": {
       "Z": "*",
       "N": false,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "r"
@@ -954,8 +954,8 @@
     "flags_set": {
       "Z": "*",
       "N": false,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": []
   },
@@ -973,8 +973,8 @@
     "flags_set": {
       "Z": "*",
       "N": false,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "n"
@@ -1024,8 +1024,8 @@
     "flags_set": {
       "Z": "*",
       "N": true,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "r"
@@ -1043,8 +1043,8 @@
     "flags_set": {
       "Z": "*",
       "N": true,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": []
   },
@@ -1062,8 +1062,8 @@
     "flags_set": {
       "Z": "*",
       "N": true,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "n"
@@ -1113,8 +1113,8 @@
     "flags_set": {
       "Z": "*",
       "N": true,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "r"
@@ -1132,8 +1132,8 @@
     "flags_set": {
       "Z": "*",
       "N": true,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": []
   },
@@ -1448,8 +1448,8 @@
     "flags_set": {
       "Z": "*",
       "N": true,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "r"
@@ -1467,8 +1467,8 @@
     "flags_set": {
       "Z": "*",
       "N": true,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": []
   },
@@ -1486,8 +1486,8 @@
     "flags_set": {
       "Z": "*",
       "N": true,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "n"
@@ -1537,7 +1537,7 @@
     "flags_set": {
       "Z": "*",
       "N": false,
-      "H": "*"
+      "H": 4
     },
     "operand_types": [
       "r"
@@ -1555,7 +1555,7 @@
     "flags_set": {
       "Z": "*",
       "N": false,
-      "H": "*"
+      "H": 4
     },
     "operand_types": []
   },
@@ -1603,7 +1603,7 @@
     "flags_set": {
       "Z": "*",
       "N": true,
-      "H": "*"
+      "H": 4
     },
     "operand_types": [
       "r"
@@ -1621,7 +1621,7 @@
     "flags_set": {
       "Z": "*",
       "N": true,
-      "H": "*"
+      "H": 4
     },
     "operand_types": []
   },
@@ -1653,8 +1653,8 @@
     "cycles": 8,
     "flags_set": {
       "N": false,
-      "H": "*",
-      "C": "*"
+      "H": 12,
+      "C": 16
     },
     "operand_types": [
       "rr"
@@ -1674,8 +1674,8 @@
     "flags_set": {
       "Z": false,
       "N": false,
-      "H": "*",
-      "C": "*"
+      "H": 4,
+      "C": 8
     },
     "operand_types": [
       "n"
