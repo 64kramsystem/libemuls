@@ -35,7 +35,7 @@ class CpuExecutionTemplatesGenerator
       when IMMEDIATE_OPERAND_8
         @buffer.print ", immediate: &u8"
       when IMMEDIATE_OPERAND_16
-        @buffer.print ", immediate_high: &u8, immediate_low: &u8"
+        @buffer.print ", immediate: &u16"
       when FLAG_OPERAND
         @buffer.print ", condition_flag: Flag"
       else

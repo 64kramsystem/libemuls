@@ -101,8 +101,7 @@ module InstructionsCode
     },
     "LD A, (nn)" => {
       operation_code: <<~RUST,
-        let address = u16::from_le_bytes([*immediate_low, *immediate_high]) as usize;
-        self[Reg8::A] = self.internal_ram[address];
+        self[Reg8::A] = self.internal_ram[*immediate as usize];
       RUST
       testing: ->(_) {
         {
@@ -116,8 +115,7 @@ module InstructionsCode
     },
     "LD (nn), A" => {
       operation_code: <<~RUST,
-        let address = u16::from_le_bytes([*immediate_low, *immediate_high]) as usize;
-        self.internal_ram[address] = self[Reg8::A];
+        self.internal_ram[*immediate as usize] = self[Reg8::A];
       RUST
       testing: ->(_) {
         {
@@ -287,7 +285,7 @@ module InstructionsCode
     },
     "LD rr, nn" => {
       operation_code: <<~RUST,
-        self[dst_register] = ((*immediate_high as u16) << 8) + *immediate_low as u16;
+        self[dst_register] = *immediate;
       RUST
       testing: ->(register, _) {
         {
@@ -319,9 +317,8 @@ module InstructionsCode
     },
     "LD (nn), SP" => {
       operation_code: <<~RUST,
-        let address = ((*immediate_high as usize) << 8) + *immediate_low as usize;
-        self.internal_ram[address] = self[Reg16::SP] as u8;
-        self.internal_ram[address + 1] = (self[Reg16::SP] >> 8) as u8;
+        self.internal_ram[*immediate as usize] = self[Reg16::SP] as u8;
+        self.internal_ram[*immediate as usize + 1] = (self[Reg16::SP] >> 8) as u8;
       RUST
       testing: ->(_) {
         {

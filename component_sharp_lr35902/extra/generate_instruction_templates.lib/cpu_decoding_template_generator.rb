@@ -39,6 +39,7 @@ class CpuDecodingTemplateGenerator
   #
   def add_code!(opcode_hex, instruction_encoded, opcode_data, instruction_data)
     generate_matcher_line!(opcode_hex, instruction_data)
+    generate_variables_assignment!(instruction_data)
     generate_execution_method_call!(opcode_hex, instruction_encoded, instruction_data)
     generate_closure!(instruction_data)
   end
@@ -72,6 +73,21 @@ class CpuDecodingTemplateGenerator
     @buffer.puts "] => {"
   end
 
+  def generate_variables_assignment!(instruction_data)
+    operand_types = instruction_data.fetch("operand_types")
+
+    operand_types.each do |operand_type|
+      case operand_type
+      when IMMEDIATE_OPERAND_16
+        # The reference is unnecessary, but we pass it for consistency with the 8-bit immediates.
+        #
+        @buffer.puts <<-RUST
+                let immediate = &u16::from_le_bytes([*immediate_low, *immediate_high]);
+        RUST
+      end
+    end
+  end
+
   def generate_execution_method_call!(opcode_hex, instruction_encoded, instruction_data)
     operand_types = instruction_data.fetch("operand_types")
     opcode_data = instruction_data.fetch("opcodes").fetch(opcode_hex)
@@ -86,7 +102,7 @@ class CpuDecodingTemplateGenerator
       when IMMEDIATE_OPERAND_8
         operand_params << "immediate"
       when IMMEDIATE_OPERAND_16
-        operand_params.push("immediate_high", "immediate_low")
+        operand_params << "immediate"
       when FLAG_OPERAND
         operand_params.push("Flag::#{operand_name[-1].downcase}")
       else
