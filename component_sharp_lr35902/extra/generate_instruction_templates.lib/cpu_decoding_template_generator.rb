@@ -9,11 +9,34 @@ class CpuDecodingTemplateGenerator
     @buffer = StringIO.new
   end
 
-  # While the instructions could be decoded algorithmically up to a certain extent, it's not worth
-  # the complexity. For example, `PUSH nn` and `INC nn` use different bitmasks for the registers
-  # (the 4th argument shares the same bitmask (base + 11), but point to different registers in the
-  # two cases).
-
+  # The instructions could be decoded algorithmically; the register formula is either `high_nibble + 1`
+  # or `(high_nibble + 1) & 3`). In this case, from a metadata perspective, we'd:
+  #
+  # - split up instructions involving multiple registers, e.g. `LD r1, r2` becomes `LD A, r`, `LD B, r`
+  #   and so on;
+  # - encode the register indexing in the operand type (e.g. `r_m3` for registers to mask);
+  # - drop the `operands` data.
+  #
+  # From the generator/cpu perspective, this introduces machine-specific code, however, like the carry
+  # computations, it can be abstracted by defining and calling `Cpu` associated methods.
+  #
+  # The advantages are:
+  #
+  # - the "operands" data is not needed anymore in the instructions metadata;
+  # - less entries in the decoder switch/case.
+  #
+  # However:
+  #
+  # - there will be considerably more entries (at least, for some intructions) in the instructions
+  #   metadata;
+  # - as a consequence, it won't be clear anymore what the reference should be; if the existing one
+  #   should stay, a (temporary) intermediate one should be created, and the transformation code added;
+  # - the generation won't know which register an opcode refers to, which is needed to generate
+  #   descriptions (UTs), so it will require specific code.
+  #
+  # It needs to be verified if two-register instructions have still a regular register encoding; if
+  # so, denormalization isn't needed.
+  #
   def add_code!(opcode_hex, instruction_encoded, opcode_data, instruction_data)
     generate_matcher_line!(opcode_hex, instruction_data)
     generate_execution_method_call!(opcode_hex, instruction_encoded, instruction_data)
