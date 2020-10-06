@@ -27,63 +27,63 @@ fn assert_cpu_execute(
     assert_eq!(
         cpu[Reg8::A],
         A,
-        "Unexpected `A`: actual={}, expected={}",
+        "Unexpected `A`: actual=0x{:02X}, expected=0x{:02X}",
         cpu[Reg8::A],
         A
     );
     assert_eq!(
         cpu[Reg8::B],
         B,
-        "Unexpected `B`: actual={}, expected={}",
+        "Unexpected `B`: actual=0x{:02X}, expected=0x{:02X}",
         cpu[Reg8::B],
         B
     );
     assert_eq!(
         cpu[Reg8::C],
         C,
-        "Unexpected `C`: actual={}, expected={}",
+        "Unexpected `C`: actual=0x{:02X}, expected=0x{:02X}",
         cpu[Reg8::C],
         C
     );
     assert_eq!(
         cpu[Reg8::D],
         D,
-        "Unexpected `D`: actual={}, expected={}",
+        "Unexpected `D`: actual=0x{:02X}, expected=0x{:02X}",
         cpu[Reg8::D],
         D
     );
     assert_eq!(
         cpu[Reg8::E],
         E,
-        "Unexpected `E`: actual={}, expected={}",
+        "Unexpected `E`: actual=0x{:02X}, expected=0x{:02X}",
         cpu[Reg8::E],
         E
     );
     assert_eq!(
         cpu[Reg8::H],
         H,
-        "Unexpected `H`: actual={}, expected={}",
+        "Unexpected `H`: actual=0x{:02X}, expected=0x{:02X}",
         cpu[Reg8::H],
         H
     );
     assert_eq!(
         cpu[Reg8::L],
         L,
-        "Unexpected `L`: actual={}, expected={}",
+        "Unexpected `L`: actual=0x{:02X}, expected=0x{:02X}",
         cpu[Reg8::L],
         L
     );
     assert_eq!(
         cpu[Reg16::SP],
         SP,
-        "Unexpected `SP`: actual={}, expected={}",
+        "Unexpected `SP`: actual=0x{:04X}, expected=0x{:04X}",
         cpu[Reg16::SP],
         SP
     );
     assert_eq!(
         cpu[Reg16::PC],
         PC,
-        "Unexpected `PC`: actual={}, expected={}",
+        "Unexpected `PC`: actual=0x{:04X}, expected=0x{:04X}",
         cpu[Reg16::PC],
         PC
     );
@@ -125,7 +125,7 @@ fn assert_cpu_execute(
 
             assert_eq!(
                 actual_value, expected_value,
-                "Unexpected mem[{}]: actual={}, expected={}",
+                "Unexpected mem[0x{:04X}]: actual=0x{:02X}, expected=0x{:02X}",
                 address, actual_value, expected_value,
             );
         }
