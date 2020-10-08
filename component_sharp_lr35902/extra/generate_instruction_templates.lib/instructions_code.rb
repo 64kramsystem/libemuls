@@ -438,6 +438,43 @@ module InstructionsCode
         }
       }
     },
+    "POP rr" => {
+      operation_code: <<~RUST,
+        let source_bytes = self.internal_ram[self[Reg16::SP] as usize..self[Reg16::SP] as usize + 2].try_into().unwrap();
+        self[dst_register] = u16::from_le_bytes(source_bytes);
+
+        let (result, _) = self[Reg16::SP].overflowing_add(2);
+        self[Reg16::SP] = result;
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCAFE;
+
+              let address = cpu[Reg16::SP] as usize;
+              cpu.internal_ram[address..address + 2].copy_from_slice(&[0xEF, 0xBE]);
+            RUST
+            expectations: <<~RUST
+              #{register} => 0xBEEF,
+              SP => 0xCB00,
+            RUST
+          },
+          "#{BASE}: wraparound" => {
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xFFFE;
+
+              let address = cpu[Reg16::SP] as usize;
+              cpu.internal_ram[address..address + 2].copy_from_slice(&[0xEF, 0xBE]);
+            RUST
+            expectations: <<~RUST
+              #{register} => 0xBEEF,
+              SP => 0x0000,
+            RUST
+          },
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];

@@ -2,6 +2,7 @@
 
 use crate::utils;
 use rand::RngCore;
+use std::convert::TryInto;
 use std::ops::{Index, IndexMut};
 
 #[derive(Copy, Clone)]
