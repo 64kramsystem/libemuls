@@ -406,6 +406,38 @@ module InstructionsCode
         }
       }
     },
+    "PUSH rr" => {
+      operation_code: <<~RUST,
+        let (new_sp, _) = self[Reg16::SP].overflowing_sub(2);
+        self[Reg16::SP] = new_sp;
+
+        let pushed_bytes = self[dst_register].to_le_bytes();
+        self.internal_ram[new_sp as usize..new_sp as usize + 2].copy_from_slice(&pushed_bytes);
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg16::#{register}] = 0xBEEF;
+              cpu[Reg16::SP] = 0xCAFE;
+            RUST
+            expectations: <<~RUST
+              SP => 0xCAFC,
+              mem[0xCAFC] => [0xEF, 0xBE],
+            RUST
+          },
+          "#{BASE}: wraparound" => {
+            presets: <<~RUST,
+              cpu[Reg16::#{register}] = 0xBEEF;
+            RUST
+            expectations: <<~RUST
+              SP => 0xFFFE,
+              mem[0xFFFE] => [0xEF, 0xBE],
+            RUST
+          },
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];
