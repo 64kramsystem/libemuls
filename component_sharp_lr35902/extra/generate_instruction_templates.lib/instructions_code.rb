@@ -475,6 +475,61 @@ module InstructionsCode
         }
       }
     },
+    "ADD A, r" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A];
+        let operand2 = self[dst_register];
+
+        let (result, carry) = operand1.overflowing_add(operand2);
+        self[Reg8::A] = result;
+
+        self.set_flag(Flag::c, carry);
+      RUST
+      # In some UTs, the two registers are set to the same value in order to handle `ADD A, A`.
+      #
+      testing: ->(register) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x21;
+              cpu[Reg8::#{register}] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x42,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0;
+            RUST
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+            RUST
+          },
+          'H' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x18;
+              cpu[Reg8::#{register}] = 0x18;
+            RUST
+            expectations: <<~RUST
+              A => 0x30,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x90;
+              cpu[Reg8::#{register}] = 0x90;
+            RUST
+            expectations: <<~RUST
+              A => 0x20,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];
