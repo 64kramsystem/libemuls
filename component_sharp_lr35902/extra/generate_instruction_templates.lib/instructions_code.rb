@@ -780,6 +780,70 @@ module InstructionsCode
         }
       }
     },
+    # See `ADC A, r` for reference notes.
+    #
+    "ADC A, n" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A] as u16;
+        let operand2 = *immediate as u16 + self.get_flag(Flag::c) as u16;
+
+        let (result, _) = operand1.overflowing_add(operand2);
+        self[Reg8::A] = result as u8;
+
+        let carry_set = (result & 0b1_0000_0000) != 0;
+        self.set_flag(Flag::c, carry_set);
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            extra_instruction_bytes: [0x21],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x42,
+            RUST
+          },
+          "#{BASE}: carry set" => {
+            extra_instruction_bytes: [0xFF],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0xFF;
+              cpu.set_flag(Flag::c, true);
+            RUST
+            expectations: <<~RUST
+              A => 0xFF,
+            RUST
+          },
+          'Z' => {
+            extra_instruction_bytes: [0x0],
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+            RUST
+          },
+          'H' => {
+            extra_instruction_bytes: [0x0F],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x22;
+            RUST
+            expectations: <<~RUST
+              A => 0x31,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            extra_instruction_bytes: [0xF0],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+            RUST
+            expectations: <<~RUST
+              A => 0x10,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];
