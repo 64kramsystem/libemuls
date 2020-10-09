@@ -638,6 +638,77 @@ module InstructionsCode
         }
       }
     },
+    # We can't rely on the standard ways of computing the carry (overflowing_add()/API), because the
+    # carry addition may have already set it.
+    #
+    "ADC A, r" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A] as u16;
+        let operand2 = self[dst_register] as u16 + self.get_flag(Flag::c) as u16;
+
+        let (result, _) = operand1.overflowing_add(operand2);
+        self[Reg8::A] = result as u8;
+
+        let carry_set = (result & 0b1_0000_0000) != 0;
+        self.set_flag(Flag::c, carry_set);
+      RUST
+      # In some UTs, the two registers are set to the same value in order to handle `ADD A, A`.
+      #
+      testing: ->(register) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x21;
+              cpu[Reg8::#{register}] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x42,
+            RUST
+          },
+          # Using 0xFF also makes sure that the carry added is not accidentally discarded.
+          #
+          "#{BASE}: carry set" => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0xFF;
+              cpu[Reg8::#{register}] = 0xFF;
+              cpu.set_flag(Flag::c, true);
+            RUST
+            expectations: <<~RUST
+              A => 0xFF,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0;
+            RUST
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+            RUST
+          },
+          'H' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x18;
+              cpu[Reg8::#{register}] = 0x18;
+            RUST
+            expectations: <<~RUST
+              A => 0x30,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x90;
+              cpu[Reg8::#{register}] = 0x90;
+            RUST
+            expectations: <<~RUST
+              A => 0x20,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];
