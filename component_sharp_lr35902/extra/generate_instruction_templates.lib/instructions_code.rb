@@ -844,6 +844,83 @@ module InstructionsCode
         }
       }
     },
+    "SUB A, r" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A];
+        let operand2 = self[dst_register];
+
+        let (result, carry) = operand1.overflowing_sub(operand2);
+        self[Reg8::A] = result;
+
+        self.set_flag(Flag::c, carry);
+        self.set_flag(Flag::n, true);
+      RUST
+      testing: ->(register) {
+        # In the `SUB A, A` case, in essence, the only test case is the `Z` one.
+        #
+        if register == "A"
+          return {
+            BASE => nil,
+            'Z' => {
+              presets: <<~RUST,
+                cpu[Reg8::#{register}] = 0x21;
+              RUST
+              expectations: <<~RUST
+                A => 0x00,
+                zf => true,
+                nf => true,
+              RUST
+            },
+            'H' => nil,
+            'C' => nil,
+          }
+        end
+
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x22;
+              cpu[Reg8::#{register}] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x01,
+              RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0x0;
+            RUST
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+              nf => true,
+              RUST
+          },
+          'H' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+              cpu[Reg8::#{register}] = 0x01;
+            RUST
+            expectations: <<~RUST
+              A => 0x1F,
+              nf => true,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x70;
+              cpu[Reg8::#{register}] = 0x90;
+            RUST
+            expectations: <<~RUST
+              A => 0xE0,
+              nf => true,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];
