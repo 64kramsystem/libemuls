@@ -587,6 +587,57 @@ module InstructionsCode
         }
       }
     },
+    "ADD A, n" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A];
+        let operand2 = *immediate;
+
+        let (result, carry) = operand1.overflowing_add(operand2);
+        self[Reg8::A] = result;
+
+        self.set_flag(Flag::c, carry);
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            extra_instruction_bytes: [0x21],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x42,
+            RUST
+          },
+          'Z' => {
+            extra_instruction_bytes: [0x0],
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+            RUST
+          },
+          'H' => {
+            extra_instruction_bytes: [0x0F],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x22;
+            RUST
+            expectations: <<~RUST
+              A => 0x31,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            extra_instruction_bytes: [0xF0],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+            RUST
+            expectations: <<~RUST
+              A => 0x10,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];
