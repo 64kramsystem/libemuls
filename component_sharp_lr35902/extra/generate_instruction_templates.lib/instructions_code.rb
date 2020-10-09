@@ -709,6 +709,77 @@ module InstructionsCode
         }
       }
     },
+    # See `ADC A, r` for reference notes.
+    #
+    "ADC A, (HL)" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A] as u16;
+        let operand2 = self.internal_ram[self[Reg16::HL] as usize] as u16 + self.get_flag(Flag::c) as u16;
+
+        let (result, _) = operand1.overflowing_add(operand2);
+        self[Reg8::A] = result as u8;
+
+        let carry_set = (result & 0b1_0000_0000) != 0;
+        self.set_flag(Flag::c, carry_set);
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x21;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x42,
+            RUST
+          },
+          "#{BASE}: carry set" => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0xFF;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0xFF;
+              cpu.set_flag(Flag::c, true);
+            RUST
+            expectations: <<~RUST
+              A => 0xFF,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x00;
+            RUST
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+            RUST
+          },
+          'H' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x22;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x0F;
+            RUST
+            expectations: <<~RUST
+              A => 0x31,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0xF0;
+            RUST
+            expectations: <<~RUST
+              A => 0x10,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];
