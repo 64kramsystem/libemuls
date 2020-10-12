@@ -2,120 +2,66 @@
 
 use crate::cpu::{Cpu, Flag, Reg16, Reg8};
 use demonstrate::demonstrate;
+use strum::IntoEnumIterator;
 
 fn assert_cpu_execute(
     cpu: &mut Cpu,
     instruction_bytes: &[u8],
-    A: u8,
-    B: u8,
-    C: u8,
-    D: u8,
-    E: u8,
-    H: u8,
-    L: u8,
-    SP: u16,
-    PC: u16,
-    zf: bool,
-    nf: bool,
-    hf: bool,
-    cf: bool,
+    A: Option<u8>,
+    F: Option<u8>,
+    B: Option<u8>,
+    C: Option<u8>,
+    D: Option<u8>,
+    E: Option<u8>,
+    H: Option<u8>,
+    L: Option<u8>,
+    AF: Option<u16>,
+    BC: Option<u16>,
+    DE: Option<u16>,
+    HL: Option<u16>,
+    SP: Option<u16>,
+    PC: Option<u16>,
+    zf: Option<bool>,
+    nf: Option<bool>,
+    hf: Option<bool>,
+    cf: Option<bool>,
     mem: Option<(u16, &[u8])>,
     cycles_spent: u8,
 ) {
     let actual_cycles_spent = cpu.execute(&instruction_bytes);
 
-    assert_eq!(
-        cpu[Reg8::A],
-        A,
-        "Unexpected `A`: actual=0x{:02X}, expected=0x{:02X}",
-        cpu[Reg8::A],
-        A
-    );
-    assert_eq!(
-        cpu[Reg8::B],
-        B,
-        "Unexpected `B`: actual=0x{:02X}, expected=0x{:02X}",
-        cpu[Reg8::B],
-        B
-    );
-    assert_eq!(
-        cpu[Reg8::C],
-        C,
-        "Unexpected `C`: actual=0x{:02X}, expected=0x{:02X}",
-        cpu[Reg8::C],
-        C
-    );
-    assert_eq!(
-        cpu[Reg8::D],
-        D,
-        "Unexpected `D`: actual=0x{:02X}, expected=0x{:02X}",
-        cpu[Reg8::D],
-        D
-    );
-    assert_eq!(
-        cpu[Reg8::E],
-        E,
-        "Unexpected `E`: actual=0x{:02X}, expected=0x{:02X}",
-        cpu[Reg8::E],
-        E
-    );
-    assert_eq!(
-        cpu[Reg8::H],
-        H,
-        "Unexpected `H`: actual=0x{:02X}, expected=0x{:02X}",
-        cpu[Reg8::H],
-        H
-    );
-    assert_eq!(
-        cpu[Reg8::L],
-        L,
-        "Unexpected `L`: actual=0x{:02X}, expected=0x{:02X}",
-        cpu[Reg8::L],
-        L
-    );
-    assert_eq!(
-        cpu[Reg16::SP],
-        SP,
-        "Unexpected `SP`: actual=0x{:04X}, expected=0x{:04X}",
-        cpu[Reg16::SP],
-        SP
-    );
-    assert_eq!(
-        cpu[Reg16::PC],
-        PC,
-        "Unexpected `PC`: actual=0x{:04X}, expected=0x{:04X}",
-        cpu[Reg16::PC],
-        PC
-    );
+    for (register, value) in Reg8::iter().zip([A, F, B, C, D, E, H, L].iter()) {
+        if let Some(value) = value {
+            assert_eq!(
+                cpu[register], *value,
+                "Unexpected `{:?}`: actual=0x{:02X}, expected=0x{:02X}",
+                register, cpu[register], *value
+            );
+        }
+    }
 
-    assert_eq!(
-        cpu.get_flag(Flag::z),
-        zf,
-        "Unexpected `zf`: actual={}, expected={}",
-        cpu.get_flag(Flag::z) as u8,
-        zf as u8
-    );
-    assert_eq!(
-        cpu.get_flag(Flag::n),
-        nf,
-        "Unexpected nf: actual={}, expected={}",
-        cpu.get_flag(Flag::n) as u8,
-        nf as u8
-    );
-    assert_eq!(
-        cpu.get_flag(Flag::h),
-        hf,
-        "Unexpected `hf`: actual={}, expected={}",
-        cpu.get_flag(Flag::h) as u8,
-        hf as u8
-    );
-    assert_eq!(
-        cpu.get_flag(Flag::c),
-        cf,
-        "Unexpected `cf`: actual={}, expected={}",
-        cpu.get_flag(Flag::c) as u8,
-        cf as u8
-    );
+    for (register, value) in Reg16::iter().zip([AF, BC, DE, HL, SP, PC].iter()) {
+        if let Some(value) = value {
+            assert_eq!(
+                cpu[register], *value,
+                "Unexpected `{:?}`: actual=0x{:02X}, expected=0x{:02X}",
+                register, cpu[register], *value
+            );
+        }
+    }
+
+    for (flag, value) in Flag::iter().zip([zf, nf, hf, cf].iter()) {
+        if let Some(value) = value {
+            assert_eq!(
+                cpu.get_flag(flag),
+                *value,
+                "Unexpected `{:?}`: actual={}, expected={}",
+                flag,
+                cpu.get_flag(flag) as u8,
+                *value as u8
+            );
+        }
+    }
 
     if let Some((start_address, expected_values)) = mem {
         for i in 0..(expected_values.len()) {
@@ -141,17 +87,23 @@ fn assert_cpu_execute(
 // While writing the macro, it became evident that making the parameters optional would make the UT
 // expectations very neat.
 //
+// Up to a certain point, the macro implicitly tested the register not specified, however, after 16-bit
+// registers were added, and in particular AF, the logic became too tangled, so the macro now tests
+// only what specified.
+//
 macro_rules! assert_cpu_execute {
     (
         $cpu:ident,
         $instruction_bytes:ident,
         $( A => $expected_A:literal , )?
+        $( F => $expected_F:literal , )?
         $( B => $expected_B:literal , )?
         $( C => $expected_C:literal , )?
         $( D => $expected_D:literal , )?
         $( E => $expected_E:literal , )?
         $( H => $expected_H:literal , )?
         $( L => $expected_L:literal , )?
+        $( AF => $expected_AF:literal , )?
         $( BC => $expected_BC:literal , )?
         $( DE => $expected_DE:literal , )?
         $( HL => $expected_HL:literal , )?
@@ -164,75 +116,45 @@ macro_rules! assert_cpu_execute {
         $( mem[$mem_address:literal] => [$( $mem_value:expr ),+] , )?
         cycles: $cycles:literal
     ) => {
-        let current_A = $cpu[Reg8::A];
-        let current_B = $cpu[Reg8::B];
-        let current_C = $cpu[Reg8::C];
-        let current_D = $cpu[Reg8::D];
-        let current_E = $cpu[Reg8::E];
-        let current_H = $cpu[Reg8::H];
-        let current_L = $cpu[Reg8::L];
-        let current_SP = $cpu[Reg16::SP];
-        let current_PC = $cpu[Reg16::PC];
-        let current_zf = $cpu.get_flag(Flag::z);
-        let current_nf = $cpu.get_flag(Flag::n);
-        let current_hf = $cpu.get_flag(Flag::h);
-        let current_cf = $cpu.get_flag(Flag::c);
-
-        // Alternatives to this have been evaluated here: https://users.rust-lang.org/t/any-way-to-cleanly-set-a-default-value-for-a-pseudo-named-parameter-in-a-macro/48682/6
-        // A simple, interesting, alternative is to pass the variables to an adhoc struct with
-        // default(), however, it's not a radical improvement.
-        //
-        let A = current_A $( - current_A + $expected_A )?;
+        // Middle ground between a giant assignment, and a platoon of single ones.
 
         #[allow(unused_mut, unused_assignments)]
-        let mut B = current_B $( - current_B + $expected_B )?;
+        let (mut A, mut F, mut B, mut C, mut D, mut E, mut H, mut L) = (None, None, None, None, None, None, None, None);
         #[allow(unused_mut, unused_assignments)]
-        let mut C = current_C $( - current_C + $expected_C )?;
-        $(
-        B = ($expected_BC >> 8) as u8;
-        C = ($expected_BC & 0b1111_1111) as u8;
-        )?
-
+        let (mut AF, mut BC, mut DE, mut HL, mut SP, mut PC) = (None, None, None, None, None, None);
         #[allow(unused_mut, unused_assignments)]
-        let mut D = current_D $( - current_D + $expected_D )?;
+        let (mut zf, mut nf, mut hf, mut cf) = (None, None, None, None);
         #[allow(unused_mut, unused_assignments)]
-        let mut E = current_E $( - current_E + $expected_E )?;
+        let mut mem = None::<(u16, &[u8])>;
 
-        $(
-        D = ($expected_DE >> 8) as u8;
-        E = ($expected_DE & 0b1111_1111) as u8;
-        )?
-
-        #[allow(unused_mut, unused_assignments)]
-        let mut H = current_H $( - current_H + $expected_H )?;
-        #[allow(unused_mut, unused_assignments)]
-        let mut L = current_L $( - current_L + $expected_L )?;
-
-        $(
-        H = ($expected_HL >> 8) as u8;
-        L = ($expected_HL & 0b1111_1111) as u8;
-        )?
-
-        let SP = current_SP $( - current_SP + $expected_SP )?;
-        let PC = current_PC $( - current_PC + $expected_PC )?;
-        let zf = current_zf $( ^ current_zf | $expected_zf )?;
-        let nf = current_nf $( ^ current_nf | $expected_nf )?;
-        let hf = current_hf $( ^ current_hf | $expected_hf )?;
-        let cf = current_cf $( ^ current_cf | $expected_cf )?;
-
-        // The numerical workaround doesn't work here, unless we use some array silliness.
-        //
-        #[allow(unused_variables)]
-        let mem = None::<(u16, &[u8])>;
+        $( A = Some($expected_A); )?
+        $( F = Some($expected_F); )?
+        $( B = Some($expected_B); )?
+        $( C = Some($expected_C); )?
+        $( D = Some($expected_D); )?
+        $( E = Some($expected_E); )?
+        $( H = Some($expected_H); )?
+        $( L = Some($expected_L); )?
+        $( AF = Some($expected_AF); )?
+        $( BC = Some($expected_BC); )?
+        $( DE = Some($expected_DE); )?
+        $( HL = Some($expected_HL); )?
+        $( SP = Some($expected_SP); )?
+        $( PC = Some($expected_PC); )?
+        $( zf = Some($expected_zf); )?
+        $( nf = Some($expected_nf); )?
+        $( hf = Some($expected_hf); )?
+        $( cf = Some($expected_cf); )?
         $(
         let expected_mem_values = &[$( $mem_value ),*][..];
-        let mem = Some(($mem_address, expected_mem_values));
+        mem = Some(($mem_address, expected_mem_values));
         )?
 
         assert_cpu_execute(
             &mut $cpu,
             &$instruction_bytes,
-            A, B, C, D, E, H, L, SP, PC,
+            A, F, B, C, D, E, H, L,
+            AF, BC, DE, HL, SP, PC,
             zf, nf, hf, cf,
             mem,
             $cycles,

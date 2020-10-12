@@ -8,3 +8,5 @@ version = "0.1.0"
 
 demonstrate = "0.4.3"
 rand = "0.7.3"
+strum = "0.19.5"
+strum_macros = "0.19.4"

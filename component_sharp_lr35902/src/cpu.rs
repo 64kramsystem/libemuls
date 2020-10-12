@@ -4,6 +4,7 @@ use crate::utils;
 use rand::RngCore;
 use std::convert::TryInto;
 use std::ops::{Index, IndexMut};
+use strum_macros::EnumIter;
 
 #[derive(Copy, Clone)]
 pub struct Registers8Pair {
@@ -23,7 +24,7 @@ pub union Register16 {
 // The Flag enum doesn't have the clashing problem, and it's short enough not to require any
 // attention.
 //
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, EnumIter)]
 pub(crate) enum Reg8 {
     A,
     F,
@@ -38,7 +39,7 @@ pub(crate) enum Reg8 {
 // AF is not included, as keeping the flags stored as register is not convenient; the only cases where
 // they're treated as such is `PUSH/POP AF`.
 //
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, EnumIter)]
 pub(crate) enum Reg16 {
     AF,
     BC,
@@ -50,7 +51,7 @@ pub(crate) enum Reg16 {
 
 // The `f` suffix is not required in this context, since there is no ambiguity like in the Cpu struct.
 //
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Flag {
     z,
     n,
