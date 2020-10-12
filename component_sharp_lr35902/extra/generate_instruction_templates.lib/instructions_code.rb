@@ -475,6 +475,45 @@ module InstructionsCode
         }
       }
     },
+    "POP AF" => {
+      # A bit ugly - we need to make the generator think that we're actually setting the flags. Since
+      # this is the only exception, is not worth adding extra functionality to handle this case.
+      #
+      operation_code: <<~RUST,
+        let source_bytes = self.internal_ram[self[Reg16::SP] as usize..self[Reg16::SP] as usize + 2].try_into().unwrap();
+        self[Reg16::AF] = u16::from_le_bytes(source_bytes) & 0b1111_1111_1111_0000;
+
+        let (result, _) = self[Reg16::SP].overflowing_add(2);
+        self[Reg16::SP] = result;
+
+        // self.set_flag(Flag::h, phony);
+        // self.set_flag(Flag::z, phony);
+        // self.set_flag(Flag::c, phony);
+        // self.set_flag(Flag::n, phony);
+      RUST
+      testing: ->() {
+        {
+          # This tests all the flags, so per-flag tests are not meaningful.
+          #
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCAFE;
+
+              let address = cpu[Reg16::SP] as usize;
+              cpu.internal_ram[address..address + 2].copy_from_slice(&[0xFF, 0xBE]);
+            RUST
+            expectations: <<~RUST
+              AF => 0xBEF0,
+              SP => 0xCB00,
+            RUST
+          },
+          "H" => nil,
+          "Z" => nil,
+          "C" => nil,
+          "N" => nil,
+        }
+      }
+    },
     "ADD A, r" => {
       operation_code: <<~RUST,
         let operand1 = self[Reg8::A];
