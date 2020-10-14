@@ -524,22 +524,33 @@ module InstructionsCode
 
         self.set_flag(Flag::c, carry);
       RUST
-      # In some UTs, the two registers are set to the same value in order to handle `ADD A, A`.
-      #
       testing: ->(register) {
+        # Since the base logic is tested in the base test(s), the flag tests are simple.
+        #
         {
           BASE => {
+            skip: register == "A",
             presets: <<~RUST,
               cpu[Reg8::A] = 0x21;
-              cpu[Reg8::#{register}] = 0x21;
+              cpu[Reg8::#{register}] = 0x30;
+            RUST
+            expectations: <<~RUST
+              A => 0x51,
+            RUST
+          },
+          "#{BASE}: A" => {
+            skip: register != "A",
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x21;
             RUST
             expectations: <<~RUST
               A => 0x42,
             RUST
           },
           'Z' => {
+            skip: register == "A",
             presets: <<~RUST,
-              cpu[Reg8::#{register}] = 0;
+              cpu[Reg8::#{register}] = 0x00;
             RUST
             expectations: <<~RUST
               A => 0x00,
@@ -691,14 +702,24 @@ module InstructionsCode
         let carry_set = (result & 0b1_0000_0000) != 0;
         self.set_flag(Flag::c, carry_set);
       RUST
-      # In some UTs, the two registers are set to the same value in order to handle `ADD A, A`.
+      # Since the base logic is tested in the base test(s), the flag tests are simple.
       #
       testing: ->(register) {
         {
           BASE => {
+            skip: register == "A",
             presets: <<~RUST,
               cpu[Reg8::A] = 0x21;
-              cpu[Reg8::#{register}] = 0x21;
+              cpu[Reg8::#{register}] = 0x30;
+            RUST
+            expectations: <<~RUST
+              A => 0x51,
+            RUST
+          },
+          "#{BASE}: A" => {
+            skip: register != "A",
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x21;
             RUST
             expectations: <<~RUST
               A => 0x42,
@@ -897,26 +918,9 @@ module InstructionsCode
       testing: ->(register) {
         # In the `SUB A, A` case, in essence, the only test case is the `Z` one.
         #
-        if register == "A"
-          return {
-            BASE => {skip: true},
-            'Z' => {
-              presets: <<~RUST,
-                cpu[Reg8::#{register}] = 0x21;
-              RUST
-              expectations: <<~RUST
-                A => 0x00,
-                zf => true,
-                nf => true,
-              RUST
-            },
-            'H' => {skip: true},
-            'C' => {skip: true},
-          }
-        end
-
         {
           BASE => {
+            skip: register == "A",
             presets: <<~RUST,
               cpu[Reg8::A] = 0x22;
               cpu[Reg8::#{register}] = 0x21;
@@ -936,6 +940,7 @@ module InstructionsCode
               RUST
           },
           'H' => {
+            skip: register == "A",
             presets: <<~RUST,
               cpu[Reg8::A] = 0x20;
               cpu[Reg8::#{register}] = 0x01;
@@ -947,6 +952,7 @@ module InstructionsCode
             RUST
           },
           'C' => {
+            skip: register == "A",
             presets: <<~RUST,
               cpu[Reg8::A] = 0x70;
               cpu[Reg8::#{register}] = 0x90;
