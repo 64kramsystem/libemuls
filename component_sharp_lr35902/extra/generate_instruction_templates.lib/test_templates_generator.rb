@@ -116,15 +116,9 @@ class TestTemplatesGenerator
       raise "No testing metadata found for opcode 0x#{opcode}, with flag prefix #{test_key_prefix.inspect}"
     end
 
-    tests_data.each do |test_key, test_data|
-      # Allow test skipping in metadata. This is useful while building tests, for example.
-      # Sadly, this prevents the neat hash unpacking, since we can't distinguish nil testing data
-      # from missing entries (:expectations, specifically).
-      #
-      next if test_data.nil?
-
-      extra_instruction_bytes, presets = test_data.values_at(:extra_instruction_bytes, :presets)
-      expectations = test_data.fetch(:expectations)
+    tests_data.each do |test_key, skip: nil, extra_instruction_bytes: nil, presets: nil, expectations: nil|
+      next if skip
+      raise "Missing test :expectations" if expectations.nil?
 
       if test_key != test_key_prefix
         title_suffix = test_key.sub(test_key_prefix, '')
@@ -173,7 +167,7 @@ class TestTemplatesGenerator
 
       pc_expectation = "PC => #{hex(end_pc)},"
 
-      all_expectations = expectations.to_s.lines.push(pc_expectation).concat(flag_expectations)
+      all_expectations = expectations.lines.push(pc_expectation).concat(flag_expectations)
 
       # Sorting is mandated by the macro.
       #

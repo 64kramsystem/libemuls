@@ -507,10 +507,10 @@ module InstructionsCode
               SP => 0xCB00,
             RUST
           },
-          "H" => nil,
-          "Z" => nil,
-          "C" => nil,
-          "N" => nil,
+          "H" => {skip: true},
+          "Z" => {skip: true},
+          "C" => {skip: true},
+          "N" => {skip: true},
         }
       }
     },
@@ -899,7 +899,7 @@ module InstructionsCode
         #
         if register == "A"
           return {
-            BASE => nil,
+            BASE => {skip: true},
             'Z' => {
               presets: <<~RUST,
                 cpu[Reg8::#{register}] = 0x21;
@@ -910,8 +910,8 @@ module InstructionsCode
                 nf => true,
               RUST
             },
-            'H' => nil,
-            'C' => nil,
+            'H' => {skip: true},
+            'C' => {skip: true},
           }
         end
 
