@@ -103,35 +103,35 @@ class TestTemplatesGenerator
     end
   end
 
-  def generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, flag_test_prefix, flags_preset, flag_expectations)
+  def generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, test_key_prefix, flags_preset, flag_expectations)
     testing_block = instruction_code.fetch(:testing)
     opcode_operands = opcode_data.fetch("operands")
 
-    flag_tests_data =
+    tests_data =
       testing_block
       .(*opcode_operands)
-      .select { |key, _| key.to_s.start_with?(/#{flag_test_prefix}\b/) }
+      .select { |key, _| key.to_s.start_with?(/#{test_key_prefix}\b/) }
 
-    if flag_tests_data.empty?
-      raise "No testing metadata found for opcode 0x#{opcode}, with flag prefix #{flag_test_prefix.inspect}"
+    if tests_data.empty?
+      raise "No testing metadata found for opcode 0x#{opcode}, with flag prefix #{test_key_prefix.inspect}"
     end
 
-    flag_tests_data.each do |flag_test_key, testing_data|
+    tests_data.each do |test_key, test_data|
       # Allow test skipping in metadata. This is useful while building tests, for example.
       # Sadly, this prevents the neat hash unpacking, since we can't distinguish nil testing data
       # from missing entries (:expectations, specifically).
       #
-      next if testing_data.nil?
+      next if test_data.nil?
 
-      extra_instruction_bytes, presets = testing_data.values_at(:extra_instruction_bytes, :presets)
-      expectations = testing_data.fetch(:expectations)
+      extra_instruction_bytes, presets = test_data.values_at(:extra_instruction_bytes, :presets)
+      expectations = test_data.fetch(:expectations)
 
-      if flag_test_key != flag_test_prefix
-        suffix_specification = flag_test_key.sub(flag_test_prefix, '')
+      if test_key != test_key_prefix
+        title_suffix = test_key.sub(test_key_prefix, '')
       end
 
       @buffer.puts <<-RUST
-                it "#{title}#{suffix_specification}" {
+                it "#{title}#{title_suffix}" {
       RUST
 
       extra_instruction_bytes_str = extra_instruction_bytes.to_a.map { |byte| ", #{hex(byte)}" }.join
