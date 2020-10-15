@@ -1568,6 +1568,181 @@ module InstructionsCode
         }
       }
     },
+    "CP A, r" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A];
+        let operand2 = self[dst_register];
+
+        let (result, carry) = operand1.overflowing_sub(operand2);
+
+        self.set_flag(Flag::c, carry);
+        self.set_flag(Flag::n, true);
+      RUST
+      testing: ->(register) {
+        # In the `CP A, A` case, in essence, the only test case is the `Z` one.
+        #
+        {
+          BASE => {
+            skip: register == "A",
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x22;
+              cpu[Reg8::#{register}] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x22,
+              RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0x0;
+            RUST
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+              nf => true,
+              RUST
+          },
+          'H' => {
+            skip: register == "A",
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+              cpu[Reg8::#{register}] = 0x01;
+            RUST
+            expectations: <<~RUST
+              A => 0x20,
+              nf => true,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            skip: register == "A",
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x70;
+              cpu[Reg8::#{register}] = 0x90;
+            RUST
+            expectations: <<~RUST
+              A => 0x70,
+              nf => true,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
+    "CP A, (HL)" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A];
+        let operand2 = self.internal_ram[self[Reg16::HL] as usize];
+
+        let (result, carry) = operand1.overflowing_sub(operand2);
+
+        self.set_flag(Flag::c, carry);
+        self.set_flag(Flag::n, true);
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x42;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x42,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x00;
+            RUST
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+              nf => true,
+              RUST
+          },
+          'H' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x01;
+            RUST
+            expectations: <<~RUST
+              A => 0x20,
+              nf => true,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x70;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x90;
+            RUST
+            expectations: <<~RUST
+              A => 0x70,
+              nf => true,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
+    "CP A, n" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A];
+        let operand2 = *immediate;
+
+        let (result, carry) = operand1.overflowing_sub(operand2);
+
+        self.set_flag(Flag::c, carry);
+        self.set_flag(Flag::n, true);
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            extra_instruction_bytes: [0x21],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x42;
+            RUST
+            expectations: <<~RUST
+              A => 0x42,
+            RUST
+          },
+          'Z' => {
+            extra_instruction_bytes: [0x0],
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+              nf => true,
+            RUST
+          },
+          'H' => {
+            extra_instruction_bytes: [0x0F],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x21,
+              nf => true,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            extra_instruction_bytes: [0xF0],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x10;
+            RUST
+            expectations: <<~RUST
+              A => 0x10,
+              nf => true,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];
