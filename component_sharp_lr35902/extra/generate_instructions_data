@@ -28,8 +28,8 @@ class InstructionsDataGenerator
   def check_and_extract_instruction_data_from_opcodes_data(opcodes_data, instructions_integration_data)
     transformed_data = deep_dup_without_proc_entries(instructions_integration_data)
 
-    transformed_data.each do |instruction, instruction_data|
-      instruction_integration_data = instructions_integration_data.fetch(instruction)
+    instructions_integration_data.each do |instruction, instruction_integration_data|
+      instruction_data = transformed_data.fetch(instruction)
 
       # WATCH OUT! We rip the opcodes array from the instructions data here, and replace it with a
       # hash.
