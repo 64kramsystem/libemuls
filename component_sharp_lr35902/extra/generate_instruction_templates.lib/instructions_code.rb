@@ -1476,6 +1476,98 @@ module InstructionsCode
         }
       }
     },
+    "XOR A, r" => {
+      operation_code: <<~RUST,
+        let result = self[Reg8::A] ^ self[dst_register];
+        self[Reg8::A] = result;
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            skip: register == "A",
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b1010_1001;
+              cpu[Reg8::#{register}] = 0b0101_1001;
+            RUST
+            expectations: <<~RUST
+              A => 0b1111_0000,
+            RUST
+          },
+          # The `A, A` case fits nicely here, even with duplication.
+          #
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b1010_1001;
+              cpu[Reg8::#{register}] = 0b1010_1001;
+            RUST
+            expectations: <<~RUST
+              A => 0b0000_0000,
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
+    "XOR A, (HL)" => {
+      operation_code: <<~RUST,
+        let result = self[Reg8::A] ^ self.internal_ram[self[Reg16::HL] as usize];
+        self[Reg8::A] = result;
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b1010_1001;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b0101_1001;
+            RUST
+            expectations: <<~RUST
+              A => 0b1111_0000,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b1010_1001;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b1010_1001;
+            RUST
+            expectations: <<~RUST
+              A => 0b0000_0000,
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
+    "XOR A, n" => {
+      operation_code: <<~RUST,
+        let result = self[Reg8::A] ^ *immediate;
+        self[Reg8::A] = result;
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            extra_instruction_bytes: [0b0101_1001],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b1010_1001;
+            RUST
+            expectations: <<~RUST
+              A => 0b1111_0000,
+            RUST
+          },
+          'Z' => {
+            extra_instruction_bytes: [0b1010_1001],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b1010_1001;
+            RUST
+            expectations: <<~RUST
+              A => 0b0000_0000,
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];
