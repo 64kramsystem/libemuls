@@ -1819,6 +1819,80 @@ module InstructionsCode
         }
       }
     },
+    "DEC r" => {
+      operation_code: <<~RUST,
+        let operand1 = self[dst_register];
+        let operand2 = 1;
+
+        let (result, _) = operand1.overflowing_sub(operand2);
+        self[dst_register] = result;
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            presets: "cpu[Reg8::#{register}] = 0x22;",
+            expectations: <<~RUST
+              #{register} => 0x21,
+            RUST
+          },
+          'Z' => {
+            presets: "cpu[Reg8::#{register}] = 0x01;",
+            expectations: <<~RUST
+              #{register} => 0x00,
+              zf => true,
+            RUST
+          },
+          'H' => {
+            presets: "cpu[Reg8::#{register}] = 0x20;",
+            expectations: <<~RUST
+              #{register} => 0x1F,
+              hf => true,
+            RUST
+          }
+        }
+      }
+    },
+    "DEC (HL)" => {
+      operation_code: <<~RUST,
+        let operand1 = self.internal_ram[self[Reg16::HL] as usize];
+        let operand2 = 1;
+        let (result, _) = operand1.overflowing_sub(operand2);
+        self.internal_ram[self[Reg16::HL] as usize] = result;
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu.internal_ram[0x0CAF] = 0x22;
+              cpu[Reg16::HL] = 0x0CAF;
+            RUST
+            expectations: <<~RUST
+              mem[0x0CAF] => [0x21],
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu.internal_ram[0x0CAF] = 0x01;
+              cpu[Reg16::HL] = 0x0CAF;
+            RUST
+            expectations: <<~RUST
+              mem[0x0CAF] => [0x00],
+              zf => true,
+            RUST
+          },
+          'H' => {
+            presets: <<~RUST,
+              cpu.internal_ram[0x0CAF] = 0x20;
+              cpu[Reg16::HL] = 0x0CAF;
+            RUST
+            expectations: <<~RUST
+              mem[0x0CAF] => [0x1F],
+              hf => true,
+            RUST
+          }
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
