@@ -2040,6 +2040,25 @@ module InstructionsCode
         }
       }
     },
+    "DEC rr" => {
+      operation_code: <<~RUST,
+        let operand1 = self[dst_register];
+        let operand2 = 1;
+
+        let (result, _) = operand1.overflowing_sub(operand2);
+        self[dst_register] = result;
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            presets: "cpu[Reg16::#{register}] = 0x0000;",
+            expectations: <<~RUST
+              #{register} => 0xFFFF,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
