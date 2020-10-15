@@ -2059,6 +2059,29 @@ module InstructionsCode
         }
       }
     },
+    "SWAP r" => {
+      operation_code: <<~RUST,
+        let result = self[dst_register] >> 4 | ((self[dst_register] & 0b0000_1111) << 4);
+        self[dst_register] = result;
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            presets: "cpu[Reg8::#{register}] = 0x21;",
+            expectations: <<~RUST
+              #{register} => 0x12,
+            RUST
+          },
+          "Z" => {
+            presets: "cpu[Reg8::#{register}] = 0x00;",
+            expectations: <<~RUST
+              #{register} => 0x00,
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
