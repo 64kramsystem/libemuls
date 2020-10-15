@@ -1082,6 +1082,208 @@ module InstructionsCode
         }
       }
     },
+    "SBC A, r" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A] as u16;
+        let operand2 = self[dst_register] as u16 + self.get_flag(Flag::c) as u16;
+
+        let (result, carry) = operand1.overflowing_sub(operand2);
+        self[Reg8::A] = result as u8;
+
+        self.set_flag(Flag::c, carry);
+      RUST
+      testing: ->(register) {
+        # In the `SBC A, A` case, in essence, the only cases are the carry and `Z` ones.
+        #
+        {
+          BASE => {
+            skip: register == "A",
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x30;
+              cpu[Reg8::#{register}] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x0F,
+            RUST
+          },
+          "#{BASE}: carry set" => {
+            skip: register == "A",
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x30;
+              cpu[Reg8::#{register}] = 0x21;
+              cpu.set_flag(Flag::c, true);
+            RUST
+            expectations: <<~RUST
+              A => 0x0E,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0;
+            RUST
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+            RUST
+          },
+          'H' => {
+            skip: register == "A",
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+              cpu[Reg8::#{register}] = 0x01;
+            RUST
+            expectations: <<~RUST
+              A => 0x1F,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            skip: register == "A",
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x21;
+              cpu[Reg8::#{register}] = 0x30;
+            RUST
+            expectations: <<~RUST
+              A => 0xF1,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
+    "SBC A, (HL)" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A] as u16;
+        let operand2 = self.internal_ram[self[Reg16::HL] as usize] as u16 + self.get_flag(Flag::c) as u16;
+
+        let (result, carry) = operand1.overflowing_sub(operand2);
+        self[Reg8::A] = result as u8;
+
+        self.set_flag(Flag::c, carry);
+      RUST
+      testing: ->() {
+        # Since the base logic is tested in the base test(s), the flag tests are simple.
+        #
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x30;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x21;
+            RUST
+            expectations: <<~RUST
+              A => 0x0F,
+            RUST
+          },
+          "#{BASE}: carry set" => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x30;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x21;
+              cpu.set_flag(Flag::c, true);
+            RUST
+            expectations: <<~RUST
+              A => 0x0E,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x00;
+            RUST
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+            RUST
+          },
+          'H' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0x01;
+            RUST
+            expectations: <<~RUST
+              A => 0x1F,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0xF0;
+            RUST
+            expectations: <<~RUST
+              A => 0x30,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
+    "SBC A, n" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg8::A] as u16;
+        let operand2 = *immediate as u16 + self.get_flag(Flag::c) as u16;
+
+        let (result, carry) = operand1.overflowing_sub(operand2);
+        self[Reg8::A] = result as u8;
+
+        self.set_flag(Flag::c, carry);
+      RUST
+      testing: ->(register) {
+        # Since the base logic is tested in the base test(s), the flag tests are simple.
+        #
+        {
+          BASE => {
+            extra_instruction_bytes: [0x21],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x30;
+            RUST
+            expectations: <<~RUST
+              A => 0x0F,
+            RUST
+          },
+          "#{BASE}: carry set" => {
+            extra_instruction_bytes: [0x21],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x30;
+              cpu.set_flag(Flag::c, true);
+            RUST
+            expectations: <<~RUST
+              A => 0x0E,
+            RUST
+          },
+          'Z' => {
+            extra_instruction_bytes: [0x0],
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+            RUST
+          },
+          'H' => {
+            extra_instruction_bytes: [0x01],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+            RUST
+            expectations: <<~RUST
+              A => 0x1F,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            extra_instruction_bytes: [0xF0],
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x20;
+            RUST
+            expectations: <<~RUST
+              A => 0x30,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
     "INC r" => {
       operation_code: <<~RUST,
         let operand1 = self[dst_register];
