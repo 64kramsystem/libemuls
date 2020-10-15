@@ -2021,6 +2021,25 @@ module InstructionsCode
         }
       }
     },
+    "INC rr" => {
+      operation_code: <<~RUST,
+        let operand1 = self[dst_register];
+        let operand2 = 1;
+
+        let (result, _) = operand1.overflowing_add(operand2);
+        self[dst_register] = result;
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            presets: "cpu[Reg16::#{register}] = 0xFFFF;",
+            expectations: <<~RUST
+              #{register} => 0x0000,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
