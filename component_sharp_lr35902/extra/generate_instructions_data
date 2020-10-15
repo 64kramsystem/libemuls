@@ -41,9 +41,15 @@ class InstructionsDataGenerator
       #
       carry_flag_positions = instruction_data.delete(:carry_flag_positions) || {}
 
+      # And finally, convert this, for readability
+      #
+      if instruction_integration_data.key?(:prefix)
+        instruction_data[:prefix] = "CB"
+      end
+
       transform_data = instruction_integration_data[:transform_data]
 
-      prefixed_json_entry = instruction_data.fetch(:prefixed) ? "cbprefixed" : "unprefixed"
+      prefixed_json_entry = instruction_integration_data.key?(:prefix) ? "cbprefixed" : "unprefixed"
 
       duplicated_instruction_data = opcodes.map do |opcode|
         opcode_hex = hex(opcode)

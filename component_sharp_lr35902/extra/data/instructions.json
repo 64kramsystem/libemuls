@@ -1,6 +1,5 @@
 {
   "LD r, n": {
-    "prefixed": false,
     "opcodes": {
       "06": {
         "operands": [
@@ -54,7 +53,6 @@
     ]
   },
   "LD r1, r2": {
-    "prefixed": false,
     "opcodes": {
       "78": {
         "operands": [
@@ -360,7 +358,6 @@
     ]
   },
   "LD r1, (rr2)": {
-    "prefixed": false,
     "opcodes": {
       "46": {
         "operands": [
@@ -426,7 +423,6 @@
     ]
   },
   "LD (rr1), r2": {
-    "prefixed": false,
     "opcodes": {
       "70": {
         "operands": [
@@ -492,7 +488,6 @@
     ]
   },
   "LD (HL), n": {
-    "prefixed": false,
     "opcodes": {
       "36": {
         "operands": [
@@ -508,7 +503,6 @@
     ]
   },
   "LD A, (nn)": {
-    "prefixed": false,
     "opcodes": {
       "FA": {
         "operands": [
@@ -524,7 +518,6 @@
     ]
   },
   "LD (nn), A": {
-    "prefixed": false,
     "opcodes": {
       "EA": {
         "operands": [
@@ -540,7 +533,6 @@
     ]
   },
   "LD A, (C)": {
-    "prefixed": false,
     "opcodes": {
       "F2": {
         "operands": []
@@ -552,7 +544,6 @@
     "operand_types": []
   },
   "LD (C), A": {
-    "prefixed": false,
     "opcodes": {
       "E2": {
         "operands": []
@@ -564,7 +555,6 @@
     "operand_types": []
   },
   "LDD A, (HL)": {
-    "prefixed": false,
     "opcodes": {
       "3A": {
         "operands": []
@@ -576,7 +566,6 @@
     "operand_types": []
   },
   "LDD (HL), A": {
-    "prefixed": false,
     "opcodes": {
       "32": {
         "operands": []
@@ -588,7 +577,6 @@
     "operand_types": []
   },
   "LDI A, (HL)": {
-    "prefixed": false,
     "opcodes": {
       "2A": {
         "operands": []
@@ -600,7 +588,6 @@
     "operand_types": []
   },
   "LDI (HL), A": {
-    "prefixed": false,
     "opcodes": {
       "22": {
         "operands": []
@@ -612,7 +599,6 @@
     "operand_types": []
   },
   "LDH (n), A": {
-    "prefixed": false,
     "opcodes": {
       "E0": {
         "operands": [
@@ -628,7 +614,6 @@
     ]
   },
   "LDH A, (n)": {
-    "prefixed": false,
     "opcodes": {
       "F0": {
         "operands": [
@@ -644,7 +629,6 @@
     ]
   },
   "LD rr, nn": {
-    "prefixed": false,
     "opcodes": {
       "01": {
         "operands": [
@@ -680,7 +664,6 @@
     ]
   },
   "LD SP, HL": {
-    "prefixed": false,
     "opcodes": {
       "F9": {
         "operands": []
@@ -692,7 +675,6 @@
     "operand_types": []
   },
   "LDHL SP, n": {
-    "prefixed": false,
     "opcodes": {
       "F8": {
         "operands": [
@@ -713,7 +695,6 @@
     ]
   },
   "LD (nn), SP": {
-    "prefixed": false,
     "opcodes": {
       "08": {
         "operands": [
@@ -729,7 +710,6 @@
     ]
   },
   "PUSH rr": {
-    "prefixed": false,
     "opcodes": {
       "F5": {
         "operands": [
@@ -760,7 +740,6 @@
     ]
   },
   "POP rr": {
-    "prefixed": false,
     "opcodes": {
       "C1": {
         "operands": [
@@ -786,7 +765,6 @@
     ]
   },
   "POP AF": {
-    "prefixed": false,
     "opcodes": {
       "F1": {
         "operands": []
@@ -803,7 +781,6 @@
     "operand_types": []
   },
   "ADD A, r": {
-    "prefixed": false,
     "opcodes": {
       "87": {
         "operands": [
@@ -854,7 +831,6 @@
     ]
   },
   "ADD A, (HL)": {
-    "prefixed": false,
     "opcodes": {
       "86": {
         "operands": []
@@ -871,7 +847,6 @@
     "operand_types": []
   },
   "ADD A, n": {
-    "prefixed": false,
     "opcodes": {
       "C6": {
         "operands": [
@@ -892,7 +867,6 @@
     ]
   },
   "ADC A, r": {
-    "prefixed": false,
     "opcodes": {
       "8F": {
         "operands": [
@@ -943,7 +917,6 @@
     ]
   },
   "ADC A, (HL)": {
-    "prefixed": false,
     "opcodes": {
       "8E": {
         "operands": []
@@ -960,7 +933,6 @@
     "operand_types": []
   },
   "ADC A, n": {
-    "prefixed": false,
     "opcodes": {
       "CE": {
         "operands": [
@@ -981,7 +953,6 @@
     ]
   },
   "SUB A, r": {
-    "prefixed": false,
     "opcodes": {
       "97": {
         "operands": [
@@ -1032,7 +1003,6 @@
     ]
   },
   "SUB A, (HL)": {
-    "prefixed": false,
     "opcodes": {
       "96": {
         "operands": []
@@ -1049,7 +1019,6 @@
     "operand_types": []
   },
   "SUB A, n": {
-    "prefixed": false,
     "opcodes": {
       "D6": {
         "operands": [
@@ -1070,7 +1039,6 @@
     ]
   },
   "SBC A, r": {
-    "prefixed": false,
     "opcodes": {
       "9F": {
         "operands": [
@@ -1121,7 +1089,6 @@
     ]
   },
   "SBC A, (HL)": {
-    "prefixed": false,
     "opcodes": {
       "9E": {
         "operands": []
@@ -1138,7 +1105,6 @@
     "operand_types": []
   },
   "SBC A, n": {
-    "prefixed": false,
     "opcodes": {
       "DE": {
         "operands": [
@@ -1159,7 +1125,6 @@
     ]
   },
   "AND A, r": {
-    "prefixed": false,
     "opcodes": {
       "A7": {
         "operands": [
@@ -1210,7 +1175,6 @@
     ]
   },
   "AND A, (HL)": {
-    "prefixed": false,
     "opcodes": {
       "A6": {
         "operands": []
@@ -1227,7 +1191,6 @@
     "operand_types": []
   },
   "AND A, n": {
-    "prefixed": false,
     "opcodes": {
       "E6": {
         "operands": [
@@ -1248,7 +1211,6 @@
     ]
   },
   "OR A, r": {
-    "prefixed": false,
     "opcodes": {
       "B7": {
         "operands": [
@@ -1299,7 +1261,6 @@
     ]
   },
   "OR A, (HL)": {
-    "prefixed": false,
     "opcodes": {
       "B6": {
         "operands": []
@@ -1316,7 +1277,6 @@
     "operand_types": []
   },
   "OR A, n": {
-    "prefixed": false,
     "opcodes": {
       "F6": {
         "operands": [
@@ -1337,7 +1297,6 @@
     ]
   },
   "XOR A, r": {
-    "prefixed": false,
     "opcodes": {
       "AF": {
         "operands": [
@@ -1388,7 +1347,6 @@
     ]
   },
   "XOR A, (HL)": {
-    "prefixed": false,
     "opcodes": {
       "AE": {
         "operands": []
@@ -1405,7 +1363,6 @@
     "operand_types": []
   },
   "XOR A, n": {
-    "prefixed": false,
     "opcodes": {
       "EE": {
         "operands": [
@@ -1426,7 +1383,6 @@
     ]
   },
   "CP A, r": {
-    "prefixed": false,
     "opcodes": {
       "BF": {
         "operands": [
@@ -1477,7 +1433,6 @@
     ]
   },
   "CP A, (HL)": {
-    "prefixed": false,
     "opcodes": {
       "BE": {
         "operands": []
@@ -1494,7 +1449,6 @@
     "operand_types": []
   },
   "CP A, n": {
-    "prefixed": false,
     "opcodes": {
       "FE": {
         "operands": [
@@ -1515,7 +1469,6 @@
     ]
   },
   "INC r": {
-    "prefixed": false,
     "opcodes": {
       "3C": {
         "operands": [
@@ -1565,7 +1518,6 @@
     ]
   },
   "INC (HL)": {
-    "prefixed": false,
     "opcodes": {
       "34": {
         "operands": []
@@ -1581,7 +1533,6 @@
     "operand_types": []
   },
   "DEC r": {
-    "prefixed": false,
     "opcodes": {
       "3D": {
         "operands": [
@@ -1631,7 +1582,6 @@
     ]
   },
   "DEC (HL)": {
-    "prefixed": false,
     "opcodes": {
       "35": {
         "operands": []
@@ -1647,7 +1597,6 @@
     "operand_types": []
   },
   "ADD HL, rr": {
-    "prefixed": false,
     "opcodes": {
       "09": {
         "operands": [
@@ -1682,7 +1631,6 @@
     ]
   },
   "ADD SP, n": {
-    "prefixed": false,
     "opcodes": {
       "E8": {
         "operands": [
@@ -1703,7 +1651,6 @@
     ]
   },
   "INC rr": {
-    "prefixed": false,
     "opcodes": {
       "03": {
         "operands": [
@@ -1734,7 +1681,6 @@
     ]
   },
   "DEC rr": {
-    "prefixed": false,
     "opcodes": {
       "0B": {
         "operands": [
@@ -1765,7 +1711,7 @@
     ]
   },
   "SWAP r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "37": {
         "operands": [
@@ -1816,7 +1762,7 @@
     ]
   },
   "SWAP (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "36": {
         "operands": []
@@ -1833,7 +1779,6 @@
     "operand_types": []
   },
   "DAA": {
-    "prefixed": false,
     "opcodes": {
       "27": {
         "operands": []
@@ -1849,7 +1794,6 @@
     "operand_types": []
   },
   "CPL": {
-    "prefixed": false,
     "opcodes": {
       "2F": {
         "operands": []
@@ -1864,7 +1808,6 @@
     "operand_types": []
   },
   "CCF": {
-    "prefixed": false,
     "opcodes": {
       "3F": {
         "operands": []
@@ -1880,7 +1823,6 @@
     "operand_types": []
   },
   "SCF": {
-    "prefixed": false,
     "opcodes": {
       "37": {
         "operands": []
@@ -1896,7 +1838,6 @@
     "operand_types": []
   },
   "NOP": {
-    "prefixed": false,
     "opcodes": {
       "00": {
         "operands": []
@@ -1908,7 +1849,6 @@
     "operand_types": []
   },
   "HALT": {
-    "prefixed": false,
     "opcodes": {
       "76": {
         "operands": []
@@ -1920,7 +1860,6 @@
     "operand_types": []
   },
   "STOP": {
-    "prefixed": false,
     "opcodes": {
       "10": {
         "operands": []
@@ -1932,7 +1871,6 @@
     "operand_types": []
   },
   "DI": {
-    "prefixed": false,
     "opcodes": {
       "F3": {
         "operands": []
@@ -1944,7 +1882,6 @@
     "operand_types": []
   },
   "EI": {
-    "prefixed": false,
     "opcodes": {
       "FB": {
         "operands": []
@@ -1956,7 +1893,6 @@
     "operand_types": []
   },
   "RLCA": {
-    "prefixed": false,
     "opcodes": {
       "07": {
         "operands": []
@@ -1973,7 +1909,6 @@
     "operand_types": []
   },
   "RLA": {
-    "prefixed": false,
     "opcodes": {
       "17": {
         "operands": []
@@ -1990,7 +1925,6 @@
     "operand_types": []
   },
   "RRCA": {
-    "prefixed": false,
     "opcodes": {
       "0F": {
         "operands": []
@@ -2007,7 +1941,6 @@
     "operand_types": []
   },
   "RRA": {
-    "prefixed": false,
     "opcodes": {
       "1F": {
         "operands": []
@@ -2024,7 +1957,7 @@
     "operand_types": []
   },
   "RLC r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "07": {
         "operands": [
@@ -2075,7 +2008,7 @@
     ]
   },
   "RLC (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "06": {
         "operands": []
@@ -2092,7 +2025,7 @@
     "operand_types": []
   },
   "RL r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "17": {
         "operands": [
@@ -2143,7 +2076,7 @@
     ]
   },
   "RL (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "16": {
         "operands": []
@@ -2160,7 +2093,7 @@
     "operand_types": []
   },
   "RRC r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "0F": {
         "operands": [
@@ -2211,7 +2144,7 @@
     ]
   },
   "RRC (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "0E": {
         "operands": []
@@ -2228,7 +2161,7 @@
     "operand_types": []
   },
   "RR r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "1F": {
         "operands": [
@@ -2279,7 +2212,7 @@
     ]
   },
   "RR (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "1E": {
         "operands": []
@@ -2296,7 +2229,7 @@
     "operand_types": []
   },
   "SLA r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "27": {
         "operands": [
@@ -2347,7 +2280,7 @@
     ]
   },
   "SLA (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "26": {
         "operands": []
@@ -2364,7 +2297,7 @@
     "operand_types": []
   },
   "SRA r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "2F": {
         "operands": [
@@ -2415,7 +2348,7 @@
     ]
   },
   "SRA (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "2E": {
         "operands": []
@@ -2432,7 +2365,7 @@
     "operand_types": []
   },
   "SRL r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "3F": {
         "operands": [
@@ -2483,7 +2416,7 @@
     ]
   },
   "SRL (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "3E": {
         "operands": []
@@ -2500,7 +2433,7 @@
     "operand_types": []
   },
   "BIT n, r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "47": {
         "operands": [
@@ -2558,7 +2491,7 @@
     ]
   },
   "BIT n, (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "46": {
         "operands": [
@@ -2578,7 +2511,7 @@
     ]
   },
   "SET n, r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "C7": {
         "operands": [
@@ -2632,7 +2565,7 @@
     ]
   },
   "SET n, (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "C6": {
         "operands": [
@@ -2648,7 +2581,7 @@
     ]
   },
   "RES n, r": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "87": {
         "operands": [
@@ -2702,7 +2635,7 @@
     ]
   },
   "RES n, (HL)": {
-    "prefixed": true,
+    "prefix": "CB",
     "opcodes": {
       "86": {
         "operands": [
@@ -2718,7 +2651,6 @@
     ]
   },
   "JP nn": {
-    "prefixed": false,
     "opcodes": {
       "C3": {
         "operands": [
@@ -2734,7 +2666,6 @@
     ]
   },
   "JP cc, nn": {
-    "prefixed": false,
     "opcodes": {
       "C2": {
         "operands": [
@@ -2770,7 +2701,6 @@
     ]
   },
   "JP (HL)": {
-    "prefixed": false,
     "opcodes": {
       "E9": {
         "operands": []
@@ -2782,7 +2712,6 @@
     "operand_types": []
   },
   "JR n": {
-    "prefixed": false,
     "opcodes": {
       "18": {
         "operands": [
@@ -2798,7 +2727,6 @@
     ]
   },
   "JR cc, n": {
-    "prefixed": false,
     "opcodes": {
       "20": {
         "operands": [
@@ -2834,7 +2762,6 @@
     ]
   },
   "CALL nn": {
-    "prefixed": false,
     "opcodes": {
       "CD": {
         "operands": [
@@ -2850,7 +2777,6 @@
     ]
   },
   "CALL cc, nn": {
-    "prefixed": false,
     "opcodes": {
       "C4": {
         "operands": [
@@ -2886,7 +2812,6 @@
     ]
   },
   "RST n": {
-    "prefixed": false,
     "opcodes": {
       "C7": {
         "operands": [
@@ -2937,7 +2862,6 @@
     ]
   },
   "RET": {
-    "prefixed": false,
     "opcodes": {
       "C9": {
         "operands": []
@@ -2949,7 +2873,6 @@
     "operand_types": []
   },
   "RET cc": {
-    "prefixed": false,
     "opcodes": {
       "C0": {
         "operands": [
@@ -2980,7 +2903,6 @@
     ]
   },
   "RETI": {
-    "prefixed": false,
     "opcodes": {
       "D9": {
         "operands": []

@@ -1,7 +1,6 @@
 module InstructionsIntegrationData
   INTEGRATION_DATA = {
     "LD r, n" => {
-      prefixed: false,
       opcodes: [
         0x06,
         0x0E,
@@ -13,7 +12,6 @@ module InstructionsIntegrationData
       ],
     },
     "LD r1, r2" => {
-      prefixed: false,
       opcodes: [
         0x78,
         0x79,
@@ -67,7 +65,6 @@ module InstructionsIntegrationData
       ],
     },
     "LD r1, (rr2)" => {
-      prefixed: false,
       opcodes: [
         0x46,
         0x4E,
@@ -81,7 +78,6 @@ module InstructionsIntegrationData
       ],
     },
     "LD (rr1), r2" => {
-      prefixed: false,
       opcodes: [
         0x70,
         0x71,
@@ -95,73 +91,61 @@ module InstructionsIntegrationData
       ],
     },
     "LD (HL), n" => {
-      prefixed: false,
       opcodes: [
         0x36,
       ],
     },
     "LD A, (nn)" => {
-      prefixed: false,
       opcodes: [
         0xFA,
       ],
     },
     "LD (nn), A" => {
-      prefixed: false,
       opcodes: [
         0xEA,
       ],
     },
     "LD A, (C)" => {
-      prefixed: false,
       opcodes: [
         0xF2,
       ],
     },
     "LD (C), A" => {
-      prefixed: false,
       opcodes: [
         0xE2,
       ],
     },
     "LDD A, (HL)" => {
-      prefixed: false,
       opcodes: [
         0x3A,
       ],
     },
     "LDD (HL), A" => {
-      prefixed: false,
       opcodes: [
         0x32,
       ],
     },
     "LDI A, (HL)" => {
-      prefixed: false,
       opcodes: [
         0x2A,
       ],
     },
     "LDI (HL), A" => {
-      prefixed: false,
       opcodes: [
         0x22,
       ],
     },
     "LDH (n), A" => {
-      prefixed: false,
       opcodes: [
         0xE0,
       ],
     },
     "LDH A, (n)" => {
-      prefixed: false,
       opcodes: [
         0xF0,
       ],
     },
     "LD rr, nn" => {
-      prefixed: false,
       opcodes: [
         0x01,
         0x11,
@@ -170,13 +154,11 @@ module InstructionsIntegrationData
       ],
     },
     "LD SP, HL" => {
-      prefixed: false,
       opcodes: [
         0xF9,
       ],
     },
     "LDHL SP, n" => {
-      prefixed: false,
       opcodes: [
         0xF8,
       ],
@@ -190,13 +172,11 @@ module InstructionsIntegrationData
       }
     },
     "LD (nn), SP" => {
-      prefixed: false,
       opcodes: [
         0x08,
       ],
     },
     "PUSH rr" => {
-      prefixed: false,
       opcodes: [
         0xF5,
         0xC5,
@@ -205,7 +185,6 @@ module InstructionsIntegrationData
       ],
     },
     "POP rr" => {
-      prefixed: false,
       opcodes: [
         0xC1,
         0xD1,
@@ -216,13 +195,11 @@ module InstructionsIntegrationData
     # better to separate it.
     #
     "POP AF" => {
-      prefixed: false,
       opcodes: [
         0xF1,
       ],
     },
     "ADD A, r" => {
-      prefixed: false,
       opcodes: [
         0x87,
         0x80,
@@ -238,7 +215,6 @@ module InstructionsIntegrationData
       }
     },
     "ADD A, (HL)" => {
-      prefixed: false,
       opcodes: [
         0x86,
       ],
@@ -248,7 +224,6 @@ module InstructionsIntegrationData
       }
     },
     "ADD A, n" => {
-      prefixed: false,
       opcodes: [
         0xC6,
       ],
@@ -258,7 +233,6 @@ module InstructionsIntegrationData
       }
     },
     "ADC A, r" => {
-      prefixed: false,
       opcodes: [
         0x8F,
         0x88,
@@ -274,7 +248,6 @@ module InstructionsIntegrationData
       }
     },
     "ADC A, (HL)" => {
-      prefixed: false,
       opcodes: [
         0x8E,
       ],
@@ -284,7 +257,6 @@ module InstructionsIntegrationData
       }
     },
     "ADC A, n" => {
-      prefixed: false,
       opcodes: [
         0xCE,
       ],
@@ -294,7 +266,6 @@ module InstructionsIntegrationData
       }
     },
     "SUB A, r" => {
-      prefixed: false,
       opcodes: [
         0x97,
         0x90,
@@ -319,7 +290,6 @@ module InstructionsIntegrationData
       }
     },
     "SUB A, (HL)" => {
-      prefixed: false,
       opcodes: [
         0x96,
       ],
@@ -332,7 +302,6 @@ module InstructionsIntegrationData
       }
     },
     "SUB A, n" => {
-      prefixed: false,
       opcodes: [
         0xD6,
       ],
@@ -345,7 +314,6 @@ module InstructionsIntegrationData
       }
     },
     "SBC A, r" => {
-      prefixed: false,
       opcodes: [
         0x9F,
         0x98,
@@ -361,7 +329,6 @@ module InstructionsIntegrationData
       }
     },
     "SBC A, (HL)" => {
-      prefixed: false,
       opcodes: [
         0x9E,
       ],
@@ -371,7 +338,6 @@ module InstructionsIntegrationData
       }
     },
     "SBC A, n" => {
-      prefixed: false,
       opcodes: [
         0xDE,
       ],
@@ -381,7 +347,6 @@ module InstructionsIntegrationData
       }
     },
     "AND A, r" => {
-      prefixed: false,
       opcodes: [
         0xA7,
         0xA0,
@@ -396,7 +361,6 @@ module InstructionsIntegrationData
       end
     },
     "AND A, (HL)" => {
-      prefixed: false,
       opcodes: [
         0xA6,
       ],
@@ -405,7 +369,6 @@ module InstructionsIntegrationData
       end
     },
     "AND A, n" => {
-      prefixed: false,
       opcodes: [
         0xE6,
       ],
@@ -414,7 +377,6 @@ module InstructionsIntegrationData
       end
     },
     "OR A, r" => {
-      prefixed: false,
       opcodes: [
         0xB7,
         0xB0,
@@ -429,7 +391,6 @@ module InstructionsIntegrationData
       end
     },
     "OR A, (HL)" => {
-      prefixed: false,
       opcodes: [
         0xB6,
       ],
@@ -438,7 +399,6 @@ module InstructionsIntegrationData
       end
     },
     "OR A, n" => {
-      prefixed: false,
       opcodes: [
         0xF6,
       ],
@@ -447,7 +407,6 @@ module InstructionsIntegrationData
       end
     },
     "XOR A, r" => {
-      prefixed: false,
       opcodes: [
         0xAF,
         0xA8,
@@ -463,7 +422,6 @@ module InstructionsIntegrationData
       end
     },
     "XOR A, (HL)" => {
-      prefixed: false,
       opcodes: [
         0xAE,
       ],
@@ -472,7 +430,6 @@ module InstructionsIntegrationData
       end
     },
     "XOR A, n" => {
-      prefixed: false,
       opcodes: [
         0xEE,
       ],
@@ -481,7 +438,6 @@ module InstructionsIntegrationData
       end
     },
     "CP A, r" => {
-      prefixed: false,
       opcodes: [
         0xBF,
         0xB8,
@@ -501,7 +457,6 @@ module InstructionsIntegrationData
       }
     },
     "CP A, (HL)" => {
-      prefixed: false,
       opcodes: [
         0xBE,
       ],
@@ -514,7 +469,6 @@ module InstructionsIntegrationData
       }
     },
     "CP A, n" => {
-      prefixed: false,
       opcodes: [
         0xFE,
       ],
@@ -527,7 +481,6 @@ module InstructionsIntegrationData
       }
     },
     "INC r" => {
-      prefixed: false,
       opcodes: [
         0x3C,
         0x04,
@@ -542,7 +495,6 @@ module InstructionsIntegrationData
       }
     },
     "INC (HL)" => {
-      prefixed: false,
       opcodes: [
         0x34,
       ],
@@ -551,7 +503,6 @@ module InstructionsIntegrationData
       }
     },
     "DEC r" => {
-      prefixed: false,
       opcodes: [
         0x3D,
         0x05,
@@ -566,7 +517,6 @@ module InstructionsIntegrationData
       }
     },
     "DEC (HL)" => {
-      prefixed: false,
       opcodes: [
         0x35,
       ],
@@ -575,7 +525,6 @@ module InstructionsIntegrationData
       }
     },
     "ADD HL, rr" => {
-      prefixed: false,
       opcodes: [
         0x09,
         0x19,
@@ -588,7 +537,6 @@ module InstructionsIntegrationData
       }
     },
     "ADD SP, n" => {
-      prefixed: false,
       opcodes: [
         0xE8,
       ],
@@ -598,7 +546,6 @@ module InstructionsIntegrationData
       }
     },
     "INC rr" => {
-      prefixed: false,
       opcodes: [
         0x03,
         0x13,
@@ -607,7 +554,6 @@ module InstructionsIntegrationData
       ],
     },
     "DEC rr" => {
-      prefixed: false,
       opcodes: [
         0x0B,
         0x1B,
@@ -616,7 +562,7 @@ module InstructionsIntegrationData
       ],
     },
     "SWAP r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x37,
         0x30,
@@ -628,91 +574,78 @@ module InstructionsIntegrationData
       ],
     },
     "SWAP (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x36,
       ],
     },
     "DAA" => {
-      prefixed: false,
       opcodes: [
         0x27,
       ],
     },
     "CPL" => {
-      prefixed: false,
       opcodes: [
         0x2F,
       ],
     },
     "CCF" => {
-      prefixed: false,
       opcodes: [
         0x3F,
       ],
     },
     "SCF" => {
-      prefixed: false,
       opcodes: [
         0x37,
       ],
     },
     "NOP" => {
-      prefixed: false,
       opcodes: [
         0x00
       ],
     },
     "HALT" => {
-      prefixed: false,
       opcodes: [
         0x76,
       ],
     },
     "STOP" => {
-      prefixed: false,
       opcodes: [
         0x10,
       ],
     },
     "DI" => {
-      prefixed: false,
       opcodes: [
         0xF3,
       ],
     },
     "EI" => {
-      prefixed: false,
       opcodes: [
         0xFB,
       ],
     },
     "RLCA" => {
-      prefixed: false,
       opcodes: [
         0x07,
       ]
     },
     "RLA" => {
-      prefixed: false,
       opcodes: [
         0x17,
       ],
     },
     "RRCA" => {
-      prefixed: false,
       opcodes: [
         0x0F,
       ],
     },
     "RRA" => {
-      prefixed: false,
       opcodes: [
         0x1F,
       ],
     },
     "RLC r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x07,
         0x00,
@@ -724,13 +657,13 @@ module InstructionsIntegrationData
       ],
     },
     "RLC (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x06,
       ],
     },
     "RL r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x17,
         0x10,
@@ -742,13 +675,13 @@ module InstructionsIntegrationData
       ],
     },
     "RL (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x16,
       ],
     },
     "RRC r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x0F,
         0x08,
@@ -760,13 +693,13 @@ module InstructionsIntegrationData
       ],
     },
     "RRC (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x0E,
       ],
     },
     "RR r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x1F,
         0x18,
@@ -778,13 +711,13 @@ module InstructionsIntegrationData
       ],
     },
     "RR (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x1E,
       ],
     },
     "SLA r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x27,
         0x20,
@@ -796,13 +729,13 @@ module InstructionsIntegrationData
       ],
     },
     "SLA (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x26,
       ],
     },
     "SRA r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x2F,
         0x28,
@@ -814,13 +747,13 @@ module InstructionsIntegrationData
       ],
     },
     "SRA (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x2E,
       ],
     },
     "SRL r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x3F,
         0x38,
@@ -832,13 +765,13 @@ module InstructionsIntegrationData
       ],
     },
     "SRL (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x3E,
       ],
     },
     "BIT n, r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x47,
         0x40,
@@ -850,13 +783,13 @@ module InstructionsIntegrationData
       ],
     },
     "BIT n, (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x46,
       ],
     },
     "SET n, r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0xC7,
         0xC0,
@@ -868,13 +801,13 @@ module InstructionsIntegrationData
       ],
     },
     "SET n, (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0xC6,
       ],
     },
     "RES n, r" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x87,
         0x80,
@@ -886,19 +819,17 @@ module InstructionsIntegrationData
       ],
     },
     "RES n, (HL)" => {
-      prefixed: true,
+      prefix: 0xCB,
       opcodes: [
         0x86,
       ],
     },
     "JP nn" => {
-      prefixed: false,
       opcodes: [
         0xC3,
       ],
     },
     "JP cc, nn" => {
-      prefixed: false,
       opcodes: [
         0xC2,
         0xCA,
@@ -907,19 +838,16 @@ module InstructionsIntegrationData
       ],
     },
     "JP (HL)" => {
-      prefixed: false,
       opcodes: [
         0xE9,
       ],
     },
     "JR n" => {
-      prefixed: false,
       opcodes: [
         0x18,
       ],
     },
     "JR cc, n" => {
-      prefixed: false,
       opcodes: [
         0x20,
         0x28,
@@ -928,13 +856,11 @@ module InstructionsIntegrationData
       ],
     },
     "CALL nn" => {
-      prefixed: false,
       opcodes: [
         0xCD,
       ],
     },
     "CALL cc, nn" => {
-      prefixed: false,
       opcodes: [
         0xC4,
         0xCC,
@@ -943,7 +869,6 @@ module InstructionsIntegrationData
       ],
     },
     "RST n" => {
-      prefixed: false,
       opcodes: [
         0xC7,
         0xCF,
@@ -956,13 +881,11 @@ module InstructionsIntegrationData
       ],
     },
     "RET" => {
-      prefixed: false,
       opcodes: [
         0xC9,
       ],
     },
     "RET cc" => {
-      prefixed: false,
       opcodes: [
         0xC0,
         0xC8,
@@ -971,7 +894,6 @@ module InstructionsIntegrationData
       ],
     },
     "RETI" => {
-      prefixed: false,
       opcodes: [
         0xD9,
       ],
