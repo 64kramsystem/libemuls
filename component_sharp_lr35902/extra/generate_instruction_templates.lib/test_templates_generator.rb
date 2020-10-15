@@ -49,6 +49,8 @@ class TestTemplatesGenerator
   # `context`, or `it` depending on flags being changed or not
   #
   def generate_header!(opcode, opcode_data, instruction, instruction_data)
+    prefix_value = "0x#{instruction_data.fetch("prefix")} " if instruction_data.key?("prefix")
+
     operand_names = opcode_data.fetch("operands")
     operand_types = instruction_data.fetch("operand_types")
 
@@ -61,7 +63,7 @@ class TestTemplatesGenerator
     operand_names_description = ": #{non_immediate_operands.join(", ")}" if non_immediate_operands.size > 0
 
     @buffer.print <<-RUST
-            context "#{instruction} [0x#{opcode}#{operand_names_description}]" {
+            context "#{instruction} [#{prefix_value}0x#{opcode}#{operand_names_description}]" {
     RUST
   end
 
@@ -113,7 +115,8 @@ class TestTemplatesGenerator
       .select { |key, _| key.to_s.start_with?(/#{test_key_prefix}\b/) }
 
     if tests_data.empty?
-      raise "No testing metadata found for opcode 0x#{opcode}, with flag prefix #{test_key_prefix.inspect}"
+      prefix_value = "0x#{instruction_data.fetch("prefix")}/" if instruction_data.key?("prefix")
+      raise "No testing metadata found for opcode #{prefix_value}0x#{opcode}, with flag prefix #{test_key_prefix.inspect}"
     end
 
     tests_data.each do |test_key, skip: nil, extra_instruction_bytes: nil, presets: nil, expectations: nil|
@@ -128,10 +131,11 @@ class TestTemplatesGenerator
                 it "#{title}#{title_suffix}" {
       RUST
 
+      prefix_value = "0x#{instruction_data.fetch("prefix")}, " if instruction_data.key?("prefix")
       extra_instruction_bytes_str = extra_instruction_bytes.to_a.map { |byte| ", #{hex(byte)}" }.join
 
       @buffer.puts <<-RUST
-                    let instruction_bytes = [0x#{opcode}#{extra_instruction_bytes_str}];
+                    let instruction_bytes = [#{prefix_value}0x#{opcode}#{extra_instruction_bytes_str}];
 
       RUST
 

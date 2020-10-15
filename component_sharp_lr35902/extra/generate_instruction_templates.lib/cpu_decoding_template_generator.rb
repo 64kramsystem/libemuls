@@ -57,7 +57,8 @@ class CpuDecodingTemplateGenerator
   def generate_matcher_line!(opcode_hex, instruction_data)
     operand_types = instruction_data.fetch("operand_types")
 
-    @buffer.print "            [0x#{opcode_hex}"
+    prefix_value = "0x#{instruction_data.fetch("prefix")}, " if instruction_data.key?("prefix")
+    @buffer.print "            [#{prefix_value}0x#{opcode_hex}"
 
     # Registers don't use matcher bindings, and there can't be immediates on both sides, so we can
     # use simple testing logic.
