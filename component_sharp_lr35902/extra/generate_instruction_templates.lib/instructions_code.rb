@@ -1893,6 +1893,62 @@ module InstructionsCode
         }
       }
     },
+    "ADD HL, rr" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg16::HL];
+        let operand2 = self[dst_register];
+
+        let (result, carry) = operand1.overflowing_add(operand2);
+        self[Reg16::HL] = result;
+
+        self.set_flag(Flag::c, carry);
+      RUST
+      testing: ->(register) {
+        # Tests use duplicate values, accounting for `rr` = `HL`.
+        #
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0x2121;
+              cpu[Reg16::#{register}] = 0x2121;
+            RUST
+            expectations: <<~RUST
+              HL => 0x4242,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xF000;
+              cpu[Reg16::#{register}] = 0x1000;
+            RUST
+            expectations: <<~RUST
+              HL => 0x0000,
+              zf => true,
+            RUST
+          },
+          'H' => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0x1800;
+              cpu[Reg16::#{register}] = 0x1800;
+            RUST
+            expectations: <<~RUST
+              HL => 0x3000,
+              hf => true,
+            RUST
+          },
+          'C' => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0x9000;
+              cpu[Reg16::#{register}] = 0x9000;
+            RUST
+            expectations: <<~RUST
+              HL => 0x2000,
+              cf => true,
+            RUST
+          }
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
