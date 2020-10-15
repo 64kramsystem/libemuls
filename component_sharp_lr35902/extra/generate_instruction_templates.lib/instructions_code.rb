@@ -1949,6 +1949,78 @@ module InstructionsCode
         }
       }
     },
+    "ADD SP, n" => {
+      operation_code: <<~RUST,
+        let operand1 = self[Reg16::SP];
+        // Ugly, but required, conversions.
+        let operand2 = *immediate as i8 as i16 as u16;
+
+        let (result, _) = operand1.overflowing_add(operand2);
+        self[Reg16::SP] = result;
+      RUST
+      testing: ->(_) {
+        {
+          "#{BASE}: positive immediate" => {
+            extra_instruction_bytes: [0x01],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0x2100;
+            RUST
+            expectations: <<~RUST
+              SP => 0x2101,
+            RUST
+          },
+          "#{BASE}: negative immediate" => {
+            extra_instruction_bytes: [0xFF],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0x2100;
+            RUST
+            expectations: <<~RUST
+              SP => 0x20FF,
+            RUST
+          },
+          "H" => {
+            extra_instruction_bytes: [0x01],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCAEF;
+            RUST
+            expectations: <<~RUST
+              SP => 0xCAF0,
+              hf => true,
+            RUST
+          },
+          "H: negative immediate" => {
+            extra_instruction_bytes: [0xE1],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCA0F;
+            RUST
+            expectations: <<~RUST
+              SP => 0xC9F0,
+              hf => true,
+            RUST
+          },
+          "C" => {
+            extra_instruction_bytes: [0x10],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCAFF;
+            RUST
+            expectations: <<~RUST
+              SP => 0xCB0F,
+              cf => true,
+            RUST
+          },
+          "C: negative immediate" => {
+            extra_instruction_bytes: [0xE0],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCA2F;
+            RUST
+            expectations: <<~RUST
+              SP => 0xCA0F,
+              cf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
