@@ -56,7 +56,7 @@ class InstructionsDataGenerator
         bare_opcode = opcode_hex[2..]
         instruction_data[:opcodes][bare_opcode] = {operands: operand_names}
 
-        extra_instruction_data = extract_extra_instruction_data(opcode_data, prefixed_json_entry, carry_flag_positions)
+        extra_instruction_data = extract_extra_instruction_data(opcode_data, carry_flag_positions)
         extra_instruction_data[:operand_types] = operand_types
 
         extra_instruction_data
@@ -192,7 +192,7 @@ class InstructionsDataGenerator
 
   # Returns {:instruction_size, :cycles, :flags_set}
   #
-  def extract_extra_instruction_data(opcode_data, prefixed_json_entry, carry_flag_positions)
+  def extract_extra_instruction_data(opcode_data, carry_flag_positions)
     instruction_size = opcode_data.fetch("bytes")
     cycles = opcode_data.fetch("cycles")[0] || raise
 
