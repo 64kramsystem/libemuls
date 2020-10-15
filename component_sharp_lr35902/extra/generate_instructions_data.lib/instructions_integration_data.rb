@@ -370,11 +370,16 @@ module InstructionsIntegrationData
         "C" => 8
       }
     },
-    # "SBC A, n" => {
-    #    prefixed: false,
-    #   opcodes: [
-    #   ],
-    # },
+    "SBC A, n" => {
+      prefixed: false,
+      opcodes: [
+        0xDE,
+      ],
+      carry_flag_positions: {
+        "H" => 4,
+        "C" => 8
+      }
+    },
     "AND A, r" => {
       prefixed: false,
       opcodes: [

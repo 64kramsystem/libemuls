@@ -1137,6 +1137,27 @@
     },
     "operand_types": []
   },
+  "SBC A, n": {
+    "prefixed": false,
+    "opcodes": {
+      "DE": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
   "AND A, r": {
     "prefixed": false,
     "opcodes": {
