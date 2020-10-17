@@ -2225,6 +2225,29 @@ module InstructionsCode
         }
       }
     },
+    # The expectations are added automatically by the test generator.
+    #
+    "SCF" => {
+      operation_code: <<~RUST,
+        self.set_flag(Flag::c, true);
+      RUST
+      testing: ->() {
+        {
+          "#{BASE}: C -> true" => {
+            presets: <<~RUST,
+              cpu.set_flag(Flag::c, false);
+            RUST
+            expectations: ""
+          },
+          "#{BASE}: C -> false" => {
+            presets: <<~RUST,
+              cpu.set_flag(Flag::c, true);
+            RUST
+            expectations: ""
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
