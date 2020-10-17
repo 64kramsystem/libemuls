@@ -2181,6 +2181,23 @@ module InstructionsCode
         }
       }
     },
+    "CPL" => {
+      operation_code: <<~RUST,
+        self[Reg8::A] = !self[Reg8::A];
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0xF0;
+            RUST
+            expectations: <<~RUST
+              A => 0x0F,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
