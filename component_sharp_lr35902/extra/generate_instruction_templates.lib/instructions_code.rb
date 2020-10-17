@@ -2198,6 +2198,33 @@ module InstructionsCode
         }
       }
     },
+    "CCF" => {
+      operation_code: <<~RUST,
+        let cf_value = self.get_flag(Flag::c);
+        self.set_flag(Flag::c, !cf_value);
+      RUST
+      testing: ->() {
+        {
+          BASE => { skip: true },
+          "C: -> true" => {
+            presets: <<~RUST,
+              cpu.set_flag(Flag::c, false);
+            RUST
+            expectations: <<~RUST
+              cf => true,
+            RUST
+          },
+          "C: -> false" => {
+            presets: <<~RUST,
+              cpu.set_flag(Flag::c, true);
+            RUST
+            expectations: <<~RUST
+              cf => false,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
