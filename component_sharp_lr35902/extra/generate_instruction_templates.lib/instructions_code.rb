@@ -2082,6 +2082,36 @@ module InstructionsCode
         }
       }
     },
+    "SWAP (HL)" => {
+      operation_code: <<~RUST,
+        let value = self.internal_ram[self[Reg16::HL] as usize];
+        let result = value >> 4 | ((value & 0b0000_1111) << 4);
+        self.internal_ram[self[Reg16::HL] as usize] = result;
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu.internal_ram[0xCAFE] = 0x21;
+              cpu[Reg16::HL] = 0xCAFE;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0x12],
+            RUST
+          },
+          "Z" => {
+            presets: <<~RUST,
+              cpu.internal_ram[0xCAFE] = 0x00;
+              cpu[Reg16::HL] = 0xCAFE;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0x00],
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
