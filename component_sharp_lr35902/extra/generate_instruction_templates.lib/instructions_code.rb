@@ -2112,6 +2112,75 @@ module InstructionsCode
         }
       }
     },
+    # Adapted from SameBoy.
+    #
+    # Currently has just smoke testing; this is the best candidate for adding a large amount of unit
+    # testing.
+    # There is at least one table with all the valid values, at https://github.com/ruyrybeyro/daatable/blob/master/daaoutput.txt,
+    # which could be used to isolate the meaningful UTs.
+    #
+    "DAA" => {
+      operation_code: <<~RUST,
+        let mut result = self[Reg8::A] as u16;
+
+        self[Reg8::A] = 0x00;
+        self.set_flag(Flag::z, true);
+
+        if self.get_flag(Flag::n) {
+            if self.get_flag(Flag::h) {
+                result = (result - 0x06) & 0xFF;
+            }
+
+            if self.get_flag(Flag::c) {
+                result -= 0x60;
+            }
+        }
+        else {
+            if self.get_flag(Flag::h) || (result & 0x0F) > 0x09 {
+                result += 0x06;
+            }
+
+            if self.get_flag(Flag::c) || result > 0x9F {
+                result += 0x60;
+            }
+        }
+
+        if (result & 0xFF) == 0 {
+            self.set_flag(Flag::z, true);
+        }
+
+        if (result & 0x100) == 0x100 {
+            self.set_flag(Flag::c, true);
+        }
+
+        self.set_flag(Flag::h, false);
+        self[Reg8::A] = result as u8;
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x1B;
+            RUST
+            expectations: <<~RUST
+              A => 0x21,
+            RUST
+          },
+          "H" => {skip: true},
+          "Z" => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0x0;
+            RUST
+            expectations: <<~RUST
+              A => 0x00,
+              zf => true,
+            RUST
+          },
+          "C" => {skip: true},
+          "N" => {skip: true},
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
