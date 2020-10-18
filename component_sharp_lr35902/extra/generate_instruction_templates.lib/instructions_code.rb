@@ -3122,6 +3122,35 @@ module InstructionsCode
         }
       }
     },
+    "BIT n, r" => {
+      operation_code: <<~RUST,
+        let bitmask = 1 << *immediate;
+
+        let result = self[src_register] & bitmask;
+      RUST
+      testing: ->(_, register) {
+        {
+          BASE => {
+            extra_instruction_bytes: [4],
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0b1111_0000;
+            RUST
+            expectations: <<~RUST
+              zf => false,
+            RUST
+          },
+          'Z' => {
+            extra_instruction_bytes: [3],
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0b1111_0000;
+            RUST
+            expectations: <<~RUST
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
