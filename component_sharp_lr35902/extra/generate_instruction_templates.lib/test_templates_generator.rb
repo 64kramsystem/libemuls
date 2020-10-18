@@ -6,6 +6,8 @@ class TestTemplatesGenerator
   include FormattingHelpers
   include OperandTypes
 
+  ORDERED_FLAGS = 'znhc'.chars.each_with_index.to_h
+
   def initialize
     @buffer = StringIO.new
   end
@@ -178,11 +180,11 @@ class TestTemplatesGenerator
       all_expectations = all_expectations.sort_by do |expectation|
         case expectation
         when /^[A-Z]/
-          -1
+          -10
         when /^.f/
-          0
+          ORDERED_FLAGS.fetch(expectation[0])
         when /^mem/
-          1
+          10
         else
           raise "Unexpected expectation: #{expectation}"
         end
