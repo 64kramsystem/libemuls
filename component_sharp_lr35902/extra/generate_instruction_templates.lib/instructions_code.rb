@@ -2928,6 +2928,57 @@ module InstructionsCode
         }
       }
     },
+    "SRA r" => {
+      operation_code: <<~RUST,
+        let new_carry = (self[dst_register] & 0b0000_0001) != 0;
+        let old_msb = self[dst_register] & 0b1000_0000;
+
+        let result = self[dst_register].wrapping_shr(1) | old_msb;
+        self[dst_register] = result;
+
+        self.set_flag(Flag::c, new_carry);
+      RUST
+      testing: ->(register) {
+        {
+          "#{BASE}: MSB=0" => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0b0001_1110;
+            RUST
+            expectations: <<~RUST
+              #{register} => 0b0000_1111,
+              cf => false,
+            RUST
+          },
+          "#{BASE}: MSB=1" => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0b1001_1110;
+            RUST
+            expectations: <<~RUST
+              #{register} => 0b1100_1111,
+              cf => false,
+            RUST
+          },
+          "C" => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0b0000_1111;
+            RUST
+            expectations: <<~RUST
+              #{register} => 0b0000_0111,
+              cf => true,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0b0000_0000;
+            RUST
+            expectations: <<~RUST
+              #{register} => 0b0000_0000,
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
