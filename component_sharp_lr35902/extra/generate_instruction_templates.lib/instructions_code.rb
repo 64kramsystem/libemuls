@@ -3277,5 +3277,20 @@ module InstructionsCode
         }
       }
     },
+    "JP nn" => {
+      operation_code: <<~RUST,
+        self[Reg16::PC] = *immediate;
+      RUST
+      testing: ->(_) {
+        {
+          BASE => {
+            extra_instruction_bytes: [0xEF, 0xBE],
+            expectations: <<~RUST
+              PC => 0xBEEF,
+            RUST
+          },
+        }
+      }
+    },
   }
 end
