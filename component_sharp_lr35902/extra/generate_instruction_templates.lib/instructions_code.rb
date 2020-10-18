@@ -3347,5 +3347,41 @@ module InstructionsCode
         }
       }
     },
+    "JR n" => {
+      # See `LDHL, SP` for the logic.
+      #
+      operation_code: <<~RUST,
+        let operand1 = self[Reg16::PC];
+        let operand2 = *immediate as i8 as i16 as u16;
+
+        let (result, _) = operand1.overflowing_add(operand2);
+        self[Reg16::PC] = result;
+      RUST
+      testing: ->(_) {
+        {
+          "#{BASE}: positive" => {
+            extra_instruction_bytes: [0x10],
+            expectations: <<~RUST
+              PC => 0x0031,
+            RUST
+          },
+          "#{BASE}: negative" => {
+            extra_instruction_bytes: [0xF0],
+            expectations: <<~RUST
+              PC => 0x0011,
+            RUST
+          },
+          "#{BASE}: overflow (positive)" => {
+            extra_instruction_bytes: [0x20],
+            presets: <<~RUST,
+              cpu[Reg16::PC] = 0xFFEF;
+            RUST
+            expectations: <<~RUST
+              PC => 0x000F,
+            RUST
+          },
+        }
+      }
+    },
   }
 end
