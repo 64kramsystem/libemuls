@@ -3330,5 +3330,22 @@ module InstructionsCode
         end
       }
     },
+    "JP (HL)" => {
+      operation_code: <<~RUST,
+        self[Reg16::PC] = self[Reg16::HL];
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+            RUST
+            expectations: <<~RUST
+              PC => 0xCAFE,
+            RUST
+          },
+        }
+      }
+    },
   }
 end
