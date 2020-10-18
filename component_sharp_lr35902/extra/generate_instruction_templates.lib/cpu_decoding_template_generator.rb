@@ -39,7 +39,7 @@ class CpuDecodingTemplateGenerator
   #
   def add_code!(opcode_hex, instruction_encoded, opcode_data, instruction_data)
     generate_matcher_line!(opcode_hex, instruction_data)
-    generate_variables_assignment!(instruction_data)
+    generate_variables_assignment!(opcode_hex, instruction_data)
     generate_execution_method_call!(opcode_hex, instruction_encoded, instruction_data)
     generate_closure!(instruction_data)
   end
@@ -74,16 +74,24 @@ class CpuDecodingTemplateGenerator
     @buffer.puts "] => {"
   end
 
-  def generate_variables_assignment!(instruction_data)
+  def generate_variables_assignment!(opcode_hex, instruction_data)
     operand_types = instruction_data.fetch("operand_types")
+    opcode_data = instruction_data.fetch("opcodes").fetch(opcode_hex)
+    operand_names = opcode_data.fetch("operands")
 
-    operand_types.each do |operand_type|
+    operand_names.zip(operand_types).each do |operand_name, operand_type|
       case operand_type
       when IMMEDIATE_OPERAND_16
         # The reference is unnecessary, but we pass it for consistency with the 8-bit immediates.
         #
         @buffer.puts <<-RUST
                 let immediate = &u16::from_le_bytes([*immediate_low, *immediate_high]);
+        RUST
+      when FLAG_OPERAND
+        flag_condition = !operand_name.start_with?('N')
+
+        @buffer.puts <<-RUST
+                let flag_condition = #{flag_condition};
         RUST
       end
     end
@@ -106,6 +114,7 @@ class CpuDecodingTemplateGenerator
         operand_params << "immediate"
       when FLAG_OPERAND
         operand_params << "Flag::#{operand_name[-1].downcase}"
+        operand_params << "flag_condition"
       else
         raise "Unexpected operand type: #{operand_type.type}"
       end

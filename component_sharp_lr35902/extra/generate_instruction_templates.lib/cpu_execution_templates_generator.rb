@@ -37,7 +37,7 @@ class CpuExecutionTemplatesGenerator
       when IMMEDIATE_OPERAND_16
         @buffer.print ", immediate: &u16"
       when FLAG_OPERAND
-        @buffer.print ", condition_flag: Flag"
+        @buffer.print ", flag: Flag, flag_condition: bool"
       else
         raise "Unexpected operand type: #{operand_type.type}"
       end
@@ -47,16 +47,18 @@ class CpuExecutionTemplatesGenerator
   end
 
   def generate_register_operations!(instruction_data, instruction_code)
-    instruction_size = instruction_data.fetch("instruction_size")
-
-    @buffer.puts <<-RUST
-        self[Reg16::PC] += #{instruction_size};
-
-    RUST
-
     operation_code = instruction_code.fetch(:operation_code)
 
     if operation_code
+      if !operation_code.include?("self[Reg16::PC] = ")
+        instruction_size = instruction_data.fetch("instruction_size")
+
+        @buffer.puts <<-RUST
+        self[Reg16::PC] += #{instruction_size};
+
+        RUST
+      end
+
       operation_code.each_line do |operation_statement|
         if operation_statement.strip.empty?
           @buffer.puts

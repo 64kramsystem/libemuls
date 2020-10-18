@@ -39,6 +39,8 @@ class TestTemplatesGenerator
     # multiple register have the same behavior, in conditional jumps, due to the negation, the behavior
     # is different.
     # The best option is probably to pass, for conditional jumps, the flag and the jump condition.
+    # It'd be also a good change to improve naming, probably, somethink like base_tests, flag_tests
+    # and jump_tests. Plural!
     #
     generate_unconditional_test!(opcode, opcode_data, instruction_data, instruction_code)
     generate_conditional_test!(opcode, opcode_data, instruction_data, instruction_code)
