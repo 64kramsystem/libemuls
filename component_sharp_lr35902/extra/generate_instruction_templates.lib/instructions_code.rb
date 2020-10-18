@@ -2781,6 +2781,65 @@ module InstructionsCode
         }
       }
     },
+    "RR (HL)" => {
+      operation_code: <<~RUST,
+        let address = self[Reg16::HL] as usize;
+        let new_carry = (self.internal_ram[address] & 0b0000_0001) != 0;
+
+        let mut result = self.internal_ram[address].wrapping_shr(1);
+        if self.get_flag(Flag::c) {
+          result |= 0b1000_0000;
+        }
+        self.internal_ram[address] = result;
+
+        self.set_flag(Flag::c, new_carry);
+      RUST
+      testing: ->() {
+        {
+          "#{BASE}: carry was not set" => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b0001_1110;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0b0000_1111],
+              cf => false,
+            RUST
+          },
+          "#{BASE}: carry was set" => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b0001_1110;
+              cpu.set_flag(Flag::c, true);
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0b1000_1111],
+              cf => false,
+            RUST
+          },
+          "C" => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b0000_1111;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0b0000_0111],
+              cf => true,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b0000_0000;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0b0000_0000],
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
