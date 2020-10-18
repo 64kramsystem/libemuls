@@ -3439,5 +3439,54 @@ module InstructionsCode
         end
       }
     },
+    "CALL nn" => {
+      operation_code: <<~RUST,
+        let (new_sp, _) = self[Reg16::SP].overflowing_sub(2);
+        self[Reg16::SP] = new_sp;
+
+        let (stored_address, _) = self[Reg16::PC].overflowing_add(3);
+        let pushed_bytes = stored_address.to_le_bytes();
+        self.internal_ram[new_sp as usize..new_sp as usize + 2].copy_from_slice(&pushed_bytes);
+
+        self[Reg16::PC] = *immediate;
+      RUST
+      testing: ->(_) {
+        {
+          BASE => {
+            extra_instruction_bytes: [0x21, 0x30],
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCAFE;
+            RUST
+            expectations: <<~RUST
+              SP => 0xCAFC,
+              PC => 0x3021,
+              mem[0xCAFC] => [0x24, 0x00],
+            RUST
+          },
+          # Disabled until it's clear what's the behavior.
+          #
+          # "#{BASE}: PC wraparound" => {
+          #   extra_instruction_bytes: [0x21, 0x30],
+          #   presets: <<~RUST,
+          #     cpu[Reg16::PC] = 0xFFFF;
+          #     cpu[Reg16::SP] = 0xCAFE;
+          #   RUST
+          #   expectations: <<~RUST
+          #     SP => 0xCAFC,
+          #     PC => 0x3021,
+          #     mem[0xCAFC] => [0x02, 0x00],
+          #   RUST
+          # },
+          # "#{BASE}: stack wraparound" => {
+          #   extra_instruction_bytes: [0x21, 0x30],
+          #   expectations: <<~RUST
+          #     SP => 0xFFFE,
+          #     PC => 0x3021,
+          #     mem[0xFFFE] => [0x24, 0x00],
+          #   RUST
+          # },
+        }
+      }
+    },
   }
 end
