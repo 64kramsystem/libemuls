@@ -3379,5 +3379,65 @@ module InstructionsCode
         }
       }
     },
+    "JR cc, n" => {
+      # See `LDHL, SP` for the logic.
+      #
+      operation_code: <<~RUST,
+        if self.get_flag(flag) == flag_condition {
+          let operand1 = self[Reg16::PC];
+          let operand2 = *immediate as i8 as i16 as u16;
+
+          let (result, _) = operand1.overflowing_add(operand2);
+          self[Reg16::PC] = result;
+        }
+        else {
+          self[Reg16::PC] += 2;
+        }
+      RUST
+      testing: ->(cc, _) {
+        # See considerations in the test templates generator.
+        # The expectation is set automatically where blank.
+        #
+        %w[NZ Z NC C].each_with_object({}) do |current_cc, tests|
+          flag = current_cc[-1].downcase
+          condition_value = current_cc[0] != "N"
+
+          [true, false].each do |jump_performed|
+            jump_case_description = jump_performed ? "(jump)" : "(no jump)"
+            # !(condition_value ^ jump_performed) 😍
+            #
+            if !jump_performed
+              condition_value = !condition_value
+            end
+
+            tests["#{BASE}: #{current_cc} positive #{jump_case_description}"] = {
+              skip: cc != current_cc,
+              extra_instruction_bytes: [0x10],
+              presets: <<~RUST,
+                cpu.set_flag(Flag::#{flag}, #{condition_value});
+              RUST
+              expectations: ("PC => 0x0031," if jump_performed),
+            }
+            tests["#{BASE}: #{current_cc} negative #{jump_case_description}"] = {
+              skip: cc != current_cc,
+              extra_instruction_bytes: [0xF0],
+              presets: <<~RUST,
+                cpu.set_flag(Flag::#{flag}, #{condition_value});
+              RUST
+              expectations: ("PC => 0x0011," if jump_performed),
+            }
+            tests["#{BASE}: #{current_cc} overflow (positive) #{jump_case_description}"] = {
+              skip: cc != current_cc,
+              extra_instruction_bytes: [0x1F],
+              presets: <<~RUST,
+                cpu.set_flag(Flag::#{flag}, #{condition_value});
+                cpu[Reg16::PC] = 0xFFF0;
+              RUST
+              expectations: ("PC => 0x#{jump_performed ? "000F" : "FFF2"},"),
+            }
+          end
+        end
+      }
+    },
   }
 end
