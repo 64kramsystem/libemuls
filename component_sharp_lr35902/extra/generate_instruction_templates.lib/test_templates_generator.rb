@@ -131,7 +131,6 @@ class TestTemplatesGenerator
 
     tests_data.each do |test_key, skip: nil, extra_instruction_bytes: nil, presets: nil, expectations: nil|
       next if skip
-      raise "Missing test :expectations" if expectations.nil?
 
       if test_key != test_key_prefix
         title_suffix = test_key.sub(test_key_prefix, '')
@@ -178,7 +177,7 @@ class TestTemplatesGenerator
                         instruction_bytes,
       RUST
 
-      all_expectations = expectations.lines
+      all_expectations = expectations.to_s.lines
 
       if expectations !~ /PC =>/
         instruction_size = instruction_data.fetch("instruction_size")

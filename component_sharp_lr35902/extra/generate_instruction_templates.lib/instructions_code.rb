@@ -2237,13 +2237,11 @@ module InstructionsCode
             presets: <<~RUST,
               cpu.set_flag(Flag::c, false);
             RUST
-            expectations: ""
           },
           "#{BASE}: C -> false" => {
             presets: <<~RUST,
               cpu.set_flag(Flag::c, true);
             RUST
-            expectations: ""
           },
         }
       }
@@ -2253,7 +2251,6 @@ module InstructionsCode
       testing: -> {
         {
           BASE => {
-            expectations: ""
           }
         }
       }
@@ -3325,7 +3322,6 @@ module InstructionsCode
             presets: <<~RUST,
               cpu.set_flag(Flag::#{flag}, !#{condition_value});
             RUST
-            expectations: ""
           }
         end
       }
