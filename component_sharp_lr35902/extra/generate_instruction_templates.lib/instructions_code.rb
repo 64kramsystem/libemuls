@@ -3151,6 +3151,38 @@ module InstructionsCode
         }
       }
     },
+    "BIT n, (HL)" => {
+      operation_code: <<~RUST,
+        let address = self[Reg16::HL] as usize;
+        let bitmask = 1 << *immediate;
+
+        let result = self.internal_ram[address] & bitmask;
+      RUST
+      testing: ->(_) {
+        {
+          BASE => {
+            extra_instruction_bytes: [4],
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b1111_0000;
+            RUST
+            expectations: <<~RUST
+              zf => false,
+            RUST
+          },
+          'Z' => {
+            extra_instruction_bytes: [3],
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b1111_0000;
+            RUST
+            expectations: <<~RUST
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
