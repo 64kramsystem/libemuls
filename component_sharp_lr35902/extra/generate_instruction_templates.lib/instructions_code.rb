@@ -2248,6 +2248,16 @@ module InstructionsCode
         }
       }
     },
+    "NOP" => {
+      operation_code: "",
+      testing: -> {
+        {
+          BASE => {
+            expectations: ""
+          }
+        }
+      }
+    },
     "RLCA" => {
       operation_code: <<~RUST,
         self.set_flag(Flag::c, (self[Reg8::A] & 0b1000_0000) != 0);
@@ -3200,16 +3210,6 @@ module InstructionsCode
               #{register} => 0b1111_1000,
             RUST
           },
-        }
-      }
-    },
-    "NOP" => {
-      operation_code: "",
-      testing: -> {
-        {
-          BASE => {
-            expectations: ""
-          }
         }
       }
     },
