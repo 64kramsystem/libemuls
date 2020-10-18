@@ -3077,6 +3077,51 @@ module InstructionsCode
         }
       }
     },
+    "SRL (HL)" => {
+      operation_code: <<~RUST,
+        let address = self[Reg16::HL] as usize;
+        let new_carry = (self.internal_ram[address] & 0b1000_0000) != 0;
+
+        let result = self.internal_ram[address].wrapping_shl(1);
+        self.internal_ram[address] = result;
+
+        self.set_flag(Flag::c, new_carry);
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b0111_1000;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0b1111_0000],
+              cf => false,
+            RUST
+          },
+          "C" => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b1111_0000;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0b1110_0000],
+              cf => true,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b0000_0000;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0b0000_0000],
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
