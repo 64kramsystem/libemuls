@@ -2427,6 +2427,43 @@ module InstructionsCode
         }
       }
     },
+    "RLC r" => {
+      operation_code: <<~RUST,
+        self.set_flag(Flag::c, (self[dst_register] & 0b1000_0000) != 0);
+        let result = self[dst_register].rotate_left(1);
+        self[dst_register] = result;
+      RUST
+      testing: ->(register) {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0b0111_1000;
+            RUST
+            expectations: <<~RUST
+              #{register} => 0b1111_0000,
+            RUST
+          },
+          "C" => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0b1111_0000;
+            RUST
+            expectations: <<~RUST
+              #{register} => 0b1110_0001,
+              cf => true,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0b0000_0000;
+            RUST
+            expectations: <<~RUST
+              #{register} => 0b0000_0000,
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
