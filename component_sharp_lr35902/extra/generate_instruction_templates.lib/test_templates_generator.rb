@@ -169,7 +169,6 @@ class TestTemplatesGenerator
       instruction_size = instruction_data.fetch("instruction_size")
       start_pc = 0x21
       end_pc = start_pc + instruction_size
-      cycles = instruction_data.fetch("cycles")
 
       pc_expectation = "PC => #{hex(end_pc)},"
 
@@ -193,6 +192,8 @@ class TestTemplatesGenerator
       all_expectations.each do |expectation|
         @buffer.puts "                        #{expectation}"
       end
+
+      cycles = instruction_data.fetch("cycles")
 
       @buffer.puts <<-RUST
                         cycles: #{cycles}
