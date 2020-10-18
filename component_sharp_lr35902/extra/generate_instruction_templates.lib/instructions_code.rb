@@ -2336,6 +2336,43 @@ module InstructionsCode
         }
       }
     },
+    "RRCA" => {
+      operation_code: <<~RUST,
+        self.set_flag(Flag::c, (self[Reg8::A] & 0b0000_0001) != 0);
+        let result = self[Reg8::A].rotate_right(1);
+        self[Reg8::A] = result;
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b0001_1110;
+            RUST
+            expectations: <<~RUST
+              A => 0b0000_1111,
+            RUST
+          },
+          "C" => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b0000_1111;
+            RUST
+            expectations: <<~RUST
+              A => 0b01000_0111,
+              cf => true,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b0000_0000;
+            RUST
+            expectations: <<~RUST
+              A => 0b0000_0000,
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
