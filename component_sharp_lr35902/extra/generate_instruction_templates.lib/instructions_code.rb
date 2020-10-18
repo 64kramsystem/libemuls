@@ -3183,6 +3183,26 @@ module InstructionsCode
         }
       }
     },
+    "SET n, r" => {
+      operation_code: <<~RUST,
+        let bitmask = 1 << *immediate;
+
+        self[src_register] |= bitmask;
+      RUST
+      testing: ->(_, register) {
+        {
+          BASE => {
+            extra_instruction_bytes: [3],
+            presets: <<~RUST,
+              cpu[Reg8::#{register}] = 0b1111_0000;
+            RUST
+            expectations: <<~RUST
+              #{register} => 0b1111_1000,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
