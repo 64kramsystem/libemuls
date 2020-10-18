@@ -627,22 +627,42 @@ module InstructionsIntegrationData
     "RLCA" => {
       opcodes: [
         0x07,
-      ]
+      ],
+      # Bug fix: See https://git.io/JTWwx.
+      #
+      transform_data: ->(data) do
+        data['flags']['Z'] = 'Z'
+      end,
     },
     "RLA" => {
       opcodes: [
         0x17,
       ],
+      # Bug fix: See https://git.io/JTWwx.
+      #
+      transform_data: ->(data) do
+        data['flags']['Z'] = 'Z'
+      end,
     },
     "RRCA" => {
       opcodes: [
         0x0F,
       ],
+      # Bug fix: See https://git.io/JTWwx.
+      #
+      transform_data: ->(data) do
+        data['flags']['Z'] = 'Z'
+      end,
     },
     "RRA" => {
       opcodes: [
         0x1F,
       ],
+      # Bug fix: See https://git.io/JTWwx.
+      #
+      transform_data: ->(data) do
+        data['flags']['Z'] = 'Z'
+      end,
     },
     "RLC r" => {
       prefix: 0xCB,

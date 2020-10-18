@@ -1901,7 +1901,7 @@
     "instruction_size": 1,
     "cycles": 4,
     "flags_set": {
-      "Z": false,
+      "Z": "*",
       "N": false,
       "H": false,
       "C": "*"
@@ -1917,7 +1917,7 @@
     "instruction_size": 1,
     "cycles": 4,
     "flags_set": {
-      "Z": false,
+      "Z": "*",
       "N": false,
       "H": false,
       "C": "*"
@@ -1933,7 +1933,7 @@
     "instruction_size": 1,
     "cycles": 4,
     "flags_set": {
-      "Z": false,
+      "Z": "*",
       "N": false,
       "H": false,
       "C": "*"
@@ -1949,7 +1949,7 @@
     "instruction_size": 1,
     "cycles": 4,
     "flags_set": {
-      "Z": false,
+      "Z": "*",
       "N": false,
       "H": false,
       "C": "*"
