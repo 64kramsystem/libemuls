@@ -2373,6 +2373,60 @@ module InstructionsCode
         }
       }
     },
+    "RRA" => {
+      operation_code: <<~RUST,
+        let new_carry = (self[Reg8::A] & 0b0000_0001) != 0;
+
+        let mut result = self[Reg8::A].wrapping_shr(1);
+        if self.get_flag(Flag::c) {
+          result |= 0b1000_0000;
+        }
+        self[Reg8::A] = result;
+
+        self.set_flag(Flag::c, new_carry);
+      RUST
+      testing: ->() {
+        {
+          "#{BASE}: carry was not set" => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b0001_1110;
+            RUST
+            expectations: <<~RUST
+              A => 0b0000_1111,
+              cf => false,
+            RUST
+          },
+          "#{BASE}: carry was set" => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b0001_1110;
+              cpu.set_flag(Flag::c, true);
+            RUST
+            expectations: <<~RUST
+              A => 0b1000_1111,
+              cf => false,
+            RUST
+          },
+          "C" => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b0000_1111;
+            RUST
+            expectations: <<~RUST
+              A => 0b0000_0111,
+              cf => true,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg8::A] = 0b0000_0000;
+            RUST
+            expectations: <<~RUST
+              A => 0b0000_0000,
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "NOP" => {
       operation_code: "",
       testing: -> {
