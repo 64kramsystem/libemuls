@@ -2464,6 +2464,49 @@ module InstructionsCode
         }
       }
     },
+    "RLC (HL)" => {
+      operation_code: <<~RUST,
+        let address = self[Reg16::HL] as usize;
+
+        self.set_flag(Flag::c, (self.internal_ram[address] & 0b1000_0000) != 0);
+        let result = self.internal_ram[address].rotate_left(1);
+
+        self.internal_ram[address] = result;
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b0111_1000;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0b1111_0000],
+            RUST
+          },
+          "C" => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b1111_0000;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0b1110_0001],
+              cf => true,
+            RUST
+          },
+          'Z' => {
+            presets: <<~RUST,
+              cpu[Reg16::HL] = 0xCAFE;
+              cpu.internal_ram[0xCAFE] = 0b0000_0000;
+            RUST
+            expectations: <<~RUST
+              mem[0xCAFE] => [0b0000_0000],
+              zf => true,
+            RUST
+          },
+        }
+      }
+    },
     "RL r" => {
       operation_code: <<~RUST,
         let new_carry = (self[dst_register] & 0b1000_0000) != 0;
