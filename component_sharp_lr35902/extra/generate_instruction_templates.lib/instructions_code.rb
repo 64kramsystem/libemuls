@@ -3292,5 +3292,43 @@ module InstructionsCode
         }
       }
     },
+    "JP cc, nn" => {
+      operation_code: <<~RUST,
+        if self.get_flag(flag) == flag_condition {
+          self[Reg16::PC] = *immediate;
+        }
+        else {
+          self[Reg16::PC] += 3;
+        }
+      RUST
+      testing: ->(cc, _) {
+        # See considerations in the test templates generator.
+        # The expectation is set automatically where blank.
+        #
+        %w[NZ Z NC C].each_with_object({}) do |current_cc, tests|
+          flag = current_cc[-1].downcase
+          condition_value = current_cc[0] != "N"
+
+          tests["#{BASE}: #{current_cc} (jump)"] = {
+            skip: cc != current_cc,
+            extra_instruction_bytes: [0xEF, 0xBE],
+            presets: <<~RUST,
+              cpu.set_flag(Flag::#{flag}, #{condition_value});
+            RUST
+            expectations: <<~RUST
+              PC => 0xBEEF,
+            RUST
+          }
+          tests["#{BASE}: #{current_cc} (no jump)"] = {
+            skip: cc != current_cc,
+            extra_instruction_bytes: [0xEF, 0xBE],
+            presets: <<~RUST,
+              cpu.set_flag(Flag::#{flag}, !#{condition_value});
+            RUST
+            expectations: ""
+          }
+        end
+      }
+    },
   }
 end
