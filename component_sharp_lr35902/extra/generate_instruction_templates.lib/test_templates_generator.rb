@@ -34,6 +34,12 @@ class TestTemplatesGenerator
   def add_code!(opcode, instruction, instruction_encoded, opcode_data, instruction_data, instruction_code)
     generate_header!(opcode, opcode_data, instruction, instruction_data)
 
+    # It'd be good to add a testing category for jump conditionals. Testing the conditional jump instructions
+    # is currently a bit confusing, because they behave differently: while on a regular instruction,
+    # multiple register have the same behavior, in conditional jumps, due to the negation, the behavior
+    # is different.
+    # The best option is probably to pass, for conditional jumps, the flag and the jump condition.
+    #
     generate_unconditional_test!(opcode, opcode_data, instruction_data, instruction_code)
     generate_conditional_test!(opcode, opcode_data, instruction_data, instruction_code)
 
@@ -141,7 +147,11 @@ class TestTemplatesGenerator
 
       RUST
 
-      presets = "cpu[Reg16::PC] = 0x21;\n#{presets}"
+      presets ||= ""
+
+      if !presets.include?("cpu[Reg16::PC] = ")
+        presets = "cpu[Reg16::PC] = 0x21;\n#{presets}"
+      end
 
       presets.each_line.map(&:strip).each do |preset_statement|
         if preset_statement.empty?
@@ -166,13 +176,19 @@ class TestTemplatesGenerator
                         instruction_bytes,
       RUST
 
-      instruction_size = instruction_data.fetch("instruction_size")
-      start_pc = 0x21
-      end_pc = start_pc + instruction_size
+      all_expectations = expectations.lines
 
-      pc_expectation = "PC => #{hex(end_pc)},"
+      if expectations !~ /PC =>/
+        instruction_size = instruction_data.fetch("instruction_size")
+        start_pc = 0x21
+        end_pc = start_pc + instruction_size
 
-      all_expectations = expectations.lines.push(pc_expectation).concat(flag_expectations)
+        pc_expectation = "PC => #{hex(end_pc)},"
+
+        all_expectations.push(pc_expectation)
+      end
+
+      all_expectations.concat(flag_expectations)
 
       # Sorting is mandated by the macro.
       #
