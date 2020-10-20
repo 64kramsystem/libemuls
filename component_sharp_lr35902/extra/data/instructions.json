@@ -2811,55 +2811,37 @@
       "nn"
     ]
   },
-  "RST n": {
+  "RST": {
     "opcodes": {
       "C7": {
-        "operands": [
-          "n"
-        ]
+        "operands": []
       },
       "CF": {
-        "operands": [
-          "n"
-        ]
+        "operands": []
       },
       "D7": {
-        "operands": [
-          "n"
-        ]
+        "operands": []
       },
       "DF": {
-        "operands": [
-          "n"
-        ]
+        "operands": []
       },
       "E7": {
-        "operands": [
-          "n"
-        ]
+        "operands": []
       },
       "EF": {
-        "operands": [
-          "n"
-        ]
+        "operands": []
       },
       "F7": {
-        "operands": [
-          "n"
-        ]
+        "operands": []
       },
       "FF": {
-        "operands": [
-          "n"
-        ]
+        "operands": []
       }
     },
     "instruction_size": 1,
     "cycles": 16,
     "flags_set": {},
-    "operand_types": [
-      "n"
-    ]
+    "operand_types": []
   },
   "RET": {
     "opcodes": {

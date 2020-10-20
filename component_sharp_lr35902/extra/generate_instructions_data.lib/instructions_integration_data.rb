@@ -888,7 +888,9 @@ module InstructionsIntegrationData
         0xDC,
       ],
     },
-    "RST n" => {
+    # No `n`, since the operand is implicit.
+    #
+    "RST" => {
       opcodes: [
         0xC7,
         0xCF,
@@ -899,6 +901,11 @@ module InstructionsIntegrationData
         0xF7,
         0xFF,
       ],
+      transform_data: ->(data) do
+        # The operand is implicit.
+        #
+        data['operands'] = []
+      end,
     },
     "RET" => {
       opcodes: [
