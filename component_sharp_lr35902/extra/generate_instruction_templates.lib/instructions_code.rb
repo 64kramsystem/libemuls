@@ -3298,32 +3298,16 @@ module InstructionsCode
           self[Reg16::PC] += 3;
         }
       RUST
-      testing: ->(cc, _) {
-        # See considerations in the test templates generator.
-        # The expectation is set automatically where blank.
-        #
-        %w[NZ Z NC C].each_with_object({}) do |current_cc, tests|
-          flag = current_cc[-1].downcase
-          condition_value = current_cc[0] != "N"
-
-          tests["#{BASE}: #{current_cc} (jump)"] = {
-            skip: cc != current_cc,
+      testing: ->(flag, flag_value, condition_matching) {
+        {
+          "absolute jump" => {
             extra_instruction_bytes: [0xEF, 0xBE],
             presets: <<~RUST,
-              cpu.set_flag(Flag::#{flag}, #{condition_value});
+              cpu.set_flag(Flag::#{flag}, #{flag_value});
             RUST
-            expectations: <<~RUST
-              PC => 0xBEEF,
-            RUST
+            expectations: ("PC => 0xBEEF," if condition_matching),
           }
-          tests["#{BASE}: #{current_cc} (no jump)"] = {
-            skip: cc != current_cc,
-            extra_instruction_bytes: [0xEF, 0xBE],
-            presets: <<~RUST,
-              cpu.set_flag(Flag::#{flag}, !#{condition_value});
-            RUST
-          }
-        end
+        }
       }
     },
     "JP (HL)" => {
@@ -3394,49 +3378,31 @@ module InstructionsCode
           self[Reg16::PC] += 2;
         }
       RUST
-      testing: ->(cc, _) {
-        # See considerations in the test templates generator.
-        # The expectation is set automatically where blank.
-        #
-        %w[NZ Z NC C].each_with_object({}) do |current_cc, tests|
-          flag = current_cc[-1].downcase
-          condition_value = current_cc[0] != "N"
-
-          [true, false].each do |jump_performed|
-            jump_case_description = jump_performed ? "(jump)" : "(no jump)"
-            # !(condition_value ^ jump_performed) 😍
-            #
-            if !jump_performed
-              condition_value = !condition_value
-            end
-
-            tests["#{BASE}: #{current_cc} positive #{jump_case_description}"] = {
-              skip: cc != current_cc,
-              extra_instruction_bytes: [0x10],
-              presets: <<~RUST,
-                cpu.set_flag(Flag::#{flag}, #{condition_value});
-              RUST
-              expectations: ("PC => 0x0031," if jump_performed),
-            }
-            tests["#{BASE}: #{current_cc} negative #{jump_case_description}"] = {
-              skip: cc != current_cc,
-              extra_instruction_bytes: [0xF0],
-              presets: <<~RUST,
-                cpu.set_flag(Flag::#{flag}, #{condition_value});
-              RUST
-              expectations: ("PC => 0x0011," if jump_performed),
-            }
-            tests["#{BASE}: #{current_cc} overflow (positive) #{jump_case_description}"] = {
-              skip: cc != current_cc,
-              extra_instruction_bytes: [0x1F],
-              presets: <<~RUST,
-                cpu.set_flag(Flag::#{flag}, #{condition_value});
-                cpu[Reg16::PC] = 0xFFF0;
-              RUST
-              expectations: ("PC => 0x#{jump_performed ? "000F" : "FFF2"},"),
-            }
-          end
-        end
+      testing: ->(flag, flag_value, condition_matching) {
+        {
+          "positive jump" => {
+            extra_instruction_bytes: [0x10],
+            presets: <<~RUST,
+              cpu.set_flag(Flag::#{flag}, #{flag_value});
+            RUST
+            expectations: ("PC => 0x0031," if condition_matching),
+          },
+          "negative jump" => {
+            extra_instruction_bytes: [0xF0],
+            presets: <<~RUST,
+              cpu.set_flag(Flag::#{flag}, #{flag_value});
+            RUST
+            expectations: ("PC => 0x0011," if condition_matching),
+          },
+          "positive jump, with overflow" => {
+            extra_instruction_bytes: [0x1F],
+            presets: <<~RUST,
+              cpu.set_flag(Flag::#{flag}, #{flag_value});
+              cpu[Reg16::PC] = 0xFFF0;
+            RUST
+            expectations: ("PC => 0x#{condition_matching ? "000F" : "FFF2"},"),
+          },
+        }
       }
     },
     "CALL nn" => {

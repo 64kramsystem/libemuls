@@ -34,16 +34,12 @@ class TestTemplatesGenerator
   def add_code!(opcode, instruction, instruction_encoded, opcode_data, instruction_data, instruction_code)
     generate_header!(opcode, opcode_data, instruction, instruction_data)
 
-    # It'd be good to add a testing category for jump conditionals. Testing the conditional jump instructions
-    # is currently a bit confusing, because they behave differently: while on a regular instruction,
-    # multiple register have the same behavior, in conditional jumps, due to the negation, the behavior
-    # is different.
-    # The best option is probably to pass, for conditional jumps, the flag and the jump condition.
-    # It'd be also a good change to improve naming, probably, somethink like base_tests, flag_tests
-    # and jump_tests. Plural!
-    #
-    generate_unconditional_test!(opcode, opcode_data, instruction_data, instruction_code)
-    generate_conditional_test!(opcode, opcode_data, instruction_data, instruction_code)
+    if is_jump_instruction?(instruction_data)
+      generate_jump_tests!(opcode, opcode_data, instruction_data, instruction_code)
+    else
+      generate_base_test!(opcode, opcode_data, instruction_data, instruction_code)
+      generate_flag_tests!(opcode, opcode_data, instruction_data, instruction_code)
+    end
 
     generate_closure!(instruction_data)
   end
@@ -77,10 +73,56 @@ class TestTemplatesGenerator
     RUST
   end
 
-  def generate_unconditional_test!(opcode, opcode_data, instruction_data, instruction_code)
+  def is_jump_instruction?(instruction_data)
+    instruction_data.fetch("operand_types").include?("cc")
+  end
+
+  # This type of test is not strictly needed, as the test metadata could have logic to gather the input
+  # values. However, with the assumption that two tests need to be generated (not/jump), a for each
+  # would be required, which is excessive.
+  #
+  # Note that we generate test input parameters that have an inconsistency with the others, as they only
+  # pass the jump data (flag, flag_value, condition_matching), while ignoring the other if present (e.g.
+  # `nn`). Other tests don't use that anyway, so this is (barely) acceptable.
+  #
+  def generate_jump_tests!(opcode, opcode_data, instruction_data, instruction_code)
+    jump_condition = opcode_data.fetch("operands")[0]
+
+    # Sanity check.
+    #
+    raise if jump_condition !~ /^N?[CZ]$/
+
+    @buffer.puts
+
+    # There are no flag presets/expectations for these instructions.
+    #
+    flags_preset = []
+    flag_expectations = []
+
+    flag = jump_condition[-1].downcase
+    flag_match_condition = jump_condition[0] != "N"
+
+    # Match all the tests of the instruction.
+    #
+    test_key_prefix = //
+
+    [false, true].each do |flag_value|
+      condition_matching = flag_value == flag_match_condition
+
+      title = "with jump condition #{jump_condition}, jump #{"not " if !condition_matching}performed: "
+
+      test_input_params = [flag, flag_value, condition_matching]
+
+      generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, test_key_prefix, test_input_params, flags_preset, flag_expectations)
+    end
+  end
+
+  def generate_base_test!(opcode, opcode_data, instruction_data, instruction_code)
+    flags_set = instruction_data.fetch("flags_set")
+
     title = "without conditional flag modifications"
 
-    flags_set = instruction_data.fetch("flags_set")
+    test_input_params = opcode_data.fetch("operands")
 
     # Funny boolean class test: `state == !!state`.
     #
@@ -94,10 +136,10 @@ class TestTemplatesGenerator
       "#{flag.downcase}f => #{state},"
     end
 
-    generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, InstructionsCode::BASE, flags_preset, flag_expectations)
+    generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, InstructionsCode::BASE, test_input_params, flags_preset, flag_expectations)
   end
 
-  def generate_conditional_test!(opcode, opcode_data, instruction_data, instruction_code)
+  def generate_flag_tests!(opcode, opcode_data, instruction_data, instruction_code)
     flags_set = instruction_data.fetch("flags_set")
 
     conditional_flags = flags_set.select { |_, state| state != true && state != false }
@@ -105,23 +147,24 @@ class TestTemplatesGenerator
     conditional_flags.each do |flag, _|
       @buffer.puts
 
+      title = "with flag #{flag} modified"
+
       # In this case, the presets/expectations are in the metadata.
       #
-      title = "with flag #{flag} modified"
+      test_input_params = opcode_data.fetch("operands")
       flags_preset = []
       flag_expectations = []
 
-      generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, flag, flags_preset, flag_expectations)
+      generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, flag, test_input_params, flags_preset, flag_expectations)
     end
   end
 
-  def generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, test_key_prefix, flags_preset, flag_expectations)
+  def generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, test_key_prefix, test_input_params, flags_preset, flag_expectations)
     testing_block = instruction_code.fetch(:testing)
-    opcode_operands = opcode_data.fetch("operands")
 
     tests_data =
       testing_block
-      .(*opcode_operands)
+      .(*test_input_params)
       .select { |key, _| key.to_s.start_with?(/#{test_key_prefix}\b/) }
 
     if tests_data.empty?
