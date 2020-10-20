@@ -3512,5 +3512,52 @@ module InstructionsCode
         }
       }
     },
+    # Currently unclear what happens with invalid values.
+    #
+    # This is a somewhat ugly, because both the execution code and the execution code are oblivious
+    # of the opcode.
+    #
+    "RST" => {
+      operation_code: <<~RUST,
+        let (new_sp, _) = self[Reg16::SP].overflowing_sub(2);
+        self[Reg16::SP] = new_sp;
+
+        let pushed_bytes = self[Reg16::PC].to_le_bytes();
+        self.internal_ram[new_sp as usize..new_sp as usize + 2].copy_from_slice(&pushed_bytes);
+
+        let destination_address = match self.internal_ram[self[Reg16::PC] as usize] {
+            0xC7 => 0x00,
+            0xCF => 0x08,
+            0xD7 => 0x10,
+            0xDF => 0x18,
+            0xE7 => 0x20,
+            0xEF => 0x28,
+            0xF7 => 0x30,
+            0xFF => 0x38,
+            _ => panic!(),
+        };
+
+        self[Reg16::PC] = destination_address;
+      RUST
+      testing: ->() {
+        # Hehe. Workaround the fact that address is hardcoded. Requires the instruction opcodes to be
+        # stored/retrieved in the same order.
+        #
+        $opcode_addresses_iterator ||= [0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38].to_enum
+
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCAFE;
+            RUST
+            expectations: <<~RUST
+              SP => 0xCAFC,
+              PC => 0x#{"%02X" % $opcode_addresses_iterator.next},
+              mem[0xCAFC] => [0x21, 0x00],
+            RUST
+          },
+        }
+      }
+    },
   }
 end
