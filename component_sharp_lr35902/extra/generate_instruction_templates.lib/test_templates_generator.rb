@@ -94,17 +94,8 @@ class TestTemplatesGenerator
 
     @buffer.puts
 
-    # There are no flag presets/expectations for these instructions.
-    #
-    flags_preset = []
-    flag_expectations = []
-
     flag = jump_condition[-1].downcase
     flag_match_condition = jump_condition[0] != "N"
-
-    # Match all the tests of the instruction.
-    #
-    test_key_prefix = //
 
     [false, true].each do |flag_value|
       condition_matching = flag_value == flag_match_condition
@@ -113,7 +104,7 @@ class TestTemplatesGenerator
 
       test_input_params = [flag, flag_value, condition_matching]
 
-      generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, test_key_prefix, test_input_params, flags_preset, flag_expectations)
+      generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, test_input_params)
     end
   end
 
@@ -136,7 +127,10 @@ class TestTemplatesGenerator
       "#{flag.downcase}f => #{state},"
     end
 
-    generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, InstructionsCode::BASE, test_input_params, flags_preset, flag_expectations)
+    generate_test_body!(
+      opcode, opcode_data, instruction_data, instruction_code, title, test_input_params,
+      test_key_prefix: InstructionsCode::BASE, flags_preset: flags_preset, flag_expectations: flag_expectations
+    )
   end
 
   def generate_flag_tests!(opcode, opcode_data, instruction_data, instruction_code)
@@ -144,22 +138,23 @@ class TestTemplatesGenerator
 
     conditional_flags = flags_set.select { |_, state| state != true && state != false }
 
+    test_input_params = opcode_data.fetch("operands")
+
     conditional_flags.each do |flag, _|
       @buffer.puts
 
       title = "with flag #{flag} modified"
 
-      # In this case, the presets/expectations are in the metadata.
+      # In this case, the flag presets/expectations are specified by the user.
       #
-      test_input_params = opcode_data.fetch("operands")
-      flags_preset = []
-      flag_expectations = []
-
-      generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, flag, test_input_params, flags_preset, flag_expectations)
+      generate_test_body!(
+        opcode, opcode_data, instruction_data, instruction_code, title, test_input_params,
+        test_key_prefix: flag
+      )
     end
   end
 
-  def generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, test_key_prefix, test_input_params, flags_preset, flag_expectations)
+  def generate_test_body!(opcode, opcode_data, instruction_data, instruction_code, title, test_input_params, test_key_prefix: //, flags_preset: [], flag_expectations: [])
     testing_block = instruction_code.fetch(:testing)
 
     tests_data =
