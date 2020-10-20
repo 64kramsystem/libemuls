@@ -193,6 +193,11 @@ impl Cpu {
     /// * returns the number of clock ticks spent
     ///
     pub fn execute(&mut self, instruction_bytes: &[u8]) -> u8 {
+        // Workaround until proper execution from memory is implemented.
+        //
+        let pc = self[Reg16::PC] as usize;
+        self.internal_ram[pc..pc + instruction_bytes.len()].copy_from_slice(&instruction_bytes);
+
         match instruction_bytes {
             // __OPCODES_DECODING_REPLACEMENT_START__
             // __OPCODES_DECODING_REPLACEMENT_END__
