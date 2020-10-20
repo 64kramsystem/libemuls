@@ -3454,5 +3454,63 @@ module InstructionsCode
         }
       }
     },
+    "CALL cc, nn" => {
+      operation_code: <<~RUST,
+        if self.get_flag(flag) == flag_condition {
+            let (new_sp, _) = self[Reg16::SP].overflowing_sub(2);
+            self[Reg16::SP] = new_sp;
+
+            let (stored_address, _) = self[Reg16::PC].overflowing_add(3);
+            let pushed_bytes = stored_address.to_le_bytes();
+            self.internal_ram[new_sp as usize..new_sp as usize + 2].copy_from_slice(&pushed_bytes);
+
+            self[Reg16::PC] = *immediate;
+        } else {
+            self[Reg16::PC] += 3;
+        }
+      RUST
+      testing: ->(flag, flag_value, condition_matching) {
+        {
+          "no wraparounds" => {
+            extra_instruction_bytes: [0x21, 0x30],
+            presets: <<~RUST,
+              cpu.set_flag(Flag::#{flag}, #{flag_value});
+              cpu[Reg16::SP] = 0xCAFE;
+            RUST
+            expectations: (<<~RUST if condition_matching)
+              SP => 0xCAFC,
+              PC => 0x3021,
+              mem[0xCAFC] => [0x24, 0x00],
+            RUST
+          },
+          # Disabled until it's clear what's the behavior.
+          #
+          # "PC wraparound" => {
+          #   extra_instruction_bytes: [0x21, 0x30],
+          #   presets: <<~RUST,
+          #     cpu.set_flag(Flag::#{flag}, #{flag_value});
+          #     cpu[Reg16::PC] = 0xFFFF;
+          #     cpu[Reg16::SP] = 0xCAFE;
+          #   RUST
+          #   expectations: (<<~RUST if condition_matching)
+          #     SP => 0xCAFC,
+          #     PC => 0x3021,
+          #     mem[0xCAFC] => [0x02, 0x00],
+          #   RUST
+          # },
+          # "stack wraparound" => {
+          #   extra_instruction_bytes: [0x21, 0x30],
+          #   presets: <<~RUST,
+          #     cpu.set_flag(Flag::#{flag}, #{flag_value});
+          #   RUST
+          #   expectations: (<<~RUST if condition_matching)
+          #     SP => 0xFFFE,
+          #     PC => 0x3021,
+          #     mem[0xFFFE] => [0x24, 0x00],
+          #   RUST
+          # },
+        }
+      }
+    },
   }
 end
