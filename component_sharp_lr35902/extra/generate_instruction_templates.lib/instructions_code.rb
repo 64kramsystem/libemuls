@@ -2240,6 +2240,24 @@ module InstructionsCode
         }
       }
     },
+    "EI" => {
+      operation_code: <<~RUST,
+        self.interrupts_status = InterruptsStatus::RequestEnable;
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            # Execute a NOP between the two expectations.
+            #
+            extra_instruction_bytes: [0x00],
+            expectations: [
+              "interrupts => false,"
+              "interrupts => true,"
+            ]
+          },
+        }
+      }
+    },
     "RLCA" => {
       operation_code: <<~RUST,
         self.set_flag(Flag::c, (self[Reg8::A] & 0b1000_0000) != 0);
