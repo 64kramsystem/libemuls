@@ -5,6 +5,8 @@ module CommandlineDecoder
     Usage: #{File.basename($PROGRAM_NAME)} [<opcode_>{,<opcode_...>}]
 
     Opcodes are hex, case-independent, and without prefix, e.g. `06,3C`.
+
+    Warning! When specifying an opcode, both the unprefixed and the prefixed versions are matched. To be fixed :-)
   HELP
 
   def execute
