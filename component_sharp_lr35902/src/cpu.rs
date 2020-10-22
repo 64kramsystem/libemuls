@@ -66,7 +66,7 @@ pub enum Flag {
 //
 pub struct Cpu {
     // WATCH OUT! For consistency, registers/flags must be accessed via Index[Mut] trait, with the
-    // exception of flag setting, to perform via `flag_set()`.
+    // exception of flags access, to perform via `flag_get()/flag_set()`.
 
     // Registers; flags are part of the `F` register.
     //
