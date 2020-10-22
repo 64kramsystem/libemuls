@@ -36,11 +36,13 @@ Compatibility improvement contributions are always welcome, nonetheless.
 
 Since this is essentially an educative project, it's founded on clarity in every aspect, from the documentation, to the testing, down to the SCM metadata (history).
 
-Due to `system-chip_8` being primarily an exploration, it doesn't have any automated tests, however, all the future libraries will be specified and verified through test suites.
+Due to `system-chip_8` being primarily an exploration, it doesn't have any automated tests, however, the other libraries are specified and verified through test suites.
 
 ### Next developments
 
 The Game Boy system is currently under development.
+
+The component currently developed is the CPU. Almost all the instructions have been implemented, along with a large test suite; both are generated from [a metadata file](../master/component_sharp_lr35902/extra/data/instructions.json) by [a generator](../master/component_sharp_lr35902/extra/generate_instruction_templates).
 
 ## Current support, and running an emulator
 
@@ -77,5 +79,7 @@ The project is currently composed of the following packages:
 ## Documentation
 
 The code comments and documentation are intended to be expressive and thorough; the specifications are defined through the test suites.
+
+Documentation for the Game Boy project will start once the design is stable.
 
 The [GitHub project wiki](../../wiki) includes additional information.
