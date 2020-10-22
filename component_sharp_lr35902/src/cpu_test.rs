@@ -1,6 +1,6 @@
 #![allow(unused_macros)]
 
-use crate::cpu::{Cpu, Flag, Reg16, Reg8};
+use crate::cpu::{Cpu, Flag, InterruptsStatus, Reg16, Reg8};
 use demonstrate::demonstrate;
 use strum::IntoEnumIterator;
 
@@ -193,6 +193,50 @@ demonstrate! {
             assert_eq!(cpu.get_flag(Flag::n), false);
             assert_eq!(cpu.get_flag(Flag::h), false);
             assert_eq!(cpu.get_flag(Flag::c), false);
+
+            assert_eq!(cpu.interrupts_status, InterruptsStatus::Disabled);
+        }
+
+        context "cycles between the interrupt states:" {
+            it "disabled doesn_t cycle" {
+                cpu.interrupts_status = InterruptsStatus::Disabled;
+
+                cpu.execute(&[0x00]);
+
+                assert_eq!(cpu.interrupts_status, InterruptsStatus::Disabled);
+            }
+
+            it "enable request cycles" {
+                cpu.interrupts_status = InterruptsStatus::RequestEnable;
+
+                cpu.execute(&[0x00]);
+
+                assert_eq!(cpu.interrupts_status, InterruptsStatus::WaitEnable);
+
+                cpu.execute(&[0x00]);
+
+                assert_eq!(cpu.interrupts_status, InterruptsStatus::Enabled);
+            }
+
+            it "enabled doesn_t cycle" {
+                cpu.interrupts_status = InterruptsStatus::Enabled;
+
+                cpu.execute(&[0x00]);
+
+                assert_eq!(cpu.interrupts_status, InterruptsStatus::Enabled);
+            }
+
+            it "disable request cycles" {
+                cpu.interrupts_status = InterruptsStatus::RequestDisable;
+
+                cpu.execute(&[0x00]);
+
+                assert_eq!(cpu.interrupts_status, InterruptsStatus::WaitDisable);
+
+                cpu.execute(&[0x00]);
+
+                assert_eq!(cpu.interrupts_status, InterruptsStatus::Disabled);
+            }
         }
 
         context "executes" {

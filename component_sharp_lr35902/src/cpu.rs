@@ -59,6 +59,21 @@ pub enum Flag {
     c,
 }
 
+// The CPU, when requested to enable/disable the interrupts, waits for one extra instruction before
+// performing the operation; we encode this as the sequence `Request` -> `Wait`.
+// `Request` is set by the instruction. On the next cycle, it's switched to `Wait`, then to the final
+// state.
+//
+#[derive(PartialEq, Debug)]
+pub enum InterruptsStatus {
+    Disabled,
+    RequestEnable,
+    WaitEnable,
+    Enabled,
+    RequestDisable,
+    WaitDisable,
+}
+
 // Preliminary, supersimplified implementation.
 // Based on a cursory look at the manuals, there is one operation that mass-sets the flags, so it
 // makes sense to store them individually.
@@ -80,6 +95,8 @@ pub struct Cpu {
     // Internal RAM. Until there is properly memory management, this is kept trivial.
     //
     pub internal_ram: [u8; 0x10_000],
+
+    pub interrupts_status: InterruptsStatus,
 }
 
 impl Index<Reg8> for Cpu {
@@ -184,6 +201,7 @@ impl Cpu {
             SP: 0xFFFE,
             PC: 0,
             internal_ram,
+            interrupts_status: InterruptsStatus::Disabled,
         }
     }
 
@@ -193,6 +211,8 @@ impl Cpu {
     /// * returns the number of clock ticks spent
     ///
     pub fn execute(&mut self, instruction_bytes: &[u8]) -> u8 {
+        self.advance_interrupts_status();
+
         // Workaround until proper execution from memory is implemented.
         //
         let pc = self[Reg16::PC] as usize;
@@ -200,6 +220,7 @@ impl Cpu {
 
         match instruction_bytes {
             // __OPCODES_DECODING_REPLACEMENT_START__
+            [0x00] => 4,
             // __OPCODES_DECODING_REPLACEMENT_END__
             _ => {
                 let formatted_instruction = utils::format_hex(instruction_bytes);
@@ -210,6 +231,20 @@ impl Cpu {
 
     // __OPCODES_EXECUTION_REPLACEMENT_START__
     // __OPCODES_EXECUTION_REPLACEMENT_END__
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // OTHER CPU LOGIC
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    fn advance_interrupts_status(&mut self) {
+        self.interrupts_status = match self.interrupts_status {
+            InterruptsStatus::RequestEnable => InterruptsStatus::WaitEnable,
+            InterruptsStatus::WaitEnable => InterruptsStatus::Enabled,
+            InterruptsStatus::RequestDisable => InterruptsStatus::WaitDisable,
+            InterruptsStatus::WaitDisable => InterruptsStatus::Disabled,
+            _ => return, // not set
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // HELPERS
