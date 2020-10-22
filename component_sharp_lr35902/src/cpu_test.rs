@@ -186,7 +186,7 @@ demonstrate! {
             assert_eq!(cpu[Reg16::BC], 0);
             assert_eq!(cpu[Reg16::DE], 0);
             assert_eq!(cpu[Reg16::HL], 0);
-            assert_eq!(cpu[Reg16::SP], 0);
+            assert_eq!(cpu[Reg16::SP], 0xFFFE);
             assert_eq!(cpu[Reg16::PC], 0);
 
             assert_eq!(cpu.get_flag(Flag::z), false);

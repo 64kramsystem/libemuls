@@ -181,7 +181,7 @@ impl Cpu {
             BC: Register16 { r16: 0 },
             DE: Register16 { r16: 0 },
             HL: Register16 { r16: 0 },
-            SP: 0,
+            SP: 0xFFFE,
             PC: 0,
             internal_ram,
         }
