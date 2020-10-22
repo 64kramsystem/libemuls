@@ -60,11 +60,6 @@ class CpuDecodingTemplateGenerator
     prefix_value = "0x#{instruction_data.fetch("prefix")}, " if instruction_data.key?("prefix")
     @buffer.print "            [#{prefix_value}0x#{opcode_hex}"
 
-    # Registers don't use matcher bindings, and there can't be immediates on both sides, so we can
-    # use simple testing logic.
-    # Note that this makes it more complex to append a prefix to the variable name indicating the
-    # source/destination nature.
-
     if operand_types.include?(IMMEDIATE_OPERAND_8)
       @buffer.print ", immediate @ _"
     elsif operand_types.include?(IMMEDIATE_OPERAND_16)

@@ -39,8 +39,6 @@ class CpuTemplatesGenerator
     IO.read(@instructions_file)
   end
 
-  # For samples, see the corresponding `.md` document.
-  #
   def generate_templates(instructions_data, only_opcodes:)
     decoding_generator = CpuDecodingTemplateGenerator.new
     execution_generator = CpuExecutionTemplatesGenerator.new

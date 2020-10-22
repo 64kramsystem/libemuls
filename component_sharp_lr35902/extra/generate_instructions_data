@@ -23,8 +23,6 @@ class InstructionsDataGenerator
 
   private
 
-  # Returns {flags_data, instruction_size, operands_data}.
-  #
   def check_and_extract_instruction_data_from_opcodes_data(opcodes_data, instructions_integration_data)
     transformed_data = deep_dup_without_proc_entries(instructions_integration_data)
 

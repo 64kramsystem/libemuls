@@ -12,25 +12,6 @@ class TestTemplatesGenerator
     @buffer = StringIO.new
   end
 
-  # Creates tests with the form:
-  #
-  #     context "INC A (0x3C)" {
-  #         it "without conditional flag modifications" {
-  #             // ...
-  #         }
-  #
-  #         it "with flag Z modified" {
-  #             // ...
-  #         }
-  #
-  # Originally, for instuctions that don't have conditional flag modifications, the context
-  # was not created (the only test would carry that description) , however, this was a headache, and
-  # it's perfectly ok to always have a context (from the consistency point of view, it's actually
-  # better).
-  #
-  # The exact naming of the flag concepts is a bit too verbose, so we oversimplify, and use
-  # "un/conditional".
-  #
   def add_code!(opcode, instruction, instruction_encoded, opcode_data, instruction_data, instruction_code)
     generate_header!(opcode, opcode_data, instruction, instruction_data)
 
@@ -50,10 +31,6 @@ class TestTemplatesGenerator
 
   private
 
-  # "Header": Context (optional), and main test method.
-  #
-  # `context`, or `it` depending on flags being changed or not
-  #
   def generate_header!(opcode, opcode_data, instruction, instruction_data)
     prefix_value = "0x#{instruction_data.fetch("prefix")} " if instruction_data.key?("prefix")
 
