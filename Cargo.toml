@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+  "component_sharp_lr35902",
   "emu-chip_8-sdl",
   "frontend-sdl",
   "interfaces-frontend",

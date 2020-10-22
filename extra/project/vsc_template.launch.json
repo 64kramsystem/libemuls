@@ -22,8 +22,8 @@
       "args": [
         // "--debug",
         // "--max-speed",
-        "${workspaceFolder}/extra/chip8/flightrunner.ch8"
-        // "${workspaceFolder}/extra/chip8/tombstontipp.ch8"
+        "${workspaceFolder}/system-chip_8/extra/flightrunner.ch8"
+        // "${workspaceFolder}/system-chip_8/extra/tombstontipp.ch8"
       ],
       "cwd": "${workspaceFolder}",
       "env": {

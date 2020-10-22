@@ -1,0 +1,2898 @@
+{
+  "LD r, n": {
+    "opcodes": {
+      "06": {
+        "operands": [
+          "B",
+          "n"
+        ]
+      },
+      "0E": {
+        "operands": [
+          "C",
+          "n"
+        ]
+      },
+      "16": {
+        "operands": [
+          "D",
+          "n"
+        ]
+      },
+      "1E": {
+        "operands": [
+          "E",
+          "n"
+        ]
+      },
+      "26": {
+        "operands": [
+          "H",
+          "n"
+        ]
+      },
+      "2E": {
+        "operands": [
+          "L",
+          "n"
+        ]
+      },
+      "3E": {
+        "operands": [
+          "A",
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": [
+      "r",
+      "n"
+    ]
+  },
+  "LD r1, r2": {
+    "opcodes": {
+      "78": {
+        "operands": [
+          "A",
+          "B"
+        ]
+      },
+      "79": {
+        "operands": [
+          "A",
+          "C"
+        ]
+      },
+      "7A": {
+        "operands": [
+          "A",
+          "D"
+        ]
+      },
+      "7B": {
+        "operands": [
+          "A",
+          "E"
+        ]
+      },
+      "7C": {
+        "operands": [
+          "A",
+          "H"
+        ]
+      },
+      "7D": {
+        "operands": [
+          "A",
+          "L"
+        ]
+      },
+      "41": {
+        "operands": [
+          "B",
+          "C"
+        ]
+      },
+      "42": {
+        "operands": [
+          "B",
+          "D"
+        ]
+      },
+      "43": {
+        "operands": [
+          "B",
+          "E"
+        ]
+      },
+      "44": {
+        "operands": [
+          "B",
+          "H"
+        ]
+      },
+      "45": {
+        "operands": [
+          "B",
+          "L"
+        ]
+      },
+      "48": {
+        "operands": [
+          "C",
+          "B"
+        ]
+      },
+      "4A": {
+        "operands": [
+          "C",
+          "D"
+        ]
+      },
+      "4B": {
+        "operands": [
+          "C",
+          "E"
+        ]
+      },
+      "4C": {
+        "operands": [
+          "C",
+          "H"
+        ]
+      },
+      "4D": {
+        "operands": [
+          "C",
+          "L"
+        ]
+      },
+      "50": {
+        "operands": [
+          "D",
+          "B"
+        ]
+      },
+      "51": {
+        "operands": [
+          "D",
+          "C"
+        ]
+      },
+      "53": {
+        "operands": [
+          "D",
+          "E"
+        ]
+      },
+      "54": {
+        "operands": [
+          "D",
+          "H"
+        ]
+      },
+      "55": {
+        "operands": [
+          "D",
+          "L"
+        ]
+      },
+      "58": {
+        "operands": [
+          "E",
+          "B"
+        ]
+      },
+      "59": {
+        "operands": [
+          "E",
+          "C"
+        ]
+      },
+      "5A": {
+        "operands": [
+          "E",
+          "D"
+        ]
+      },
+      "5C": {
+        "operands": [
+          "E",
+          "H"
+        ]
+      },
+      "5D": {
+        "operands": [
+          "E",
+          "L"
+        ]
+      },
+      "60": {
+        "operands": [
+          "H",
+          "B"
+        ]
+      },
+      "61": {
+        "operands": [
+          "H",
+          "C"
+        ]
+      },
+      "62": {
+        "operands": [
+          "H",
+          "D"
+        ]
+      },
+      "63": {
+        "operands": [
+          "H",
+          "E"
+        ]
+      },
+      "65": {
+        "operands": [
+          "H",
+          "L"
+        ]
+      },
+      "68": {
+        "operands": [
+          "L",
+          "B"
+        ]
+      },
+      "69": {
+        "operands": [
+          "L",
+          "C"
+        ]
+      },
+      "6A": {
+        "operands": [
+          "L",
+          "D"
+        ]
+      },
+      "6B": {
+        "operands": [
+          "L",
+          "E"
+        ]
+      },
+      "6C": {
+        "operands": [
+          "L",
+          "H"
+        ]
+      },
+      "47": {
+        "operands": [
+          "B",
+          "A"
+        ]
+      },
+      "4F": {
+        "operands": [
+          "C",
+          "A"
+        ]
+      },
+      "57": {
+        "operands": [
+          "D",
+          "A"
+        ]
+      },
+      "5F": {
+        "operands": [
+          "E",
+          "A"
+        ]
+      },
+      "67": {
+        "operands": [
+          "H",
+          "A"
+        ]
+      },
+      "6F": {
+        "operands": [
+          "L",
+          "A"
+        ]
+      },
+      "7F": {
+        "operands": [
+          "A",
+          "A"
+        ]
+      },
+      "40": {
+        "operands": [
+          "B",
+          "B"
+        ]
+      },
+      "49": {
+        "operands": [
+          "C",
+          "C"
+        ]
+      },
+      "52": {
+        "operands": [
+          "D",
+          "D"
+        ]
+      },
+      "5B": {
+        "operands": [
+          "E",
+          "E"
+        ]
+      },
+      "64": {
+        "operands": [
+          "H",
+          "H"
+        ]
+      },
+      "6D": {
+        "operands": [
+          "L",
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {},
+    "operand_types": [
+      "r",
+      "r"
+    ]
+  },
+  "LD r1, (rr2)": {
+    "opcodes": {
+      "46": {
+        "operands": [
+          "B",
+          "HL"
+        ]
+      },
+      "4E": {
+        "operands": [
+          "C",
+          "HL"
+        ]
+      },
+      "56": {
+        "operands": [
+          "D",
+          "HL"
+        ]
+      },
+      "5E": {
+        "operands": [
+          "E",
+          "HL"
+        ]
+      },
+      "7E": {
+        "operands": [
+          "A",
+          "HL"
+        ]
+      },
+      "0A": {
+        "operands": [
+          "A",
+          "BC"
+        ]
+      },
+      "1A": {
+        "operands": [
+          "A",
+          "DE"
+        ]
+      },
+      "66": {
+        "operands": [
+          "H",
+          "HL"
+        ]
+      },
+      "6E": {
+        "operands": [
+          "L",
+          "HL"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": [
+      "r",
+      "rr"
+    ]
+  },
+  "LD (rr1), r2": {
+    "opcodes": {
+      "70": {
+        "operands": [
+          "HL",
+          "B"
+        ]
+      },
+      "71": {
+        "operands": [
+          "HL",
+          "C"
+        ]
+      },
+      "72": {
+        "operands": [
+          "HL",
+          "D"
+        ]
+      },
+      "73": {
+        "operands": [
+          "HL",
+          "E"
+        ]
+      },
+      "74": {
+        "operands": [
+          "HL",
+          "H"
+        ]
+      },
+      "75": {
+        "operands": [
+          "HL",
+          "L"
+        ]
+      },
+      "02": {
+        "operands": [
+          "BC",
+          "A"
+        ]
+      },
+      "12": {
+        "operands": [
+          "DE",
+          "A"
+        ]
+      },
+      "77": {
+        "operands": [
+          "HL",
+          "A"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": [
+      "rr",
+      "r"
+    ]
+  },
+  "LD (HL), n": {
+    "opcodes": {
+      "36": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 12,
+    "flags_set": {},
+    "operand_types": [
+      "n"
+    ]
+  },
+  "LD A, (nn)": {
+    "opcodes": {
+      "FA": {
+        "operands": [
+          "nn"
+        ]
+      }
+    },
+    "instruction_size": 3,
+    "cycles": 16,
+    "flags_set": {},
+    "operand_types": [
+      "nn"
+    ]
+  },
+  "LD (nn), A": {
+    "opcodes": {
+      "EA": {
+        "operands": [
+          "nn"
+        ]
+      }
+    },
+    "instruction_size": 3,
+    "cycles": 16,
+    "flags_set": {},
+    "operand_types": [
+      "nn"
+    ]
+  },
+  "LD A, (C)": {
+    "opcodes": {
+      "F2": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "LD (C), A": {
+    "opcodes": {
+      "E2": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "LDD A, (HL)": {
+    "opcodes": {
+      "3A": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "LDD (HL), A": {
+    "opcodes": {
+      "32": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "LDI A, (HL)": {
+    "opcodes": {
+      "2A": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "LDI (HL), A": {
+    "opcodes": {
+      "22": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "LDH (n), A": {
+    "opcodes": {
+      "E0": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 12,
+    "flags_set": {},
+    "operand_types": [
+      "n"
+    ]
+  },
+  "LDH A, (n)": {
+    "opcodes": {
+      "F0": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 12,
+    "flags_set": {},
+    "operand_types": [
+      "n"
+    ]
+  },
+  "LD rr, nn": {
+    "opcodes": {
+      "01": {
+        "operands": [
+          "BC",
+          "nn"
+        ]
+      },
+      "11": {
+        "operands": [
+          "DE",
+          "nn"
+        ]
+      },
+      "21": {
+        "operands": [
+          "HL",
+          "nn"
+        ]
+      },
+      "31": {
+        "operands": [
+          "SP",
+          "nn"
+        ]
+      }
+    },
+    "instruction_size": 3,
+    "cycles": 12,
+    "flags_set": {},
+    "operand_types": [
+      "rr",
+      "nn"
+    ]
+  },
+  "LD SP, HL": {
+    "opcodes": {
+      "F9": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "LDHL SP, n": {
+    "opcodes": {
+      "F8": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 12,
+    "flags_set": {
+      "Z": false,
+      "N": false,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "LD (nn), SP": {
+    "opcodes": {
+      "08": {
+        "operands": [
+          "nn"
+        ]
+      }
+    },
+    "instruction_size": 3,
+    "cycles": 20,
+    "flags_set": {},
+    "operand_types": [
+      "nn"
+    ]
+  },
+  "PUSH rr": {
+    "opcodes": {
+      "F5": {
+        "operands": [
+          "AF"
+        ]
+      },
+      "C5": {
+        "operands": [
+          "BC"
+        ]
+      },
+      "D5": {
+        "operands": [
+          "DE"
+        ]
+      },
+      "E5": {
+        "operands": [
+          "HL"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 16,
+    "flags_set": {},
+    "operand_types": [
+      "rr"
+    ]
+  },
+  "POP rr": {
+    "opcodes": {
+      "C1": {
+        "operands": [
+          "BC"
+        ]
+      },
+      "D1": {
+        "operands": [
+          "DE"
+        ]
+      },
+      "E1": {
+        "operands": [
+          "HL"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 12,
+    "flags_set": {},
+    "operand_types": [
+      "rr"
+    ]
+  },
+  "POP AF": {
+    "opcodes": {
+      "F1": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 12,
+    "flags_set": {
+      "Z": "*",
+      "N": "*",
+      "H": "*",
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "ADD A, r": {
+    "opcodes": {
+      "87": {
+        "operands": [
+          "A"
+        ]
+      },
+      "80": {
+        "operands": [
+          "B"
+        ]
+      },
+      "81": {
+        "operands": [
+          "C"
+        ]
+      },
+      "82": {
+        "operands": [
+          "D"
+        ]
+      },
+      "83": {
+        "operands": [
+          "E"
+        ]
+      },
+      "84": {
+        "operands": [
+          "H"
+        ]
+      },
+      "85": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "ADD A, (HL)": {
+    "opcodes": {
+      "86": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": []
+  },
+  "ADD A, n": {
+    "opcodes": {
+      "C6": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "ADC A, r": {
+    "opcodes": {
+      "8F": {
+        "operands": [
+          "A"
+        ]
+      },
+      "88": {
+        "operands": [
+          "B"
+        ]
+      },
+      "89": {
+        "operands": [
+          "C"
+        ]
+      },
+      "8A": {
+        "operands": [
+          "D"
+        ]
+      },
+      "8B": {
+        "operands": [
+          "E"
+        ]
+      },
+      "8C": {
+        "operands": [
+          "H"
+        ]
+      },
+      "8D": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "ADC A, (HL)": {
+    "opcodes": {
+      "8E": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": []
+  },
+  "ADC A, n": {
+    "opcodes": {
+      "CE": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "SUB A, r": {
+    "opcodes": {
+      "97": {
+        "operands": [
+          "A"
+        ]
+      },
+      "90": {
+        "operands": [
+          "B"
+        ]
+      },
+      "91": {
+        "operands": [
+          "C"
+        ]
+      },
+      "92": {
+        "operands": [
+          "D"
+        ]
+      },
+      "93": {
+        "operands": [
+          "E"
+        ]
+      },
+      "94": {
+        "operands": [
+          "H"
+        ]
+      },
+      "95": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "SUB A, (HL)": {
+    "opcodes": {
+      "96": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": []
+  },
+  "SUB A, n": {
+    "opcodes": {
+      "D6": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "SBC A, r": {
+    "opcodes": {
+      "9F": {
+        "operands": [
+          "A"
+        ]
+      },
+      "98": {
+        "operands": [
+          "B"
+        ]
+      },
+      "99": {
+        "operands": [
+          "C"
+        ]
+      },
+      "9A": {
+        "operands": [
+          "D"
+        ]
+      },
+      "9B": {
+        "operands": [
+          "E"
+        ]
+      },
+      "9C": {
+        "operands": [
+          "H"
+        ]
+      },
+      "9D": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "SBC A, (HL)": {
+    "opcodes": {
+      "9E": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": []
+  },
+  "SBC A, n": {
+    "opcodes": {
+      "DE": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "AND A, r": {
+    "opcodes": {
+      "A7": {
+        "operands": [
+          "A"
+        ]
+      },
+      "A0": {
+        "operands": [
+          "B"
+        ]
+      },
+      "A1": {
+        "operands": [
+          "C"
+        ]
+      },
+      "A2": {
+        "operands": [
+          "D"
+        ]
+      },
+      "A3": {
+        "operands": [
+          "E"
+        ]
+      },
+      "A4": {
+        "operands": [
+          "H"
+        ]
+      },
+      "A5": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": true,
+      "C": false
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "AND A, (HL)": {
+    "opcodes": {
+      "A6": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": true,
+      "C": false
+    },
+    "operand_types": []
+  },
+  "AND A, n": {
+    "opcodes": {
+      "E6": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": true,
+      "C": false
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "OR A, r": {
+    "opcodes": {
+      "B7": {
+        "operands": [
+          "A"
+        ]
+      },
+      "B0": {
+        "operands": [
+          "B"
+        ]
+      },
+      "B1": {
+        "operands": [
+          "C"
+        ]
+      },
+      "B2": {
+        "operands": [
+          "D"
+        ]
+      },
+      "B3": {
+        "operands": [
+          "E"
+        ]
+      },
+      "B4": {
+        "operands": [
+          "H"
+        ]
+      },
+      "B5": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": false
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "OR A, (HL)": {
+    "opcodes": {
+      "B6": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": false
+    },
+    "operand_types": []
+  },
+  "OR A, n": {
+    "opcodes": {
+      "F6": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": false
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "XOR A, r": {
+    "opcodes": {
+      "AF": {
+        "operands": [
+          "A"
+        ]
+      },
+      "A8": {
+        "operands": [
+          "B"
+        ]
+      },
+      "A9": {
+        "operands": [
+          "C"
+        ]
+      },
+      "AA": {
+        "operands": [
+          "D"
+        ]
+      },
+      "AB": {
+        "operands": [
+          "E"
+        ]
+      },
+      "AC": {
+        "operands": [
+          "H"
+        ]
+      },
+      "AD": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": false
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "XOR A, (HL)": {
+    "opcodes": {
+      "AE": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": false
+    },
+    "operand_types": []
+  },
+  "XOR A, n": {
+    "opcodes": {
+      "EE": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": false
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "CP A, r": {
+    "opcodes": {
+      "BF": {
+        "operands": [
+          "A"
+        ]
+      },
+      "B8": {
+        "operands": [
+          "B"
+        ]
+      },
+      "B9": {
+        "operands": [
+          "C"
+        ]
+      },
+      "BA": {
+        "operands": [
+          "D"
+        ]
+      },
+      "BB": {
+        "operands": [
+          "E"
+        ]
+      },
+      "BC": {
+        "operands": [
+          "H"
+        ]
+      },
+      "BD": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "CP A, (HL)": {
+    "opcodes": {
+      "BE": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": []
+  },
+  "CP A, n": {
+    "opcodes": {
+      "FE": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "INC r": {
+    "opcodes": {
+      "3C": {
+        "operands": [
+          "A"
+        ]
+      },
+      "04": {
+        "operands": [
+          "B"
+        ]
+      },
+      "0C": {
+        "operands": [
+          "C"
+        ]
+      },
+      "14": {
+        "operands": [
+          "D"
+        ]
+      },
+      "1C": {
+        "operands": [
+          "E"
+        ]
+      },
+      "24": {
+        "operands": [
+          "H"
+        ]
+      },
+      "2C": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": 4
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "INC (HL)": {
+    "opcodes": {
+      "34": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 12,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": 4
+    },
+    "operand_types": []
+  },
+  "DEC r": {
+    "opcodes": {
+      "3D": {
+        "operands": [
+          "A"
+        ]
+      },
+      "05": {
+        "operands": [
+          "B"
+        ]
+      },
+      "0D": {
+        "operands": [
+          "C"
+        ]
+      },
+      "15": {
+        "operands": [
+          "D"
+        ]
+      },
+      "1D": {
+        "operands": [
+          "E"
+        ]
+      },
+      "25": {
+        "operands": [
+          "H"
+        ]
+      },
+      "2D": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "DEC (HL)": {
+    "opcodes": {
+      "35": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 12,
+    "flags_set": {
+      "Z": "*",
+      "N": true,
+      "H": 4
+    },
+    "operand_types": []
+  },
+  "ADD HL, rr": {
+    "opcodes": {
+      "09": {
+        "operands": [
+          "BC"
+        ]
+      },
+      "19": {
+        "operands": [
+          "DE"
+        ]
+      },
+      "29": {
+        "operands": [
+          "HL"
+        ]
+      },
+      "39": {
+        "operands": [
+          "SP"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {
+      "N": false,
+      "H": 12,
+      "C": 16
+    },
+    "operand_types": [
+      "rr"
+    ]
+  },
+  "ADD SP, n": {
+    "opcodes": {
+      "E8": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {
+      "Z": false,
+      "N": false,
+      "H": 4,
+      "C": 8
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "INC rr": {
+    "opcodes": {
+      "03": {
+        "operands": [
+          "BC"
+        ]
+      },
+      "13": {
+        "operands": [
+          "DE"
+        ]
+      },
+      "23": {
+        "operands": [
+          "HL"
+        ]
+      },
+      "33": {
+        "operands": [
+          "SP"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": [
+      "rr"
+    ]
+  },
+  "DEC rr": {
+    "opcodes": {
+      "0B": {
+        "operands": [
+          "BC"
+        ]
+      },
+      "1B": {
+        "operands": [
+          "DE"
+        ]
+      },
+      "2B": {
+        "operands": [
+          "HL"
+        ]
+      },
+      "3B": {
+        "operands": [
+          "SP"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": [
+      "rr"
+    ]
+  },
+  "SWAP r": {
+    "prefix": "CB",
+    "opcodes": {
+      "37": {
+        "operands": [
+          "A"
+        ]
+      },
+      "30": {
+        "operands": [
+          "B"
+        ]
+      },
+      "31": {
+        "operands": [
+          "C"
+        ]
+      },
+      "32": {
+        "operands": [
+          "D"
+        ]
+      },
+      "33": {
+        "operands": [
+          "E"
+        ]
+      },
+      "34": {
+        "operands": [
+          "H"
+        ]
+      },
+      "35": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": false
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "SWAP (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "36": {
+        "operands": []
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": false
+    },
+    "operand_types": []
+  },
+  "DAA": {
+    "opcodes": {
+      "27": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "CPL": {
+    "opcodes": {
+      "2F": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "N": true,
+      "H": true
+    },
+    "operand_types": []
+  },
+  "CCF": {
+    "opcodes": {
+      "3F": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "SCF": {
+    "opcodes": {
+      "37": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "N": false,
+      "H": false,
+      "C": true
+    },
+    "operand_types": []
+  },
+  "NOP": {
+    "opcodes": {
+      "00": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "HALT": {
+    "opcodes": {
+      "76": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "STOP": {
+    "opcodes": {
+      "10": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "DI": {
+    "opcodes": {
+      "F3": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "EI": {
+    "opcodes": {
+      "FB": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "RLCA": {
+    "opcodes": {
+      "07": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "RLA": {
+    "opcodes": {
+      "17": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "RRCA": {
+    "opcodes": {
+      "0F": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "RRA": {
+    "opcodes": {
+      "1F": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "RLC r": {
+    "prefix": "CB",
+    "opcodes": {
+      "07": {
+        "operands": [
+          "A"
+        ]
+      },
+      "00": {
+        "operands": [
+          "B"
+        ]
+      },
+      "01": {
+        "operands": [
+          "C"
+        ]
+      },
+      "02": {
+        "operands": [
+          "D"
+        ]
+      },
+      "03": {
+        "operands": [
+          "E"
+        ]
+      },
+      "04": {
+        "operands": [
+          "H"
+        ]
+      },
+      "05": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "RLC (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "06": {
+        "operands": []
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "RL r": {
+    "prefix": "CB",
+    "opcodes": {
+      "17": {
+        "operands": [
+          "A"
+        ]
+      },
+      "10": {
+        "operands": [
+          "B"
+        ]
+      },
+      "11": {
+        "operands": [
+          "C"
+        ]
+      },
+      "12": {
+        "operands": [
+          "D"
+        ]
+      },
+      "13": {
+        "operands": [
+          "E"
+        ]
+      },
+      "14": {
+        "operands": [
+          "H"
+        ]
+      },
+      "15": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "RL (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "16": {
+        "operands": []
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "RRC r": {
+    "prefix": "CB",
+    "opcodes": {
+      "0F": {
+        "operands": [
+          "A"
+        ]
+      },
+      "08": {
+        "operands": [
+          "B"
+        ]
+      },
+      "09": {
+        "operands": [
+          "C"
+        ]
+      },
+      "0A": {
+        "operands": [
+          "D"
+        ]
+      },
+      "0B": {
+        "operands": [
+          "E"
+        ]
+      },
+      "0C": {
+        "operands": [
+          "H"
+        ]
+      },
+      "0D": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "RRC (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "0E": {
+        "operands": []
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "RR r": {
+    "prefix": "CB",
+    "opcodes": {
+      "1F": {
+        "operands": [
+          "A"
+        ]
+      },
+      "18": {
+        "operands": [
+          "B"
+        ]
+      },
+      "19": {
+        "operands": [
+          "C"
+        ]
+      },
+      "1A": {
+        "operands": [
+          "D"
+        ]
+      },
+      "1B": {
+        "operands": [
+          "E"
+        ]
+      },
+      "1C": {
+        "operands": [
+          "H"
+        ]
+      },
+      "1D": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "RR (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "1E": {
+        "operands": []
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "SLA r": {
+    "prefix": "CB",
+    "opcodes": {
+      "27": {
+        "operands": [
+          "A"
+        ]
+      },
+      "20": {
+        "operands": [
+          "B"
+        ]
+      },
+      "21": {
+        "operands": [
+          "C"
+        ]
+      },
+      "22": {
+        "operands": [
+          "D"
+        ]
+      },
+      "23": {
+        "operands": [
+          "E"
+        ]
+      },
+      "24": {
+        "operands": [
+          "H"
+        ]
+      },
+      "25": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "SLA (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "26": {
+        "operands": []
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "SRA r": {
+    "prefix": "CB",
+    "opcodes": {
+      "2F": {
+        "operands": [
+          "A"
+        ]
+      },
+      "28": {
+        "operands": [
+          "B"
+        ]
+      },
+      "29": {
+        "operands": [
+          "C"
+        ]
+      },
+      "2A": {
+        "operands": [
+          "D"
+        ]
+      },
+      "2B": {
+        "operands": [
+          "E"
+        ]
+      },
+      "2C": {
+        "operands": [
+          "H"
+        ]
+      },
+      "2D": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "SRA (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "2E": {
+        "operands": []
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "SRL r": {
+    "prefix": "CB",
+    "opcodes": {
+      "3F": {
+        "operands": [
+          "A"
+        ]
+      },
+      "38": {
+        "operands": [
+          "B"
+        ]
+      },
+      "39": {
+        "operands": [
+          "C"
+        ]
+      },
+      "3A": {
+        "operands": [
+          "D"
+        ]
+      },
+      "3B": {
+        "operands": [
+          "E"
+        ]
+      },
+      "3C": {
+        "operands": [
+          "H"
+        ]
+      },
+      "3D": {
+        "operands": [
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": [
+      "r"
+    ]
+  },
+  "SRL (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "3E": {
+        "operands": []
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": false,
+      "C": "*"
+    },
+    "operand_types": []
+  },
+  "BIT n, r": {
+    "prefix": "CB",
+    "opcodes": {
+      "47": {
+        "operands": [
+          "n",
+          "A"
+        ]
+      },
+      "40": {
+        "operands": [
+          "n",
+          "B"
+        ]
+      },
+      "41": {
+        "operands": [
+          "n",
+          "C"
+        ]
+      },
+      "42": {
+        "operands": [
+          "n",
+          "D"
+        ]
+      },
+      "43": {
+        "operands": [
+          "n",
+          "E"
+        ]
+      },
+      "44": {
+        "operands": [
+          "n",
+          "H"
+        ]
+      },
+      "45": {
+        "operands": [
+          "n",
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": true
+    },
+    "operand_types": [
+      "n",
+      "r"
+    ]
+  },
+  "BIT n, (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "46": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 12,
+    "flags_set": {
+      "Z": "*",
+      "N": false,
+      "H": true
+    },
+    "operand_types": [
+      "n"
+    ]
+  },
+  "SET n, r": {
+    "prefix": "CB",
+    "opcodes": {
+      "C7": {
+        "operands": [
+          "n",
+          "A"
+        ]
+      },
+      "C0": {
+        "operands": [
+          "n",
+          "B"
+        ]
+      },
+      "C1": {
+        "operands": [
+          "n",
+          "C"
+        ]
+      },
+      "C2": {
+        "operands": [
+          "n",
+          "D"
+        ]
+      },
+      "C3": {
+        "operands": [
+          "n",
+          "E"
+        ]
+      },
+      "C4": {
+        "operands": [
+          "n",
+          "H"
+        ]
+      },
+      "C5": {
+        "operands": [
+          "n",
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": [
+      "n",
+      "r"
+    ]
+  },
+  "SET n, (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "C6": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {},
+    "operand_types": [
+      "n"
+    ]
+  },
+  "RES n, r": {
+    "prefix": "CB",
+    "opcodes": {
+      "87": {
+        "operands": [
+          "n",
+          "A"
+        ]
+      },
+      "80": {
+        "operands": [
+          "n",
+          "B"
+        ]
+      },
+      "81": {
+        "operands": [
+          "n",
+          "C"
+        ]
+      },
+      "82": {
+        "operands": [
+          "n",
+          "D"
+        ]
+      },
+      "83": {
+        "operands": [
+          "n",
+          "E"
+        ]
+      },
+      "84": {
+        "operands": [
+          "n",
+          "H"
+        ]
+      },
+      "85": {
+        "operands": [
+          "n",
+          "L"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 8,
+    "flags_set": {},
+    "operand_types": [
+      "n",
+      "r"
+    ]
+  },
+  "RES n, (HL)": {
+    "prefix": "CB",
+    "opcodes": {
+      "86": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 16,
+    "flags_set": {},
+    "operand_types": [
+      "n"
+    ]
+  },
+  "JP nn": {
+    "opcodes": {
+      "C3": {
+        "operands": [
+          "nn"
+        ]
+      }
+    },
+    "instruction_size": 3,
+    "cycles": 16,
+    "flags_set": {},
+    "operand_types": [
+      "nn"
+    ]
+  },
+  "JP cc, nn": {
+    "opcodes": {
+      "C2": {
+        "operands": [
+          "NZ",
+          "nn"
+        ]
+      },
+      "CA": {
+        "operands": [
+          "Z",
+          "nn"
+        ]
+      },
+      "D2": {
+        "operands": [
+          "NC",
+          "nn"
+        ]
+      },
+      "DA": {
+        "operands": [
+          "C",
+          "nn"
+        ]
+      }
+    },
+    "instruction_size": 3,
+    "cycles": 16,
+    "flags_set": {},
+    "operand_types": [
+      "cc",
+      "nn"
+    ]
+  },
+  "JP (HL)": {
+    "opcodes": {
+      "E9": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 4,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "JR n": {
+    "opcodes": {
+      "18": {
+        "operands": [
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 12,
+    "flags_set": {},
+    "operand_types": [
+      "n"
+    ]
+  },
+  "JR cc, n": {
+    "opcodes": {
+      "20": {
+        "operands": [
+          "NZ",
+          "n"
+        ]
+      },
+      "28": {
+        "operands": [
+          "Z",
+          "n"
+        ]
+      },
+      "30": {
+        "operands": [
+          "NC",
+          "n"
+        ]
+      },
+      "38": {
+        "operands": [
+          "C",
+          "n"
+        ]
+      }
+    },
+    "instruction_size": 2,
+    "cycles": 12,
+    "flags_set": {},
+    "operand_types": [
+      "cc",
+      "n"
+    ]
+  },
+  "CALL nn": {
+    "opcodes": {
+      "CD": {
+        "operands": [
+          "nn"
+        ]
+      }
+    },
+    "instruction_size": 3,
+    "cycles": 24,
+    "flags_set": {},
+    "operand_types": [
+      "nn"
+    ]
+  },
+  "CALL cc, nn": {
+    "opcodes": {
+      "C4": {
+        "operands": [
+          "NZ",
+          "nn"
+        ]
+      },
+      "CC": {
+        "operands": [
+          "Z",
+          "nn"
+        ]
+      },
+      "D4": {
+        "operands": [
+          "NC",
+          "nn"
+        ]
+      },
+      "DC": {
+        "operands": [
+          "C",
+          "nn"
+        ]
+      }
+    },
+    "instruction_size": 3,
+    "cycles": 24,
+    "flags_set": {},
+    "operand_types": [
+      "cc",
+      "nn"
+    ]
+  },
+  "RST": {
+    "opcodes": {
+      "C7": {
+        "operands": []
+      },
+      "CF": {
+        "operands": []
+      },
+      "D7": {
+        "operands": []
+      },
+      "DF": {
+        "operands": []
+      },
+      "E7": {
+        "operands": []
+      },
+      "EF": {
+        "operands": []
+      },
+      "F7": {
+        "operands": []
+      },
+      "FF": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 16,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "RET": {
+    "opcodes": {
+      "C9": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 16,
+    "flags_set": {},
+    "operand_types": []
+  },
+  "RET cc": {
+    "opcodes": {
+      "C0": {
+        "operands": [
+          "NZ"
+        ]
+      },
+      "C8": {
+        "operands": [
+          "Z"
+        ]
+      },
+      "D0": {
+        "operands": [
+          "NC"
+        ]
+      },
+      "D8": {
+        "operands": [
+          "C"
+        ]
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 20,
+    "flags_set": {},
+    "operand_types": [
+      "cc"
+    ]
+  },
+  "RETI": {
+    "opcodes": {
+      "D9": {
+        "operands": []
+      }
+    },
+    "instruction_size": 1,
+    "cycles": 16,
+    "flags_set": {},
+    "operand_types": []
+  }
+}

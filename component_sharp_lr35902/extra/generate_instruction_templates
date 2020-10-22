@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+require 'byebug'
+require 'English'
+
+require_relative "#{File.basename(__FILE__)}.lib/commandline_decoder"
+require_relative "#{File.basename(__FILE__)}.lib/git_helpers"
+require_relative "#{File.basename(__FILE__)}.lib/templates_generator"
+
+if __FILE__ == $PROGRAM_NAME
+  instructions_file = File.expand_path("data/instructions.json", __dir__)
+  cpu_file = File.expand_path("../src/cpu.rs", __dir__)
+  tests_file = File.expand_path("../src/cpu_test.rs", __dir__)
+
+  # Currently, it causes more troubles than it's worth.
+  #
+  # GitHelpers.restore_files(cpu_file, tests_file)
+
+  only_opcodes = CommandlineDecoder.execute
+
+  CpuTemplatesGenerator.new(instructions_file, cpu_file, tests_file).execute(only_opcodes: only_opcodes)
+end

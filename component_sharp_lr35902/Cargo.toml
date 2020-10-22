@@ -1,0 +1,12 @@
+[package]
+authors = ["Saverio Miroddi <saverio.pub2@gmail.com>"]
+edition = "2018"
+name = "component_sharp_lr35902"
+version = "0.1.0"
+
+[dependencies]
+
+demonstrate = "0.4.3"
+rand = "0.7.3"
+strum = "0.19.5"
+strum_macros = "0.19.4"
