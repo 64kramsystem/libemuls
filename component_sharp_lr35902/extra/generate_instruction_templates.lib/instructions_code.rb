@@ -3559,5 +3559,27 @@ module InstructionsCode
         }
       }
     },
+    "RET" => {
+      operation_code: <<~RUST,
+        self[Reg16::PC] = u16::from_le_bytes(self.internal_ram[self[Reg16::SP] as usize..self[Reg16::SP] as usize + 2].try_into().unwrap());
+
+        let (new_sp, _) = self[Reg16::SP].overflowing_add(2);
+        self[Reg16::SP] = new_sp;
+      RUST
+      testing: ->() {
+        {
+          BASE => {
+            presets: <<~RUST,
+              cpu[Reg16::SP] = 0xCAFE;
+              cpu.internal_ram[0xCAFE..=0xCAFF].copy_from_slice(&[0x30, 0x21]);
+            RUST
+            expectations: <<~RUST
+              SP => 0xCB00,
+              PC => 0x2130,
+            RUST
+          },
+        }
+      }
+    },
   }
 end
