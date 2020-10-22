@@ -3581,5 +3581,36 @@ module InstructionsCode
         }
       }
     },
+    "RET cc" => {
+      operation_code: <<~RUST,
+        if self.get_flag(flag) == flag_condition {
+            self[Reg16::PC] = u16::from_le_bytes(self.internal_ram[self[Reg16::SP] as usize..self[Reg16::SP] as usize + 2].try_into().unwrap());
+
+            let (new_sp, _) = self[Reg16::SP].overflowing_add(2);
+            self[Reg16::SP] = new_sp;
+        } else {
+            self[Reg16::PC] += 1;
+        }
+      RUST
+      testing: ->(flag, flag_value, condition_matching) {
+        {
+          "no wraparounds" => {
+            presets: <<~RUST,
+              cpu.set_flag(Flag::#{flag}, #{flag_value});
+              cpu[Reg16::SP] = 0xCAFE;
+              cpu.internal_ram[0xCAFE..=0xCAFF].copy_from_slice(&[0x30, 0x21]);
+            RUST
+            expectations: (<<~RUST if condition_matching)
+              SP => 0xCB00,
+              PC => 0x2130,
+            RUST
+          },
+          # Disabled until it's clear what's the behavior.
+          #
+          # "PC wraparound" => {
+          # "stack wraparound" => {
+        }
+      }
+    },
   }
 end
