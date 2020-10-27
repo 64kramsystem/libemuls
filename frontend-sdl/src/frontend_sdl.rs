@@ -17,8 +17,6 @@ use std::time::{Duration, Instant};
 //
 const WINDOW_START_WIDTH: u32 = 640;
 const WINDOW_START_HEIGHT: u32 = 480;
-const TOP_BORDER_START_SIZE: i32 = 0;
-const LEFT_BORDER_START_SIZE: i32 = 0;
 
 /// SDL-based implementation of IoFrontend.
 ///
@@ -30,12 +28,6 @@ pub struct FrontendSdl {
     audio_subsystem: AudioSubsystem,
 
     custom_keys_mapping: HashMap<EventCode, EventCode>,
-
-    // Logical width (game resolution).
-    screen_width: u32,
-    screen_height: u32,
-    top_border_size: i32,
-    left_border_size: i32,
 
     last_screen_update: Instant,
     min_time_between_screen_updates: Duration,
@@ -78,38 +70,9 @@ impl FrontendSdl {
             canvas,
             audio_subsystem,
             custom_keys_mapping,
-            screen_width: WINDOW_START_WIDTH,
-            screen_height: WINDOW_START_HEIGHT,
-            top_border_size: TOP_BORDER_START_SIZE,
-            left_border_size: LEFT_BORDER_START_SIZE,
             last_screen_update: Instant::now(),
             min_time_between_screen_updates,
         }
-    }
-
-    // Reacts to window resizing events; takes care of clearing, centering, and updating the scale.
-    //
-    fn update_window_dimensions(&mut self, window_width: i32, window_height: i32) {
-        let min_scale = f32::min(
-            (window_width as f32) / (self.screen_width as f32).floor(),
-            (window_height as f32) / (self.screen_height as f32).floor(),
-        );
-
-        self.canvas.set_scale(min_scale, min_scale).unwrap();
-
-        // The FP accuracy is not worth considering.
-        //
-        self.top_border_size =
-            ((window_height as f32 / min_scale) as i32 - self.screen_height as i32) / 2;
-
-        self.left_border_size =
-            ((window_width as f32 / min_scale) as i32 - self.screen_width as i32) / 2;
-
-        // If we don't clear, if a part of the canvas is not covered due to mismatch between the
-        // screen and the window, will have undefined content.
-        //
-        self.canvas.set_draw_color(Color::RGB(0, 0, 0));
-        self.canvas.clear();
     }
 
     // Ugly but necessary, as we can't trivially map an enum to another enum.
@@ -359,24 +322,28 @@ impl FrontendSdl {
 
 impl IoFrontend for FrontendSdl {
     fn init(&mut self, screen_width: u32, screen_height: u32) {
-        self.screen_width = screen_width;
-        self.screen_height = screen_height;
+        self.canvas
+            .set_logical_size(screen_width, screen_height)
+            .unwrap();
     }
 
+    // Previously, it was needed to listen to window resizing events, otherwise, the uncovered canvas
+    // part would have undefined content.
+    // It seems that using a logical size made this unnecessary; if corruption happens, restore the
+    // logic.
+    //
     fn update_screen(&mut self, pixels: &[Pixel], force_update: bool) {
+        let (canvas_width, _) = self.canvas.logical_size();
         let time_from_last_update = self.last_screen_update.elapsed();
 
         if time_from_last_update >= self.min_time_between_screen_updates || force_update {
-            for (y, line) in pixels.chunks(self.screen_width as usize).enumerate() {
+            for (y, line) in pixels.chunks(canvas_width as usize).enumerate() {
                 for (x, Pixel(r, g, b)) in line.iter().enumerate() {
                     // for (x, pixel) in line.iter().enumerate() {
                     self.canvas.set_draw_color(Color::RGB(*r, *g, *b));
 
                     self.canvas
-                        .draw_point(Point::new(
-                            self.left_border_size + x as i32,
-                            self.top_border_size + y as i32,
-                        ))
+                        .draw_point(Point::new(x as i32, y as i32))
                         .unwrap();
                 }
             }
@@ -430,12 +397,6 @@ impl IoFrontend for FrontendSdl {
                     } else {
                         Some((key_code, false))
                     };
-                }
-                Some(Event::Window {
-                    win_event: WindowEvent::SizeChanged(new_width, new_height),
-                    ..
-                }) => {
-                    self.update_window_dimensions(new_width, new_height);
                 }
                 Some(Event::Quit { .. }) => {
                     return Some((EventCode::Quit, true));
