@@ -339,7 +339,6 @@ impl IoFrontend for FrontendSdl {
         if time_from_last_update >= self.min_time_between_screen_updates || force_update {
             for (y, line) in pixels.chunks(canvas_width as usize).enumerate() {
                 for (x, Pixel(r, g, b)) in line.iter().enumerate() {
-                    // for (x, pixel) in line.iter().enumerate() {
                     self.canvas.set_draw_color(Color::RGB(*r, *g, *b));
 
                     self.canvas
