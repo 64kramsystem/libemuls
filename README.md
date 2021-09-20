@@ -14,6 +14,6 @@ Subjects I've explored until now:
 - Benchmarking different multithreading architectures for high-performance systems, including lockless implementations
 - Automated generation of CPU instructions fetch/decoding/execution, starting from instructions metadata
 
-My next subject in line is implementing a WASM interface.
+This project is now archived; I'm going to follow up with new topics on separate projects (which may reuse/update components).
 
 The [GitHub project wiki](../../wiki) has additional information.
