@@ -1,6 +1,6 @@
-use crate::audio::AudioDevice;
-use crate::events::EventCode;
-use crate::video::Pixel;
+use super::audio::AudioDevice;
+use super::events::EventCode;
+use super::video::Pixel;
 
 /// IoFrontend represent the user-facing interface: audio, video and events.
 ///

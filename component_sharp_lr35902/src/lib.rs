@@ -5,7 +5,7 @@ mod utils;
 
 pub mod cpu;
 
-pub use crate::cpu::Cpu as SharpLr35902;
+pub use cpu::Cpu as SharpLr35902;
 
 #[cfg(test)]
 mod cpu_test;

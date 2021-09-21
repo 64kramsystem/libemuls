@@ -10,4 +10,4 @@ pub mod events;
 pub mod logging;
 pub mod video;
 
-pub use crate::io_frontend::IoFrontend;
+pub use io_frontend::IoFrontend;

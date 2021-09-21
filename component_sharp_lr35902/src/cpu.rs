@@ -1,6 +1,6 @@
 #![allow(non_camel_case_types)]
 
-use crate::utils;
+use super::utils;
 use rand::RngCore;
 use std::convert::TryInto;
 use std::ops::{Index, IndexMut};

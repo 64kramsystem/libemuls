@@ -1,6 +1,6 @@
 #![allow(unused_macros)]
 
-use crate::cpu::{Cpu, Flag, Reg16, Reg8};
+use super::cpu::{Cpu, Flag, Reg16, Reg8};
 use demonstrate::demonstrate;
 use strum::IntoEnumIterator;
 
