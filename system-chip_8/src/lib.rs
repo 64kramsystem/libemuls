@@ -101,7 +101,7 @@ impl<'a, T: IoFrontend> Chip8<'a, T> {
             let period_number = sample_i as f64 / PERIOD;
             let scale_factor = (period_number * 2.0 * PI).sin();
             (AMPLITUDE as f64 * scale_factor) as i16
-        };
+        }
 
         let audio_device = io_frontend.audio_device(wave_generator);
 
